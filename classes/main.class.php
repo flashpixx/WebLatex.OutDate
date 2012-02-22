@@ -103,6 +103,16 @@ class main {
     static function getThemeDir() {
         return "themes/".config::theme."/";
     }
+    
+    /** binds a language file to a domain, default domain is [weblatex]
+     * @param $pcDomain domain name
+     * @param $pcDirectory directory of the language files
+     **/
+    static function bindLanguage( $pcDomain, $pcDirectory ) {
+        bindtextdomain($pcDomain, $pcDirectory);
+        bind_textdomain_codeset($pcDomain, "UTF-8");
+        textdomain($pcDomain);
+    }
 	
 }
 

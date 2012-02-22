@@ -1,0 +1,102 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2012-02-22 21:52+0100\n"
+"PO-Revision-Date: 2012-02-22 21:50+0100\n"
+"Last-Translator: Philipp Kraus <philipp.kraus@flashpixx.de>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: classes/design/theme.class.php:89 classes/design/theme.class.php:94
+msgid "documents"
+msgstr "Dokumente"
+
+#: classes/design/theme.class.php:91
+msgid "new document"
+msgstr "neues Dokument"
+
+#: classes/design/theme.class.php:92
+msgid "new draft"
+msgstr "neue Vorlage"
+
+#: classes/design/theme.class.php:93
+msgid "drafts"
+msgstr "Vorlagen"
+
+#: classes/design/theme.class.php:98 classes/design/theme.class.php:100
+msgid "directories"
+msgstr "Verzeichnisse"
+
+#: classes/design/theme.class.php:104
+msgid "settings"
+msgstr "Einstellungen"
+
+#: classes/design/theme.class.php:106
+msgid "change password"
+msgstr "Passwort ändern"
+
+#: classes/design/theme.class.php:110
+msgid "logout"
+msgstr "Logout"
+
+#: classes/design/theme.class.php:112
+msgid "help"
+msgstr "Hilfe"
+
+#: index.php:50
+msgid "login not found"
+msgstr "Login nicht gefunden"
+
+#: index.php:55
+msgid "login disable"
+msgstr "Login deaktiviert"
+
+#: index.php:60
+msgid "password incorrect"
+msgstr "Passwort nicht korrekt"
+
+#: index.php:81
+msgid "username"
+msgstr "Benutzername"
+
+#: index.php:82
+msgid "password"
+msgstr "Passwort"
+
+#: index.php:83
+msgid "login"
+msgstr "Login"
+
+#: wl-password.php:47
+msgid "password are not equal"
+msgstr "Passwörter nicht gleich"
+
+#: wl-password.php:50
+msgid "password should not be empty"
+msgstr "Passwort darf nicht leer sein"
+
+#: wl-password.php:65
+msgid "new password (insert both)"
+msgstr "neues Passwort (deoppelte Eingabe)"
+
+#: wl-password.php:66
+msgid "change"
+msgstr "ändern"
+
+#~ msgid "class data cannot be detected"
+#~ msgstr "Klassendaten können nicht ermittelt werden"
+
+#~ msgid "theme cannot be loaded"
+#~ msgstr "Theme kann nicht geladen werden"
+
+#~ msgid "theme is empty"
+#~ msgstr "Theme ist leer"

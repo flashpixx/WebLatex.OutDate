@@ -44,10 +44,10 @@ $loUser = $_SESSION["weblatex::loginuser"];
 $lcError = null;
 if ( (isset($_POST["password1"])) && (isset($_POST["password2"])) )
     if ($_POST["password1"] != $_POST["password2"])
-        $lcError = "<p id=\"weblatex-error\">Passw&ouml;rter nicht gleich</p>";
+        $lcError = "<p id=\"weblatex-error\">"._("password are not equal")."</p>";
     else
         if (empty($_POST["password1"]))
-            $lcError = "<p id=\"weblatex-error\">Passwort darf nicht leer sein</p>";
+            $lcError = "<p id=\"weblatex-error\">"._("password should not be empty")."</p>";
         else
             $loUser->changePassword($_POST["password1"]);
     
@@ -62,8 +62,8 @@ if (!empty($lcError))
     
 echo "<div id=\"weblatex-admin\">\n";
 echo "<form action=\"".$_SERVER["PHP_SELF"]."\" method=\"post\">\n";
-echo "<label for=\"password1\">neues Passwort (doppelte Eingabe)<br/><input type=\"password\" name=\"password1\" size=\"35\" tabindex=\"10\"/><input type=\"password\" name=\"password2\" size=\"35\" tabindex=\"20\"/></label>\n";
-echo "<p><input type=\"submit\" name=\"submit\" class=\"weblatex-button\" value=\"&auml;ndern\" tabindex=\"100\"/></p>\n";
+echo "<label for=\"password1\">"._("new password (insert both)")."<br/><input type=\"password\" name=\"password1\" size=\"35\" tabindex=\"10\"/><input type=\"password\" name=\"password2\" size=\"35\" tabindex=\"20\"/></label>\n";
+echo "<p><input type=\"submit\" name=\"submit\" class=\"weblatex-button\" value=\""._("change")."\" tabindex=\"100\"/></p>\n";
 echo "</form>\n";
 echo "</div>\n";
     

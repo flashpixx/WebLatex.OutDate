@@ -24,7 +24,7 @@
  **/
 
 
-/** global autoload function (used by theme and plugins
+/** global autoload function (used by theme and plugins)
  * @param $pcClassname
  **/
 function __autoload( $pcClassname ) {
@@ -42,10 +42,10 @@ function __autoload( $pcClassname ) {
 
     // checks data and include the file
     if ( (empty($lcPath)) || (empty($lcClass)) )
-        throw new Exception("class data cannot be detected");
+        throw new \Exception("class data cannot be detected");
     
     if ((!file_exists($lcPath)) || (!is_readable($lcPath)) )
-        throw new Exception("theme [".$lcClass."] cannot be loaded");
+        throw new \Exception("theme [".$lcClass."] cannot be loaded");
     
     require_once($lcPath);
 }   

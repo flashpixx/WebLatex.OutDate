@@ -28,6 +28,8 @@ use weblatex as wl;
     
 require_once( dirname(dirname(__DIR__))."/config.inc.php" );
 require_once( dirname(__DIR__)."/autoload.php" );
+require_once( dirname(__DIR__)."/main.class.php" );
+
 
     
 /** class for loading the user-defined theme data **/
@@ -40,12 +42,18 @@ class theme {
     /** contructor creates the theme object **/
     function __construct() {
         
-        // we must use variable because empty creates
-        // an error if we use it directly with the theme constant
-        $lcTheme = wl\config::theme;
+        // create language addon via gettext
+        $lcLang = wl\config::language;
+        if (!empty($lcLang)) {
+            putenv("LC_MESSAGES=".$lcLang.".UTF-8");
+            setlocale(LC_MESSAGES, $lcLang);   
+            wl\main::bindLanguage("weblatex", dirname(dirname(__DIR__))."/language/");
+        }
         
-        if (empty($lcTheme))
-            throw new Exception("theme is empty");
+        // create themes
+        $lcTheme = wl\config::theme;
+        if (empty($lcTheme))        
+            throw new \Exception("theme is empty");
         
         eval("\$this->moTheme = new weblatex\\design\\".$lcTheme."();");
     }
@@ -78,31 +86,30 @@ class theme {
         echo "<div id=\"weblatex-menu\">";
         echo "<span class=\"weblatex-logomini\"><a href=\"http://code.google.com/p/weblatex/\" target=\"_blank\">Web<img src=\"images/latex.png\"></a></span>\n";
         echo "<ul>\n";
-        echo "  <li><a>Dokumente</a>\n";
+        echo "  <li><a>"._("documents")."</a>\n";
         echo "      <ul>\n";
-        echo "          <li><a href=\"\">neues Dokument</a></li>\n";
-        echo "          <li><a href=\"\">neue Vorlage</a></li>\n";
-        echo "          <li><a href=\"\">Vorlagen</a></li>\n";
-        echo "          <li><a href=\"\">Dokumente</a></li>\n";
+        echo "          <li><a href=\"\">"._("new document")."</a></li>\n";
+        echo "          <li><a href=\"\">"._("new draft")."</a></li>\n";
+        echo "          <li><a href=\"\">"._("drafts")."</a></li>\n";
+        echo "          <li><a href=\"\">"._("documents")."</a></li>\n";
         echo "      </ul>\n";
         echo "  </li>\n";
         
-        echo "  <li><a>Verzeichnisse</a>\n";
+        echo "  <li><a>"._("directories")."</a>\n";
         echo "      <ul>\n";
-        echo "          <li><a href=\"\">Verzeichnisliste</a></li>\n";
-        echo "          <li><a href=\"\">Tag-Cloud</a></li>\n";
+        echo "          <li><a href=\"\">"._("directories")."</a></li>\n";
         echo "      </ul>\n";
         echo "  </li>\n";
         
-        echo "  <li><a>Einstellungen</a>\n";
+        echo "  <li><a>"._("settings")."</a>\n";
         echo "      <ul>\n";
-        echo "          <li><a href=\"wl-password.php\">Passwort &auml;ndern</a></li>\n";
+        echo "          <li><a href=\"wl-password.php\">"._("change password")."</a></li>\n";
         echo "      </ul>\n";
         echo "  </li>\n";
         
-        echo "  <li><a href=\"wl-logout.php\">Logout</a></li>\n";
+        echo "  <li><a href=\"wl-logout.php\">"._("logout")."</a></li>\n";
         
-        echo "  <li><a>Hilfe</a>\n";
+        echo "  <li><a>"._("help")."</a>\n";
         echo "      <ul>\n";
         echo "          <li><a href=\"\">GUI</a></li>\n";
         echo "          <li><a href=\"\">LaTeX</a></li>\n";

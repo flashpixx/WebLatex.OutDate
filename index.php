@@ -47,17 +47,17 @@ if ( (empty($loUser)) && (isset($_POST["user_login"])) && (isset($_POST["user_pa
     try {
         $loUser = new wm\user($_POST["user_login"]);
     } catch (Exception $e) {
-        $lcError = "<p id=\"weblatex-error\">Benutzername nicht gefunden</p>";
+        $lcError = "<p id=\"weblatex-error\">"._("login not found")."</p>";
     }
     
     if (!empty($loUser))
         if (!$loUser->canLogin())
-            $lcError = "<p id=\"weblatex-error\">Login deaktiviert</p>";
+            $lcError = "<p id=\"weblatex-error\">"._("login disable")."</p>";
         else
             if ($loUser->authentificate($_POST["user_pass"]))
                 $_SESSION["weblatex::loginuser"] = $loUser;
             else
-                $lcError = "<p id=\"weblatex-error\">Passwort inkorrekt</p>";
+                $lcError = "<p id=\"weblatex-error\">"._("password incorrect")."</p>";
 
     if (!empty($lcError)) {
         $_SESSION["weblatex::loginuser"] = null;
@@ -78,9 +78,9 @@ if (!empty($loUser)) {
     echo "<p id=\"weblatex-logo\"><a href=\"http://code.google.com/p/weblatex/\" target=\"_blank\">Web<img src=\"images/latex.png\"></a></p>\n";
     echo $lcError;
     echo "<form action=\"".$_SERVER["PHP_SELF"]."\" method=\"post\">\n";
-    echo "<p><label for=\"user_login\">Benutzername<br/><input type=\"text\" name=\"user_login\" size=\"35\" tabindex=\"10\"/></label></p>\n";
-    echo "<p><label for=\"user_pass\">Passwort<br /><input type=\"password\" name=\"user_pass\" size=\"35\" tabindex=\"20\"/></label></p>\n";
-    echo "<p><input type=\"submit\" name=\"submit\" class=\"weblatex-button\" value=\"Anmelden\" tabindex=\"100\"/></p>\n";
+    echo "<p><label for=\"user_login\">"._("username")."<br/><input type=\"text\" name=\"user_login\" size=\"35\" tabindex=\"10\"/></label></p>\n";
+    echo "<p><label for=\"user_pass\">"._("password")."<br /><input type=\"password\" name=\"user_pass\" size=\"35\" tabindex=\"20\"/></label></p>\n";
+    echo "<p><input type=\"submit\" name=\"submit\" class=\"weblatex-button\" value=\""._("login")."\" tabindex=\"100\"/></p>\n";
     echo "</form></div>\n";
 }
     
