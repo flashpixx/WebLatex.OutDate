@@ -33,15 +33,10 @@ require_once(__DIR__."/classes/management/user.class.php");
     
 // create theme and run initialization
 $loTheme = new wd\theme();    
-$loTheme->init();
+$loUser  = $loTheme->init(false);
     
-// check login data and initialize session data
+// sets the login data
 $lcError = null;
-
-$loUser  = null;
-if ( (isset($_SESSION["weblatex::loginuser"])) && ($_SESSION["weblatex::loginuser"] instanceof wm\user) )
-    $loUser = $_SESSION["weblatex::loginuser"];
-   
 if ( (empty($loUser)) && (isset($_POST["user_login"])) && (isset($_POST["user_pass"])) ) {
     
     try {

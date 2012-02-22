@@ -25,10 +25,12 @@
 
 namespace weblatex\design;
 use weblatex as wl;
+use weblatex\management as wm;
     
 require_once( dirname(dirname(__DIR__))."/config.inc.php" );
 require_once( dirname(__DIR__)."/autoload.php" );
 require_once( dirname(__DIR__)."/main.class.php" );
+require_once( dirname(__DIR__)."/management/user.class.php" );
 
 
     
@@ -45,8 +47,9 @@ class theme {
         // create language addon via gettext
         $lcLang = wl\config::language;
         if (!empty($lcLang)) {
-            putenv("LC_MESSAGES=".$lcLang.".UTF-8");
-            setlocale(LC_MESSAGES, $lcLang);   
+            setlocale(LC_MESSAGES, $lcLang.".UTF-8");   
+            putenv("LANG=".$lcLang.".UTF-8");
+            putenv("LANGUAGE=".$lcLang.".UTF-8");
             wl\main::bindLanguage("weblatex", dirname(dirname(__DIR__))."/language/");
         }
         
@@ -58,10 +61,21 @@ class theme {
         eval("\$this->moTheme = new weblatex\\design\\".$lcTheme."();");
     }
     
-    /** method that is used before the header is sended **/
-    function init() {
+    /** method that is used before the header is sended
+     * @param $plLocation sends if the session is not active to the login
+     * @return user object
+     **/
+    function init( $plLocation = true ) {
         @session_start();
         $this->moTheme->init();
+        
+        // read login user object
+        if ( (!isset($_SESSION["weblatex::loginuser"])) || (!($_SESSION["weblatex::loginuser"] instanceof wm\user)) ) {
+            if ($plLocation)
+                @header("Location: index.php");
+            return null;
+        }
+        return $_SESSION["weblatex::loginuser"];
     }
     
     /** method that creates the header and body
@@ -88,7 +102,7 @@ class theme {
         echo "<ul>\n";
         echo "  <li><a>"._("documents")."</a>\n";
         echo "      <ul>\n";
-        echo "          <li><a href=\"\">"._("new document")."</a></li>\n";
+        echo "          <li><a href=\"wl-createdocument.php\">"._("new document")."</a></li>\n";
         echo "          <li><a href=\"\">"._("new draft")."</a></li>\n";
         echo "          <li><a href=\"\">"._("drafts")."</a></li>\n";
         echo "          <li><a href=\"\">"._("documents")."</a></li>\n";

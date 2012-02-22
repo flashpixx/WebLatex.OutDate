@@ -25,43 +25,26 @@
 
 use weblatex\design as wd;
 use weblatex\management as wm;
-    
+use weblatex\document as doc;
+
 require_once(__DIR__."/classes/design/theme.class.php");
 require_once(__DIR__."/classes/management/user.class.php");
-    
+require_once(__DIR__."/classes/document/document.class.php");
+
 // create theme and run initialization
 $loTheme = new wd\theme();    
 $loUser  = $loTheme->init();
     
     
-// do password change
-$lcError = null;
-if ( (isset($_POST["password1"])) && (isset($_POST["password2"])) )
-    if ($_POST["password1"] != $_POST["password2"])
-        $lcError = "<p id=\"weblatex-error\">"._("password are not equal")."</p>";
-    else
-        if (empty($_POST["password1"]))
-            $lcError = "<p id=\"weblatex-error\">"._("password should not be empty")."</p>";
-        else
-            $loUser->changePassword($_POST["password1"]);
-    
-
-    
 // create HTML header, body and main menu
 $loTheme->header( $loUser );
 $loTheme->mainMenu( $loUser );
-  
-if (!empty($lcError))
-    echo $lcError;
-    
-echo "<div id=\"weblatex-admin\">\n";
-echo "<form action=\"".$_SERVER["PHP_SELF"]."\" method=\"post\">\n";
-echo "<label for=\"password1\">"._("new password (insert both)")."<br/><input type=\"password\" name=\"password1\" size=\"35\" tabindex=\"10\"/><input type=\"password\" name=\"password2\" size=\"35\" tabindex=\"20\"/></label>\n";
-echo "<p><input type=\"submit\" name=\"submit\" class=\"weblatex-button\" value=\""._("change")."\" tabindex=\"100\"/></p>\n";
-echo "</form>\n";
-echo "</div>\n";
-    
+
+
+
 // create HTML footer
 $loTheme->footer( $loUser );
+    
+    
 
 ?>

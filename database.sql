@@ -30,13 +30,13 @@ CREATE TABLE IF NOT EXISTS `document` (
   `uid` bigint(20) unsigned DEFAULT NULL,
   `draft` longtext COLLATE utf8_bin,
   `draftid` bigint(20) unsigned DEFAULT NULL,
-  `canchange` enum('true','false') COLLATE utf8_bin NOT NULL DEFAULT 'true',
-  `history` enum('true','false') COLLATE utf8_bin NOT NULL DEFAULT 'false',
+  `modifiable` enum('true','false') COLLATE utf8_bin NOT NULL DEFAULT 'true',
+  `archivable` enum('true','false') COLLATE utf8_bin NOT NULL DEFAULT 'false',
   PRIMARY KEY (`did`),
   UNIQUE KEY `name` (`name`),
   KEY `uid` (`uid`),
   KEY `draftid` (`draftid`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='table for storing document header information' AUTO_INCREMENT=3 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='table for storing document header information' AUTO_INCREMENT=1 ;
 
 DROP TABLE IF EXISTS `documentpart`;
 CREATE TABLE IF NOT EXISTS `documentpart` (
@@ -59,10 +59,10 @@ CREATE TABLE IF NOT EXISTS `document_rights` (
 
 DROP TABLE IF EXISTS `domentpart_rights`;
 CREATE TABLE IF NOT EXISTS `domentpart_rights` (
-  `documentpartrt` bigint(20) unsigned NOT NULL,
+  `documentpart` bigint(20) unsigned NOT NULL,
   `right` bigint(20) unsigned NOT NULL,
   `access` enum('read','write') COLLATE utf8_bin NOT NULL DEFAULT 'read',
-  PRIMARY KEY (`documentpartrt`,`right`),
+  PRIMARY KEY (`documentpart`,`right`),
   KEY `right` (`right`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
@@ -92,7 +92,7 @@ CREATE TABLE IF NOT EXISTS `groups` (
   `name` varchar(32) COLLATE utf8_bin NOT NULL,
   `system` enum('true','false') COLLATE utf8_bin NOT NULL DEFAULT 'false',
   PRIMARY KEY (`gid`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='table for storing the user groups' AUTO_INCREMENT=7 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='table for storing the user groups' AUTO_INCREMENT=1 ;
 
 DROP TABLE IF EXISTS `group_rights`;
 CREATE TABLE IF NOT EXISTS `group_rights` (
@@ -128,7 +128,7 @@ CREATE TABLE IF NOT EXISTS `rights` (
   `system` enum('true','false') COLLATE utf8_bin NOT NULL,
   PRIMARY KEY (`rid`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='table for storing user / group rights' AUTO_INCREMENT=3 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='table for storing user / group rights' AUTO_INCREMENT=1 ;
 
 DROP TABLE IF EXISTS `user`;
 CREATE TABLE IF NOT EXISTS `user` (
@@ -138,7 +138,7 @@ CREATE TABLE IF NOT EXISTS `user` (
   `loginenable` enum('true','false') COLLATE utf8_bin NOT NULL DEFAULT 'true',
   PRIMARY KEY (`uid`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='table for storing user information' AUTO_INCREMENT=7 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='table for storing user information' AUTO_INCREMENT=1 ;
 
 DROP TABLE IF EXISTS `user_groups`;
 CREATE TABLE IF NOT EXISTS `user_groups` (
@@ -176,7 +176,7 @@ ALTER TABLE `document_rights`
   ADD CONSTRAINT `document_rights_ibfk_2` FOREIGN KEY (`right`) REFERENCES `rights` (`rid`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 ALTER TABLE `domentpart_rights`
-  ADD CONSTRAINT `domentpart_rights_ibfk_1` FOREIGN KEY (`documentpartrt`) REFERENCES `documentpart` (`dpid`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `domentpart_rights_ibfk_1` FOREIGN KEY (`documentpart`) REFERENCES `documentpart` (`dpid`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `domentpart_rights_ibfk_2` FOREIGN KEY (`right`) REFERENCES `rights` (`rid`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 ALTER TABLE `draft`

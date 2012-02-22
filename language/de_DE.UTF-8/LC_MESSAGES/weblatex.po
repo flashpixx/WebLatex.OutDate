@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2012-02-22 21:52+0100\n"
-"PO-Revision-Date: 2012-02-22 21:50+0100\n"
+"PO-Revision-Date: 2012-02-22 22:04+0100\n"
 "Last-Translator: Philipp Kraus <philipp.kraus@flashpixx.de>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: \n"
@@ -16,7 +16,8 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: classes/design/theme.class.php:89 classes/design/theme.class.php:94
+#: classes/design/theme.class.php:89
+#: classes/design/theme.class.php:94
 msgid "documents"
 msgstr "Dokumente"
 
@@ -32,7 +33,8 @@ msgstr "neue Vorlage"
 msgid "drafts"
 msgstr "Vorlagen"
 
-#: classes/design/theme.class.php:98 classes/design/theme.class.php:100
+#: classes/design/theme.class.php:98
+#: classes/design/theme.class.php:100
 msgid "directories"
 msgstr "Verzeichnisse"
 
@@ -86,7 +88,7 @@ msgstr "Passwort darf nicht leer sein"
 
 #: wl-password.php:65
 msgid "new password (insert both)"
-msgstr "neues Passwort (deoppelte Eingabe)"
+msgstr "neues Passwort (doppelte Eingabe)"
 
 #: wl-password.php:66
 msgid "change"
