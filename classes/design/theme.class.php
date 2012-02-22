@@ -76,7 +76,7 @@ class theme {
      **/
     function mainMenu( $poUser = null ) {
         echo "<div id=\"weblatex-menu\">";
-        echo "<span class=\"weblatex-logomini\">Web<img src=\"images/latex.png\"></span>\n";
+        echo "<span class=\"weblatex-logomini\"><a href=\"http://code.google.com/p/weblatex/\" target=\"_blank\">Web<img src=\"images/latex.png\"></a></span>\n";
         echo "<ul>\n";
         echo "  <li><a>Dokumente</a>\n";
         echo "      <ul>\n";

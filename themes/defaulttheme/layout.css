@@ -4,7 +4,7 @@
  # LGPL License                                                             #
  #                                                                          #
  # This file is part of the WebLaTeX system           .                     #
- # Copyright (c) 2010, Philipp Kraus, <philipp.kraus@flashpixx.de>          #
+ # Copyright (c) 2012 <http://code.google.com/p/weblatex/>                  #
  # This program is free software: you can redistribute it and/or modify     #
  # it under the terms of the GNU Lesser General Public License as           #
  # published by the Free Software Foundation, either version 3 of the       #
@@ -58,7 +58,6 @@ input {
     font-variant: small-caps;
     font-size: 14px;
     font-family: serif;
-    color: #0000AA;
 }
 
 .weblatex-logomini img {
@@ -90,12 +89,12 @@ input {
     background: #FFFFFF;
 }
 
-
-#weblatex-admin #weblatex-logo {
+#weblatex-admin #weblatex-logo a {
     font-variant: small-caps;
     font-size: 40px;
     font-family: serif;
     color: #0000AA;
+    text-decoration: none;
 }
 
 #weblatex-admin #weblatex-logo img {

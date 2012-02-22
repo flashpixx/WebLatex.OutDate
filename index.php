@@ -75,7 +75,7 @@ if (!empty($loUser)) {
     $loTheme->mainMenu( $loUser );
 } else {
     echo "<div id=\"weblatex-admin\">\n";
-    echo "<p id=\"weblatex-logo\">Web<img src=\"images/latex.png\"></p>\n";
+    echo "<p id=\"weblatex-logo\"><a href=\"http://code.google.com/p/weblatex/\" target=\"_blank\">Web<img src=\"images/latex.png\"></a></p>\n";
     echo $lcError;
     echo "<form action=\"".$_SERVER["PHP_SELF"]."\" method=\"post\">\n";
     echo "<p><label for=\"user_login\">Benutzername<br/><input type=\"text\" name=\"user_login\" size=\"35\" tabindex=\"10\"/></label></p>\n";
