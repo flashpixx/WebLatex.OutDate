@@ -1,0 +1,102 @@
+<?php
+
+/** 
+ @cond
+ ############################################################################
+ # LGPL License                                                             #
+ #                                                                          #
+ # This file is part of the WebLaTeX system           .                     #
+ # Copyright (c) 2010, Philipp Kraus, <philipp.kraus@flashpixx.de>          #
+ # This program is free software: you can redistribute it and/or modify     #
+ # it under the terms of the GNU Lesser General Public License as           #
+ # published by the Free Software Foundation, either version 3 of the       #
+ # License, or (at your option) any later version.                          #
+ #                                                                          #
+ # This program is distributed in the hope that it will be useful,          #
+ # but WITHOUT ANY WARRANTY; without even the implied warranty of           #
+ # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the            #
+ # GNU Lesser General Public License for more details.                      #
+ #                                                                          #
+ # You should have received a copy of the GNU Lesser General Public License #
+ # along with this program. If not, see <http://www.gnu.org/licenses/>.     #
+ ############################################################################
+ @endcond
+**/
+
+namespace weblatex;
+
+
+/** configuration class of the system, that stores database login
+ * and LaTeX (PDFLaTeX) path information
+**/
+class config {
+	
+    
+    // === general configuration ================================================================================================
+    
+	/** debug flag for developing (should be set to false on default) **/
+	const debug 			= false;
+    
+    /** hash method (allowed values: phppass and each type of hash algorithm (see http://www.php.net/manual/en/function.hash-algos.php )) **/
+    const hashtype          = "phppass";
+    
+    /** private key for create the HMAC variant (not used by phppass) **/
+    const hashkey           = "insert a random string";
+    
+    /** number of iterations for key stretching (only used by phppass) **/
+    const hashiteration     = 2;
+    
+    /** name of the class which is used for the designs **/
+    const theme             = "defaulttheme";
+    
+    /** language code for setting translation **/
+    const language          = "en_EN";
+    
+    /** array with numbers of the system groups (change only the numbers) **/
+    static $system_groups   = array(
+                                    "administrator" => 1,
+                                    "draft"         => 2,
+                                    "user"          => 3
+    );
+
+
+    
+	// === database configuration ================================================================================================
+
+	/** database type, see ADODB (http://adodb.sourceforge.net/) configuration **/
+	const databasetype		= "mysql";
+	
+	/** database host **/
+	const databasehost 		= "insert database host";
+	
+	/** database user login **/
+	const databaseuser 		= "insert database user";
+	
+	/** database password **/
+	const databasepassword	= "insert database password";
+	
+	/** database name **/
+	const databasename		= "insert database name";
+	
+	
+	
+	// === tex configuration =====================================================================================================
+	
+	/** path to latex-to-pdf interpreter **/
+	const pdf2latex			= "path to pdflatex -interaction=nonstopmode";
+	
+	/** path to makeindex **/
+	const makeindex			= "path to makeindex";
+	
+	/** path to metapost **/
+	const metapost			= "path to mpost --interaction nonstopmode";
+	
+	/** path to bibtex **/
+	const bibtex			= "path to bibtex8";
+	
+	/** path to asymptote **/
+	const asymptote			= "path to asy";
+
+}
+
+?>
