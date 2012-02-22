@@ -6,7 +6,7 @@
  # LGPL License                                                             #
  #                                                                          #
  # This file is part of the WebLaTeX system           .                     #
- # Copyright (c) 2010, Philipp Kraus, <philipp.kraus@flashpixx.de>          #
+ # Copyright (c) 2012 <http://code.google.com/p/weblatex/>                  #
  # This program is free software: you can redistribute it and/or modify     #
  # it under the terms of the GNU Lesser General Public License as           #
  # published by the Free Software Foundation, either version 3 of the       #
