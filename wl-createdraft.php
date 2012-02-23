@@ -1,5 +1,5 @@
 <?php
-    
+
 /** 
  @cond
  ############################################################################
@@ -31,44 +31,31 @@ use weblatex\document as doc;
 require_once(__DIR__."/config.inc.php");
 require_once(__DIR__."/classes/design/theme.class.php");
 require_once(__DIR__."/classes/management/user.class.php");
-require_once(__DIR__."/classes/document/document.class.php");
 require_once(__DIR__."/classes/document/draft.class.php");
 
-    
-    
+
+
 // create theme and run initialization
 $loTheme = new wd\theme();    
 $loUser  = $loTheme->init();
-    
-    
+
+
 // create HTML header, body and main menu
 $loTheme->header( $loUser );
 $loTheme->mainMenu( $loUser );
-    
+
 
 echo "<div id=\"weblatex-document\">\n";
 echo "<form action=\"".$_SERVER["PHP_SELF"]."\" method=\"post\">\n";
-    
-echo "<select name=\"draft\" size=\"5\">\n";
-foreach(doc\draft::getList() as $laItem)
-    // check if the user is owner of the draft
-    if ( $loUser->isEqual($laItem["user"]) )
-        echo "<option value=\"".$laItem["did"]."\">".$laItem["name"]."</option>\n";
-    
-    // if not the owner, user must be administrator or draft administrator or has the right
-    else {
-        $loDraft  = new doc\draft($laItem["did"]);
-        if ( wm\right::hasOne($loUser, array_merge($loDraft->getRights(), array( wl\config::$system_groups["administrator"], wl\config::$system_groups["draft"] ))) )
-            echo "<option value=\"".$laItem["did"]."\">".$laItem["name"]."</option>\n";
-    }
-echo "</select>\n";
 
+echo "<p><label for=\"draft_name\">"._("draftname")."<br/><input type=\"text\" name=\"draft_login\" size=\"45\" tabindex=\"10\"/></label></p>\n";
+    
 echo "</form>\n";
 echo "</div>\n";
 
 
 // create HTML footer
 $loTheme->footer( $loUser );
-        
+
 
 ?>

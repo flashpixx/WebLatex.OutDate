@@ -36,12 +36,13 @@ CREATE TABLE IF NOT EXISTS `document` (
   UNIQUE KEY `name` (`name`),
   KEY `uid` (`uid`),
   KEY `draftid` (`draftid`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='table for storing document header information' AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='table for storing document header information' AUTO_INCREMENT=1 ;
 
 DROP TABLE IF EXISTS `documentpart`;
 CREATE TABLE IF NOT EXISTS `documentpart` (
   `dpid` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `document` bigint(20) unsigned NOT NULL,
+  `name` varchar(250) COLLATE utf8_bin DEFAULT NULL,
   `content` longtext COLLATE utf8_bin,
   `lastmodify` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`dpid`),
@@ -62,8 +63,7 @@ CREATE TABLE IF NOT EXISTS `domentpart_rights` (
   `documentpart` bigint(20) unsigned NOT NULL,
   `right` bigint(20) unsigned NOT NULL,
   `access` enum('read','write') COLLATE utf8_bin NOT NULL DEFAULT 'read',
-  PRIMARY KEY (`documentpart`,`right`),
-  KEY `right` (`right`)
+  PRIMARY KEY (`right`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 DROP TABLE IF EXISTS `draft`;
@@ -161,22 +161,16 @@ ALTER TABLE `directory`
   ADD CONSTRAINT `directory_ibfk_1` FOREIGN KEY (`parent`) REFERENCES `directory` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 ALTER TABLE `directory_document`
-  ADD CONSTRAINT `directory_document_ibfk_1` FOREIGN KEY (`document`) REFERENCES `document` (`did`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `directory_document_ibfk_2` FOREIGN KEY (`directory`) REFERENCES `directory` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-
-ALTER TABLE `document`
-  ADD CONSTRAINT `document_ibfk_1` FOREIGN KEY (`uid`) REFERENCES `user` (`uid`) ON DELETE SET NULL ON UPDATE CASCADE,
-  ADD CONSTRAINT `document_ibfk_2` FOREIGN KEY (`draftid`) REFERENCES `draft` (`did`) ON DELETE NO ACTION ON UPDATE CASCADE;
 
 ALTER TABLE `documentpart`
   ADD CONSTRAINT `documentpart_ibfk_1` FOREIGN KEY (`document`) REFERENCES `document` (`did`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 ALTER TABLE `document_rights`
-  ADD CONSTRAINT `document_rights_ibfk_1` FOREIGN KEY (`document`) REFERENCES `document` (`did`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `document_rights_ibfk_2` FOREIGN KEY (`right`) REFERENCES `rights` (`rid`) ON DELETE CASCADE ON UPDATE CASCADE;
+  ADD CONSTRAINT `document_rights_ibfk_2` FOREIGN KEY (`right`) REFERENCES `rights` (`rid`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `document_rights_ibfk_1` FOREIGN KEY (`document`) REFERENCES `document` (`did`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 ALTER TABLE `domentpart_rights`
-  ADD CONSTRAINT `domentpart_rights_ibfk_1` FOREIGN KEY (`documentpart`) REFERENCES `documentpart` (`dpid`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `domentpart_rights_ibfk_2` FOREIGN KEY (`right`) REFERENCES `rights` (`rid`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 ALTER TABLE `draft`

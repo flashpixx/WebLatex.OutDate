@@ -99,12 +99,14 @@ class group implements \Serializable {
      * @param $px groupid or groupname
      **/
     function __construct( $px ) {
-        if ( (!is_numeric($px)) && (!is_string($px)) )
-            wl\main::phperror( "argument must be a numeric or string value", E_USER_ERROR );
+        if ( (!is_numeric($px)) && (!is_string($px)) && (!($px instanceof $this)) )
+            wl\main::phperror( "argument must be a numeric, string or group object value", E_USER_ERROR );
         
         if (is_numeric($px))
             $loResult = wl\main::getDatabase()->Execute( "SELECT name, gid, system FROM groups WHERE gid=?", array($px) );
-        else
+        if ($px instanceof $this)
+            $loResult = wl\main::getDatabase()->Execute( "SELECT name, gid, system FROM groups WHERE gid=?", array($px->getGID()) );
+        if (is_string($px))
             $loResult = wl\main::getDatabase()->Execute( "SELECT name, gid, system FROM groups WHERE name=?", array($px) );
         
         if ($loResult->EOF)
@@ -207,6 +209,16 @@ class group implements \Serializable {
         $this->mnID     = $la["id"];
         $this->mcName   = $la["name"];
         $this->mlSystem = $la["system"];
+    }
+    
+    /** checks if another group object points to the same gid
+     * @param $poGroup group object
+     * @return if the gid is equal
+     **/
+    function isEqual( $poGroup ) {
+        if ($poGroup instanceof $this)
+            return $poGroup->getGID() === $this->mnID;
+        return false;
     }
 }
 

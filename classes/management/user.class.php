@@ -86,12 +86,14 @@ class user implements \Serializable {
      * @param $px userid or username
      **/
     function __construct( $px ) {
-        if ( (!is_numeric($px)) && (!is_string($px)) )
-            wl\main::phperror( "argument must be a numeric or string value", E_USER_ERROR );
+        if ( (!is_numeric($px)) && (!is_string($px)) && (!($px instanceof $this)) )
+            wl\main::phperror( "argument must be a numeric, string or user object value", E_USER_ERROR );
         
         if (is_numeric($px))
             $loResult = wl\main::getDatabase()->Execute( "SELECT name, uid FROM user WHERE uid=?", array($px) );
-        else
+        if ($px instanceof $this)
+            $loResult = wl\main::getDatabase()->Execute( "SELECT name, uid FROM user WHERE uid=?", array($px->getUID()) );
+        if (is_string($px))
             $loResult = wl\main::getDatabase()->Execute( "SELECT name, uid FROM user WHERE name=?", array($px) );
         
         if ($loResult->EOF)
@@ -200,6 +202,16 @@ class user implements \Serializable {
         $la            = unserialize($pc);
         $this->mnID    = $la["id"];
         $this->mcName  = $la["name"];
+    }
+    
+    /** checks if another user object points to the same uid
+     * @param $poUser user object
+     * @return if the uid is equal
+     **/
+    function isEqual( $poUser ) {
+        if ($poUser instanceof $this)
+            return $poUser->getUID() === $this->mnID;
+        return false;
     }
 }
 

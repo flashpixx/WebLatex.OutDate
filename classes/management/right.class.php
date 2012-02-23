@@ -86,18 +86,56 @@ class right implements \Serializable {
         return $la;
     }
     
+    /** retuns a boolean if the user or group as all the rights
+     * @param $poUserGroup user or group object
+     * @param $pa array with right ids or names
+     * @return boolean if all rights are set
+     **/
+    static function hasAll( $poUserGroup, $pa ) {
+        if (!is_array($pa))
+            wl\main::phperror( "argument must be a numeric or string array", E_USER_ERROR );
+        
+        foreach($pa as $lxItem) {
+            $loRight = new right($lxItem);
+            if (!$loRight->hasRight())
+                return false;
+        }
+        
+        return true;
+    }
+    
+    /** returns a boolean if the user or group as one of the rights
+     * @param $poUserGroup user or group object
+     * @param $pa array with right ids or names
+     * @return boolean if one right is set
+     **/
+    static function hasOne( $poUserGroup, $pa ) {
+        if (!is_array($pa))
+            wl\main::phperror( "argument must be a numeric or string array", E_USER_ERROR );
+    
+        foreach($pa as $lxItem) {
+            $loRight = new right($lxItem);
+            if ($loRight->hasRight())
+                return true;
+        }
+        
+        return false;
+    }
+    
     
     
     /** constructor
-     * @param $px groupid or groupname
+     * @param $px right id or right name
      **/
     function __construct( $px ) {
-        if ( (!is_numeric($px)) && (!is_string($px)) )
-            wl\main::phperror( "argument must be a numeric or string value", E_USER_ERROR );
+        if ( (!is_numeric($px)) && (!is_string($px)) && (!($px instanceof $this)) )
+            wl\main::phperror( "argument must be a numeric, string or right object value", E_USER_ERROR );
         
         if (is_numeric($px))
             $loResult = wl\main::getDatabase()->Execute( "SELECT name, rid, system FROM rights WHERE rid=?", array($px) );
-        else
+        if ($px instanceof $this)
+            $loResult = wl\main::getDatabase()->Execute( "SELECT name, rid, system FROM rights WHERE rid=?", array($px->getRID()) );
+        if (is_string($px))
             $loResult = wl\main::getDatabase()->Execute( "SELECT name, rid, system FROM rights WHERE name=?", array($px) );
         
         if ($loResult->EOF)
@@ -226,6 +264,16 @@ class right implements \Serializable {
         $this->mnID     = $la["id"];
         $this->mcName   = $la["name"];
         $this->mlSystem = $la["system"];
+    }
+    
+    /** checks if another right object points to the same rid
+     * @param $poRight right object
+     * @return if the rid is equal
+     **/
+    function isEqual( $poRight ) {
+        if ($poRight instanceof $this)
+            return $poRight->getRID() === $this->mnID;
+        return false;
     }
     
 }
