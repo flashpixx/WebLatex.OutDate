@@ -75,7 +75,7 @@ class user implements \Serializable {
         $loResult = wl\main::getDatabase()->Execute( "SELECT name, uid FROM user" );
         if (!$loResult->EOF)
             foreach( $loResult as $laRow )
-                array_push( $la, array("name" => $laRow["name"], "uid" => $laRow["uid"]) );
+                array_push( $la, array("name" => $laRow["name"], "uid" => intval($laRow["uid"])) );
         
         return $la;
     }
@@ -100,7 +100,7 @@ class user implements \Serializable {
             throw new \Exception( "user data not found" );
         
         $this->mcName = $loResult->fields["name"];
-        $this->mnID   = $loResult->fields["uid"];
+        $this->mnID   = intval($loResult->fields["uid"]);
     }
     
     /** validate the user password

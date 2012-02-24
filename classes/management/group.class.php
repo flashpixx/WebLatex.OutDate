@@ -88,7 +88,7 @@ class group implements \Serializable {
         $loResult = wl\main::getDatabase()->Execute( "SELECT name, gid, system FROM groups" );
         if (!$loResult->EOF)
             foreach( $loResult as $laRow )
-            array_push( $la, array("name" => $laRow["name"], "gid" => $laRow["gid"], "system" => ($laRow["system"]==true)) );
+            array_push( $la, array("name" => $laRow["name"], "gid" => intval($laRow["gid"]), "system" => ($laRow["system"]==true)) );
         
         return $la;
     }
@@ -113,7 +113,7 @@ class group implements \Serializable {
             throw new \Exception( "group data not found" );
         
         $this->mcName   = $loResult->fields["name"];
-        $this->mnID     = $loResult->fields["gid"];
+        $this->mnID     = intval($loResult->fields["gid"]);
         $this->mlSystem = $loResult->fields["system"] == "true";
     }
     

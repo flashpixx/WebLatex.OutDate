@@ -87,9 +87,9 @@ class document {
         if ($loResult->EOF)
             throw new \Exception( "document data not found" );
         
-        $this->mnID   = $loResult->fields["did"];
+        $this->mnID   = intval($loResult->fields["did"]);
         if (!empty($loResult->fields["uid"]))
-            $this->moOwner = new wm\user($loResult->fields["uid"]);
+            $this->moOwner = new wm\user(intval($loResult->fields["uid"]));
     }
 
     /** returns the user owner object

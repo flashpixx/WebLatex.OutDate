@@ -80,7 +80,7 @@ class draft {
         $loResult = wl\main::getDatabase()->Execute("SELECT did, name, user FROM draft");
         if (!$loResult->EOF)
             foreach($loResult as $laRow)
-                array_push($la, array("name" => $laRow["name"], "did" => $laRow["did"], "user" => (empty($laRow["user"]) ? null : new man\user($laRow["user"]))));
+                array_push($la, array("name" => $laRow["name"], "did" => $laRow["did"], "user" => (empty($laRow["user"]) ? null : new man\user(intval($laRow["user"])))));
         
         return $la;
     }
@@ -103,9 +103,9 @@ class draft {
             throw new \Exception( "draft data not found" );
         
         $this->mcName  = $loResult->fields["name"];
-        $this->mnID    = $loResult->fields["did"];
+        $this->mnID    = intval($loResult->fields["did"]);
         $this->mcData  = $loResult->fields["content"];
-        $this->moOwner = new man\user($loResult->fields["user"]);
+        $this->moOwner = new man\user(intval($loResult->fields["user"]));
     }
     
     /** returns the draftname
@@ -182,6 +182,21 @@ class draft {
                 array_push($la, new man\right($laRow["right"]));
         
         return $la;
+    }
+    
+    /** returns the archivable flag
+     * @return boolean is the document is archivable
+     **/
+    function isArchivable() {
+        $loResult = wl\main::getDatabase()->Execute( "SELECT archivable FROM draft WHERE did=?", array($this->mnID) );
+        return $loResult->fields["archivable"] == true;
+    }
+    
+    /** sets the archivable flag
+     * @param $plArchiveable boolean
+     **/
+    function setArchivable( $plArchiveable ) {
+        wl\main::getDatabase()->Execute( "UPDATE draft SET archivable=? WHERE did=?", array( ($plArchiveable ? "true" : "false"), $this->mnID) );
     }
 }
 

@@ -81,7 +81,7 @@ class right implements \Serializable {
         $loResult = wl\main::getDatabase()->Execute( "SELECT name, rid, system FROM rights" );
         if (!$loResult->EOF)
             foreach( $loResult as $laRow )
-                array_push( $la, array("name" => $laRow["name"], "rid" => $laRow["rid"], "system" => ($laRow["system"]==true)) );
+                array_push( $la, array("name" => $laRow["name"], "rid" => intval($laRow["rid"]), "system" => ($laRow["system"]==true)) );
         
         return $la;
     }
@@ -142,7 +142,7 @@ class right implements \Serializable {
             throw new \Exception( "right data not found" );
         
         $this->mcName   = $loResult->fields["name"];
-        $this->mnID     = $loResult->fields["rid"];
+        $this->mnID     = intval($loResult->fields["rid"]);
         $this->mlSystem = $loResult->fields["system"] == "true";
     }
     
