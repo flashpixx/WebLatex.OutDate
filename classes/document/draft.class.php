@@ -53,34 +53,34 @@ class draft {
             wl\main::phperror( "first argument must be string value, second argument a user object", E_USER_ERROR );
         
         $loDB     = wl\main::getDatabase();
-        $loResult = $loDB->Execute( "SELECT did FROM draft WHERE name=?", array($pcName) );
+        $loResult = $loDB->Execute( "SELECT id FROM draft WHERE name=?", array($pcName) );
         if (!$loResult->EOF)
             throw new \Exception( "draft [".$pcName."] exists" );
         
-        $loDB->Execute("INSERT IGNORE INTO draft (name,user) VALUES (?,?)", array($pcName, $poUser->getUID()));
+        $loDB->Execute("INSERT IGNORE INTO draft (name,user) VALUES (?,?)", array($pcName, $poUser->getID()));
         return new draft($pcName);
     }
     
     /** deletes a draft
-     * @param $did draft id
+     * @param $pnDID draft id
      **/
     static function delete( $pnDID ) {
         if (!is_numeric($pnDID))
             wl\main::phperror( "argument must be a numeric value", E_USER_ERROR );
         
-        wl\main::getDatabase()->Execute( "DELETE FROM draft WHERE did=?", array($pnDID) );
+        wl\main::getDatabase()->Execute( "DELETE FROM draft WHERE id=?", array($pnDID) );
     }
     
     /** returns a assoc array with draft information
-     * @return assoc array with draft id (did), user object (user) and name
+     * @return array with draft object
      **/
     static function getList() {
         $la = array();
         
-        $loResult = wl\main::getDatabase()->Execute("SELECT did, name, user FROM draft");
+        $loResult = wl\main::getDatabase()->Execute("SELECT id FROM draft");
         if (!$loResult->EOF)
             foreach($loResult as $laRow)
-                array_push($la, array("name" => $laRow["name"], "did" => $laRow["did"], "user" => (empty($laRow["user"]) ? null : new man\user(intval($laRow["user"])))));
+                array_push( $la, new draft(intval($laRow["id"])) );
         
         return $la;
     }
@@ -91,21 +91,24 @@ class draft {
      * @param $px draft id or draft name
      **/
     function __construct( $px ) {
-        if ( (!is_numeric($px)) && (!is_string($px)) )
-            wl\main::phperror( "argument must be a numeric or string value", E_USER_ERROR );
+        if ( (!is_numeric($px)) && (!is_string($px)) && (!($px instanceof $this)) )
+            wl\main::phperror( "argument must be a numeric, string or draft object value", E_USER_ERROR );
         
         if (is_numeric($px))
-            $loResult = wl\main::getDatabase()->Execute( "SELECT name, did, user, content FROM draft WHERE did=?", array($px) );
-        else
-            $loResult = wl\main::getDatabase()->Execute( "SELECT name, did, user, content FROM draft WHERE name=?", array($px) );
+            $loResult = wl\main::getDatabase()->Execute( "SELECT name, id, user, content FROM draft WHERE id=?", array($px) );
+        if ($px instanceof $this)
+            $loResult = wl\main::getDatabase()->Execute( "SELECT name, id, user, content FROM draft WHERE id=?", array($px->getID()) );        
+        if (is_string($px))
+            $loResult = wl\main::getDatabase()->Execute( "SELECT name, id, user, content FROM draft WHERE name=?", array($px) );
         
         if ($loResult->EOF)
             throw new \Exception( "draft data not found" );
         
         $this->mcName  = $loResult->fields["name"];
-        $this->mnID    = intval($loResult->fields["did"]);
+        $this->mnID    = intval($loResult->fields["id"]);
         $this->mcData  = $loResult->fields["content"];
-        $this->moOwner = new man\user(intval($loResult->fields["user"]));
+        if (!empty($loResult->fields["user"]))
+            $this->moOwner = new man\user(intval($loResult->fields["user"]));
     }
     
     /** returns the draftname
@@ -118,7 +121,7 @@ class draft {
     /** returns the draft id
      * @return draft id
      **/
-    function getDID() {
+    function getID() {
         return $this->mnID;
     }
     
@@ -145,7 +148,7 @@ class draft {
     
     /** saves draft data to database **/
     function save() {
-        wl\main::getDatabase()->Execute("UPDATE draft SET content=? WHERE did=?", array($this->mcData, $this->mnID));
+        wl\main::getDatabase()->Execute("UPDATE draft SET content=? WHERE id=?", array($this->mcData, $this->mnID));
     }
     
     /** adds a right or changes the access of the right
@@ -171,15 +174,15 @@ class draft {
     }
     
     /** returns an array with right objects of this draft
-     * @return array with right obejcts
+     * @return array with right obejcts (right) and boolean flag if the right can write the draft (writeable)
      **/
     function getRights() {
-        $loResult = wl\main::getDatabase()->Execute("SELECT right FROM draft_rights WHERE draft=?", array($this->mnID));
+        $loResult = wl\main::getDatabase()->Execute("SELECT right, access FROM draft_rights WHERE draft=?", array($this->mnID));
         
         $la = array();
         if (!$loResult->EOF)
             foreach($loResult as $laRow)
-                array_push($la, new man\right($laRow["right"]));
+                array_push($la, array( "right" => new man\right($laRow["right"]), "writeable" => $laRow["access"] == "write"));
         
         return $la;
     }
@@ -188,7 +191,7 @@ class draft {
      * @return boolean is the document is archivable
      **/
     function isArchivable() {
-        $loResult = wl\main::getDatabase()->Execute( "SELECT archivable FROM draft WHERE did=?", array($this->mnID) );
+        $loResult = wl\main::getDatabase()->Execute( "SELECT archivable FROM draft WHERE id=?", array($this->mnID) );
         return $loResult->fields["archivable"] == true;
     }
     
@@ -196,7 +199,7 @@ class draft {
      * @param $plArchiveable boolean
      **/
     function setArchivable( $plArchiveable ) {
-        wl\main::getDatabase()->Execute( "UPDATE draft SET archivable=? WHERE did=?", array( ($plArchiveable ? "true" : "false"), $this->mnID) );
+        wl\main::getDatabase()->Execute( "UPDATE draft SET archivable=? WHERE id=?", array( ($plArchiveable ? "true" : "false"), $this->mnID) );
     }
 }
 

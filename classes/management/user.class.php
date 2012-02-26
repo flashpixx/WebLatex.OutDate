@@ -42,40 +42,43 @@ class user implements \Serializable {
     /** creates a new user account if not exists 
      * @param $pcName username
      * @param $pcPassword unencrypted password
+     * @return new user object
      **/
     static function create( $pcName, $pcPassword ) {
         if ( (!is_string($pcName)) || (!is_string($pcPassword)) )
             wl\main::phperror( "arguments must be string values", E_USER_ERROR );
         
         $loDB     = wl\main::getDatabase();
-        $loResult = $loDB->Execute( "SELECT uid FROM user WHERE name=?", array($pcName) );
+        $loResult = $loDB->Execute( "SELECT id FROM user WHERE name=?", array($pcName) );
         
         if (!$loResult->EOF)
             throw new \Exception( "user [".$pcName."] exists" );
         
         $loDB->Execute( "INSERT IGNORE INTO user (name,hash) VALUES (?,?)", array($pcName, wl\main::generateHash($pcPassword)) );
+        
+        return new user($pcName);
     }
     
-    /** deletes a user with the uid
+    /** deletes a user with the user id
      * @param $pnUID user id
      **/
     static function delete( $pnUID ) {
         if (!is_numeric($pnUID))
             wl\main::phperror( "argument must be a numeric value", E_USER_ERROR );
         
-        wl\main::getDatabase()->Execute( "DELETE FROM user WHERE uid=?", array($pnUID) );
+        wl\main::getDatabase()->Execute( "DELETE FROM user WHERE id=?", array($pnUID) );
     }
     
     /** returns the userlist
-     * @return assoc array with username (name) and user id (uid)
+     * @return array with user objects
      **/
     static function getList() {
         $la = array();
 
-        $loResult = wl\main::getDatabase()->Execute( "SELECT name, uid FROM user" );
+        $loResult = wl\main::getDatabase()->Execute( "SELECT name, id FROM user" );
         if (!$loResult->EOF)
             foreach( $loResult as $laRow )
-                array_push( $la, array("name" => $laRow["name"], "uid" => intval($laRow["uid"])) );
+                array_push( $la, new user(intval($laRow["id"])) );
         
         return $la;
     }
@@ -83,24 +86,24 @@ class user implements \Serializable {
     
     
     /** constructor
-     * @param $px userid or username
+     * @param $px user id, name or object
      **/
     function __construct( $px ) {
         if ( (!is_numeric($px)) && (!is_string($px)) && (!($px instanceof $this)) )
             wl\main::phperror( "argument must be a numeric, string or user object value", E_USER_ERROR );
         
         if (is_numeric($px))
-            $loResult = wl\main::getDatabase()->Execute( "SELECT name, uid FROM user WHERE uid=?", array($px) );
+            $loResult = wl\main::getDatabase()->Execute( "SELECT name, id FROM user WHERE id=?", array($px) );
         if ($px instanceof $this)
-            $loResult = wl\main::getDatabase()->Execute( "SELECT name, uid FROM user WHERE uid=?", array($px->getUID()) );
+            $loResult = wl\main::getDatabase()->Execute( "SELECT name, id FROM user WHERE id=?", array($px->getID()) );
         if (is_string($px))
-            $loResult = wl\main::getDatabase()->Execute( "SELECT name, uid FROM user WHERE name=?", array($px) );
+            $loResult = wl\main::getDatabase()->Execute( "SELECT name, id FROM user WHERE name=?", array($px) );
         
         if ($loResult->EOF)
             throw new \Exception( "user data not found" );
         
         $this->mcName = $loResult->fields["name"];
-        $this->mnID   = intval($loResult->fields["uid"]);
+        $this->mnID   = intval($loResult->fields["id"]);
     }
     
     /** validate the user password
@@ -108,7 +111,7 @@ class user implements \Serializable {
      * @return boolean if authentification is correct
      **/
     function authentificate( $pcPassword ) {
-        $loResult = wl\main::getDatabase()->Execute( "SELECT hash FROM user WHERE uid=?", array($this->mnID) );
+        $loResult = wl\main::getDatabase()->Execute( "SELECT hash FROM user WHERE id=?", array($this->mnID) );
         if ($loResult->EOF)
             wl\main::phperror( "user record not found", E_USER_ERROR );
         
@@ -123,9 +126,9 @@ class user implements \Serializable {
     }
     
     /** returns the user id
-     * @return uid
+     * @return user id
      **/
-    function getUID() {
+    function getID() {
         return $this->mnID;
     }
     
@@ -133,21 +136,21 @@ class user implements \Serializable {
      * @param $pcPassword password string
      **/
     function changePassword( $pcPassword ) {
-        wl\main::getDatabase()->Execute( "UPDATE user SET hash=? WHERE uid=?", array(wl\main::generateHash($pcPassword), $this->mnID) );
+        wl\main::getDatabase()->Execute( "UPDATE user SET hash=? WHERE id=?", array(wl\main::generateHash($pcPassword), $this->mnID) );
     }
     
     /** change the login state
      * @param $plState boolean for enable (true) or disable (false) login
      **/
     function changeLoginState( $plState ) {
-        wl\main::getDatabase()->Execute( "UPDATE user SET loginenable=? WHERE uid=?", array( ($plState ? "true" : "false"), $this->mnID) );
+        wl\main::getDatabase()->Execute( "UPDATE user SET loginenable=? WHERE id=?", array( ($plState ? "true" : "false"), $this->mnID) );
     }
     
     /** returns the login option
      * @return boolean, true login is enabled
      **/
     function canLogin() {
-        $loResult = wl\main::getDatabase()->Execute("SELECT loginenable FROM user WHERE uid=?", array($this->mnID));
+        $loResult = wl\main::getDatabase()->Execute("SELECT loginenable FROM user WHERE id=?", array($this->mnID));
         
         if (!$loResult->EOF)
             return $loResult->fields["loginenable"] == "true";
@@ -204,13 +207,13 @@ class user implements \Serializable {
         $this->mcName  = $la["name"];
     }
     
-    /** checks if another user object points to the same uid
+    /** checks if another user object points to the same user id
      * @param $poUser user object
-     * @return if the uid is equal
+     * @return if the user id is equal
      **/
     function isEqual( $poUser ) {
         if ($poUser instanceof $this)
-            return $poUser->getUID() === $this->mnID;
+            return $poUser->getID() === $this->mnID;
         return false;
     }
 }

@@ -42,7 +42,7 @@ function __autoload( $pcClassname ) {
 
     // checks data and include the file
     if ( (empty($lcPath)) || (empty($lcClass)) )
-        throw new \Exception("class data cannot be detected");
+        throw new \Exception("class data [".$pcClassname."] cannot be detected");
     
     if ((!file_exists($lcPath)) || (!is_readable($lcPath)) )
         throw new \Exception("theme [".$lcClass."] cannot be loaded");

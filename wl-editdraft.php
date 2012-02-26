@@ -30,6 +30,7 @@ use weblatex\document as doc;
 
 require_once(__DIR__."/config.inc.php");
 require_once(__DIR__."/classes/design/theme.class.php");
+require_once(__DIR__."/classes/management/right.class.php");
 require_once(__DIR__."/classes/management/user.class.php");
 require_once(__DIR__."/classes/document/draft.class.php");
 
@@ -39,21 +40,74 @@ require_once(__DIR__."/classes/document/draft.class.php");
 $loTheme = new wd\theme();    
 $loUser  = $loTheme->init();
 
+    
+// read draft object and save the new data
+if ( (isset($_GET["id"])) || (isset($_POST["id"])) ) {
+    if (isset($_GET["id"]))
+        $loDraft = new doc\draft(intval($_GET["id"]));
+    else
+        $loDraft = new doc\draft(intval($_POST["id"]));
+       
+    if (isset($_POST["elm1"])) {
+        $loDraft->setContent($_POST["elm1"]);
+        $loDraft->save();
+    }
+}
+    
+// delete draft objects
+if (isset($_POST["delete"])) {
+    
+}
 
 // create HTML header, body and main menu
-$loTheme->header( $loUser,  );
+if (empty($loDraft))
+    $loTheme->header( $loUser );
+else
+    $loTheme->header( $loUser, wd\theme::tinymce );
 $loTheme->mainMenu( $loUser );
 
-
+    
+echo "<h1>".(empty($loDraft) ? _("draft list") : _("draft")." [".$loDraft->getName()."] "._("edit"))."</h1>\n";
 echo "<div id=\"weblatex-document\">\n";
 echo "<form action=\"".$_SERVER["PHP_SELF"]."\" method=\"post\">\n";
+  
+// if the ID parameter is set
+if (!empty($loDraft)) {
+    echo "<input type=\"hidden\" name=\"id\" value=\"".$loDraft->getID()."\"/>";
+    echo "<div><textarea id=\"elm1\" name=\"elm1\" rows=\"15\" cols=\"80\" style=\"width: 80%\">".$loDraft->getContent()."</textarea></div>";
 
-echo "<p><label for=\"draft_name\">"._("draftname")."<br/><input type=\"text\" name=\"draft_login\" size=\"45\" tabindex=\"10\"/></label></p>\n";
-echo "<div><textarea id=\"elm1\" name=\"elm1\" rows=\"15\" cols=\"80\" style=\"width: 80%\"></textarea></div>";
+// if the ID not set, we create a list of drafts
+} else {
+
+    $loDraftRight   = new wm\right( wl\config::$system_groups["draft"] );
+    $llShow         = $loDraftRight->hasRight($loUser);
+
+    echo "<table>\n";
+    echo "<tr><th>"._("delete")."</th><th>"._("draft name")."</th></tr>\n";
+    foreach(doc\draft::getList() as $loDraft) {
     
+        // check rights of the draft
+        if (!$llShow) {
+            $llShow = $loUser->isEqual($loDraft->getOwner());
+        
+            if (!$llShow)
+                foreach($loDraft->getRights as $laRight)
+                    if ($laRight["right"]->hasRight($loUser)) {
+                        $llShow = true;
+                        break;
+                    }
+        }
+        
+        // show draft entry
+        if ($llShow)
+            echo "<tr><td><input type=\"checkbox\" name=\"delete[]\" value=\"".$loDraft->getID()."\"/></td><td><a href=\"".$_SERVER["PHP_SELF"]."?".http_build_query(array("id" => $loDraft->getID()))."\">".$loDraft->getName()."</a></td></tr>\n";
+    }
+    echo "</table>\n";
+}
+
+echo "<p><input type=\"submit\" name=\"submit\" class=\"weblatex-button\" value=\""._("accept")."\" tabindex=\"100\"/></p>\n";
 echo "</form>\n";
 echo "</div>\n";
-
 
 // create HTML footer
 $loTheme->footer( $loUser );

@@ -45,21 +45,24 @@ class group implements \Serializable {
     /** creates a new group account if not exists 
      * @param $pcName group name
      * @param $plSystem boolean for system group
+     * @return the new group object
      **/
     static function create( $pcName, $plSystem = false ) {
         if ( (!is_string($pcName)) || (!is_boolean($plSystem)) )
             wl\main::phperror( "first argument must be string value, second argument a boolean value", E_USER_ERROR );
         
         $loDB     = wl\main::getDatabase();
-        $loResult = $loDB->Execute( "SELECT gid FROM groups WHERE name=?", array($pcName) );
+        $loResult = $loDB->Execute( "SELECT id FROM groups WHERE name=?", array($pcName) );
         
         if (!$loResult->EOF)
             throw new \Exception( "group [".$pcName."] exists" );
         
         $loDB->Execute( "INSERT IGNORE INTO groups (name,system) VALUES (?,?)", array($pcName, ($plSystem ? "true" : "false")) );
+        
+        return new group($pcName);
     }
     
-    /** deletes a group with the gid
+    /** deletes a group with the group id
      * @param $pnGID user id
      * @param $plForce system groups can be deleted only by setting force to true
      **/
@@ -70,25 +73,25 @@ class group implements \Serializable {
         // we check the numeric value of the system groups, so that this groups cannot be deleted
         if (in_array($pnGID, array_values(wl\config::$system_groups), true)) {
             wl\main::phperror( "system group [".$pnGID."] cannot be deleted", E_USER_NOTICE );
-            throw new \Exception( "system group [".$pnID."] cannot be deleted" );
+            throw new \Exception( "system group [".$pnGID."] cannot be deleted" );
         }
         
         if ($plForce)
-            wl\main::getDatabase()->Execute( "DELETE FROM groups WHERE gid=?", array($pnGID) );
+            wl\main::getDatabase()->Execute( "DELETE FROM groups WHERE id=?", array($pnGID) );
         else
-            wl\main::getDatabase()->Execute( "DELETE FROM groups WHERE gid=? AND system=?", array($pnGID, "false") );
+            wl\main::getDatabase()->Execute( "DELETE FROM groups WHERE id=? AND system=?", array($pnGID, "false") );
     }
     
     /** returns the grouplist
-     * @return assoc array with groupname (name), group id (uid) and boolean (system) for system group
+     * @return assoc array with groupname (name), group id (id) and boolean (system) for system group
      **/
     static function getList() {
         $la = array();
         
-        $loResult = wl\main::getDatabase()->Execute( "SELECT name, gid, system FROM groups" );
+        $loResult = wl\main::getDatabase()->Execute( "SELECT name, id, system FROM groups" );
         if (!$loResult->EOF)
             foreach( $loResult as $laRow )
-            array_push( $la, array("name" => $laRow["name"], "gid" => intval($laRow["gid"]), "system" => ($laRow["system"]==true)) );
+                array_push( $la, new group(intval($laRow["id"])) );
         
         return $la;
     }
@@ -96,24 +99,24 @@ class group implements \Serializable {
     
     
     /** constructor
-     * @param $px groupid or groupname
+     * @param $px group id, name or object
      **/
     function __construct( $px ) {
         if ( (!is_numeric($px)) && (!is_string($px)) && (!($px instanceof $this)) )
             wl\main::phperror( "argument must be a numeric, string or group object value", E_USER_ERROR );
         
         if (is_numeric($px))
-            $loResult = wl\main::getDatabase()->Execute( "SELECT name, gid, system FROM groups WHERE gid=?", array($px) );
+            $loResult = wl\main::getDatabase()->Execute( "SELECT name, id, system FROM groups WHERE id=?", array($px) );
         if ($px instanceof $this)
-            $loResult = wl\main::getDatabase()->Execute( "SELECT name, gid, system FROM groups WHERE gid=?", array($px->getGID()) );
+            $loResult = wl\main::getDatabase()->Execute( "SELECT name, id, system FROM groups WHERE id=?", array($px->getID()) );
         if (is_string($px))
-            $loResult = wl\main::getDatabase()->Execute( "SELECT name, gid, system FROM groups WHERE name=?", array($px) );
+            $loResult = wl\main::getDatabase()->Execute( "SELECT name, id, system FROM groups WHERE name=?", array($px) );
         
         if ($loResult->EOF)
             throw new \Exception( "group data not found" );
         
         $this->mcName   = $loResult->fields["name"];
-        $this->mnID     = intval($loResult->fields["gid"]);
+        $this->mnID     = intval($loResult->fields["id"]);
         $this->mlSystem = $loResult->fields["system"] == "true";
     }
     
@@ -125,9 +128,9 @@ class group implements \Serializable {
     }
     
     /** returns the group id
-     * @return gid
+     * @return group id
      **/
-    function getGID() {
+    function getID() {
         return $this->mnID;
     }
     
@@ -211,13 +214,13 @@ class group implements \Serializable {
         $this->mlSystem = $la["system"];
     }
     
-    /** checks if another group object points to the same gid
+    /** checks if another group object points to the same group id
      * @param $poGroup group object
-     * @return if the gid is equal
+     * @return if the group id is equal
      **/
     function isEqual( $poGroup ) {
         if ($poGroup instanceof $this)
-            return $poGroup->getGID() === $this->mnID;
+            return $poGroup->getID() === $this->mnID;
         return false;
     }
 }

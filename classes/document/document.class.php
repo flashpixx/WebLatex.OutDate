@@ -46,18 +46,21 @@ class document {
     /** creates a new user document
      * @param $pcName document name
      * @param $poUser user object of the owner
+     * @return the new document object
      **/
     static function create( $pcName, $poUser ) {
         if ( (!is_string($pcName)) || (!($poUser instanceof wm\user)) )
             wl\main::phperror( "arguments must be string value and a user object", E_USER_ERROR );
         
         $loDB     = wl\main::getDatabase();
-        $loResult = $loDB->Execute( "SELECT did FROM document WHERE name=?", array($pcName) );
+        $loResult = $loDB->Execute( "SELECT id FROM document WHERE name=?", array($pcName) );
         
         if (!$loResult->EOF)
             throw new \Exception( "document [".$pcName."] exists" );
         
-        $loDB->Execute( "INSERT IGNORE INTO document (name,uid) VALUES (?,?)", array($pcName, $poUser->getUID()) );
+        $loDB->Execute( "INSERT IGNORE INTO document (name,uid) VALUES (?,?)", array($pcName, $poUser->getID()) );
+        
+        return new document($pcName);
     }
     
     /** deletes a document
@@ -67,7 +70,7 @@ class document {
         if (!is_numeric($pnDID))
             wl\main::phperror( "argument must be a numeric value", E_USER_ERROR );
         
-        wl\main::getDatabase()->Execute( "DELETE FROM document WHERE did=?", array($pnDID) );
+        wl\main::getDatabase()->Execute( "DELETE FROM document WHERE id=?", array($pnDID) );
     }
     
     
@@ -76,18 +79,20 @@ class document {
      * @param $px document id or document name
      **/
     function __construct( $px ) {
-        if ( (!is_numeric($px)) && (!is_string($px)) )
-            wl\main::phperror( "argument must be a numeric or string value", E_USER_ERROR );
+        if ( (!is_numeric($px)) && (!is_string($px)) && (!($px instanceof $this)) )
+            wl\main::phperror( "argument must be a numeric, string or document object value", E_USER_ERROR );
         
         if (is_numeric($px))
-            $loResult = wl\main::getDatabase()->Execute( "SELECT did, uid FROM document WHERE did=?", array($px) );
-        else
-            $loResult = wl\main::getDatabase()->Execute( "SELECT did, uid FROM document WHERE name=?", array($px) );
+            $loResult = wl\main::getDatabase()->Execute( "SELECT id, uid FROM document WHERE id=?", array($px) );
+        if ($px instanceof $this)
+            $loResult = wl\main::getDatabase()->Execute( "SELECT id, uid FROM document WHERE id=?", array($px->getID()) );
+        if (is_string($px))
+            $loResult = wl\main::getDatabase()->Execute( "SELECT id, uid FROM document WHERE name=?", array($px) );
         
         if ($loResult->EOF)
             throw new \Exception( "document data not found" );
         
-        $this->mnID   = intval($loResult->fields["did"]);
+        $this->mnID   = intval($loResult->fields["id"]);
         if (!empty($loResult->fields["uid"]))
             $this->moOwner = new wm\user(intval($loResult->fields["uid"]));
     }
@@ -101,7 +106,7 @@ class document {
     
     /** get the document name **/
     function getName() {
-        $loResult = wl\main::getDatabase()->Execute( "SELECT name FROM document WHERE did=?", array($this->mnID) );
+        $loResult = wl\main::getDatabase()->Execute( "SELECT name FROM document WHERE id=?", array($this->mnID) );
         return $loResult->fields["name"];
     }
     
@@ -109,7 +114,7 @@ class document {
      * @return draft object or draft content
      **/
     function getDraft() {
-        $loResult = wl\main::getDatabase()->Execute( "SELECT draft, draftid FROM document WHERE did=?", array($this->mnID) );
+        $loResult = wl\main::getDatabase()->Execute( "SELECT draft, draftid FROM document WHERE id=?", array($this->mnID) );
         if (empty($loResult->fields["draftid"]))
             return $loResult->fields["draft"];
         else
@@ -120,7 +125,7 @@ class document {
      * @return boolean is the document is archivable
      **/
     function isArchivable() {
-        $loResult = wl\main::getDatabase()->Execute( "SELECT archivable FROM document WHERE did=?", array($this->mnID) );
+        $loResult = wl\main::getDatabase()->Execute( "SELECT archivable FROM document WHERE id=?", array($this->mnID) );
         return $loResult->fields["archivable"] == true;
     }
     
@@ -128,14 +133,14 @@ class document {
      * @param $plArchiveable boolean
      **/
     function setArchivable( $plArchiveable ) {
-        wl\main::getDatabase()->Execute( "UPDATE document SET archivable=? WHERE did=?", array( ($plArchiveable ? "true" : "false"), $this->mnID) );
+        wl\main::getDatabase()->Execute( "UPDATE document SET archivable=? WHERE id=?", array( ($plArchiveable ? "true" : "false"), $this->mnID) );
     }
     
     /** returns the modifiable flag
      * @return boolean is the document modifiable
      **/
     function isModifiable() {
-        $loResult = wl\main::getDatabase()->Execute( "SELECT modifiable FROM document WHERE did=?", array($this->mnID) );
+        $loResult = wl\main::getDatabase()->Execute( "SELECT modifiable FROM document WHERE id=?", array($this->mnID) );
         return $loResult->fields["modifiable"] == true;
     }
     
@@ -143,7 +148,7 @@ class document {
      * @param $plModifiable boolean
      **/
     function setModifiable( $plModifiable ) {
-        wl\main::getDatabase()->Execute( "UPDATE document SET modifiable=? WHERE did=?", array( ($plModifiable ? "true" : "false"), $this->mnID) );
+        wl\main::getDatabase()->Execute( "UPDATE document SET modifiable=? WHERE id=?", array( ($plModifiable ? "true" : "false"), $this->mnID) );
     }
     
     /** sets the owner id
@@ -153,7 +158,7 @@ class document {
         if (!($poUser instanceof wm\user))
             wl\main::phperror( "argument must be an user object", E_USER_ERROR );
         
-        wl\main::getDatabase()->Execute( "UPDATE document SET uid=? WHERE did=?", array( $poUser->getUID(), $this->mnID) );
+        wl\main::getDatabase()->Execute( "UPDATE document SET uid=? WHERE id=?", array( $poUser->getID(), $this->mnID) );
         $this->moOwner = $poUser;
     }
 }

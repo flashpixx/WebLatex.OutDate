@@ -44,21 +44,24 @@ class right implements \Serializable {
     /** creates a new right if not exists 
      * @param $pcName group name
      * @param $plSystem boolean for system right
+     * @return new right object
      **/
     static function create( $pcName, $plSystem = false ) {
         if ( (!is_string($pcName)) || (!is_boolean($plSystem)) )
             wl\main::phperror( "first argument must be string value, second argument a boolean value", E_USER_ERROR );
         
         $loDB     = wl\main::getDatabase();
-        $loResult = $loDB->Execute( "SELECT rid FROM rights WHERE name=?", array($pcName) );
+        $loResult = $loDB->Execute( "SELECT id FROM rights WHERE name=?", array($pcName) );
         
         if (!$loResult->EOF)
             throw new \Exception( "right [".$pcName."] exists" );
         
         $loDB->Execute( "INSERT IGNORE INTO rights (name,system) VALUES (?,?)", array($pcName, ($plSystem ? "true" : "false")) );
+        
+        return new right($pcName);
     }
     
-    /** deletes a right with the rid
+    /** deletes a right with the right id
      * @param $pnGID right id
      * @param $plForce system rights can be deleted only by setting force to true
      **/
@@ -67,21 +70,21 @@ class right implements \Serializable {
             wl\main::phperror( "argument must be a numeric value", E_USER_ERROR );
         
         if ($plForce)
-            wl\main::getDatabase()->Execute( "DELETE FROM rights WHERE rid=?", array($pnRID) );
+            wl\main::getDatabase()->Execute( "DELETE FROM rights WHERE id=?", array($pnRID) );
         else
-            wl\main::getDatabase()->Execute( "DELETE FROM rights WHERE rid=? AND system=?", array($pnRID, "false") );
+            wl\main::getDatabase()->Execute( "DELETE FROM rights WHERE id=? AND system=?", array($pnRID, "false") );
     }
     
     /** returns the rightlist
-     * @return assoc array with rightname (name), right id (rid) and boolean (system) for system right
+     * @return assoc array with rightname (name), right id (id) and boolean (system) for system right
      **/
     static function getList() {
         $la = array();
         
-        $loResult = wl\main::getDatabase()->Execute( "SELECT name, rid, system FROM rights" );
+        $loResult = wl\main::getDatabase()->Execute( "SELECT name, id, system FROM rights" );
         if (!$loResult->EOF)
             foreach( $loResult as $laRow )
-                array_push( $la, array("name" => $laRow["name"], "rid" => intval($laRow["rid"]), "system" => ($laRow["system"]==true)) );
+                array_push( $la, new right(intval($laRow["id"])) );
         
         return $la;
     }
@@ -125,24 +128,24 @@ class right implements \Serializable {
     
     
     /** constructor
-     * @param $px right id or right name
+     * @param $px right id, name or object
      **/
     function __construct( $px ) {
         if ( (!is_numeric($px)) && (!is_string($px)) && (!($px instanceof $this)) )
             wl\main::phperror( "argument must be a numeric, string or right object value", E_USER_ERROR );
         
         if (is_numeric($px))
-            $loResult = wl\main::getDatabase()->Execute( "SELECT name, rid, system FROM rights WHERE rid=?", array($px) );
+            $loResult = wl\main::getDatabase()->Execute( "SELECT name, id, system FROM rights WHERE id=?", array($px) );
         if ($px instanceof $this)
-            $loResult = wl\main::getDatabase()->Execute( "SELECT name, rid, system FROM rights WHERE rid=?", array($px->getRID()) );
+            $loResult = wl\main::getDatabase()->Execute( "SELECT name, id, system FROM rights WHERE id=?", array($px->getID()) );
         if (is_string($px))
-            $loResult = wl\main::getDatabase()->Execute( "SELECT name, rid, system FROM rights WHERE name=?", array($px) );
+            $loResult = wl\main::getDatabase()->Execute( "SELECT name, id, system FROM rights WHERE name=?", array($px) );
         
-        if ($loResult->EOF)
+        if ($loResult->EOF) 
             throw new \Exception( "right data not found" );
         
         $this->mcName   = $loResult->fields["name"];
-        $this->mnID     = intval($loResult->fields["rid"]);
+        $this->mnID     = intval($loResult->fields["id"]);
         $this->mlSystem = $loResult->fields["system"] == "true";
     }
     
@@ -154,9 +157,9 @@ class right implements \Serializable {
     }
     
     /** returns the right id
-     * @return rid
+     * @return id
      **/
-    function getRID() {
+    function getID() {
         return $this->mnID;
     }
     
@@ -172,7 +175,7 @@ class right implements \Serializable {
      * @return array with groupobjects
      **/
     function getGroups() {
-        $loResult = wl\main::getDatabase()->Execute("SELECT group FROM group_rights WHERE right=?", array($this->mnID));
+        $loResult = wl\main::getDatabase()->Execute("SELECT group FROM group_rights WHERE rights=?", array($this->mnID));
         
         $la = array();
         if (!$loResult->EOF)
@@ -187,7 +190,7 @@ class right implements \Serializable {
      * @return array with userobjects
      **/
     function getUser() {
-        $loResult = wl\main::getDatabase()->Execute("SELECT user FROM user_rights WHERE right=?", array($this->mnID));
+        $loResult = wl\main::getDatabase()->Execute("SELECT user FROM user_rights WHERE rights=?", array($this->mnID));
         
         $la = array();
         if (!$loResult->EOF)
@@ -206,10 +209,10 @@ class right implements \Serializable {
             wl\main::phperror( "argument must be a user or group object", E_USER_ERROR );
         
         if ($px instanceof user)
-            $loResult = wl\main::getDatabase()->Execute("SELECT user FROM user_rights WHERE user=? AND right=?", array($px->getUID(), $this->mnID));
+            $loResult = wl\main::getDatabase()->Execute("SELECT user FROM user_rights WHERE user=? AND rights=?", array($px->getID(), $this->mnID));
         else
-            $loResult = wl\main::getDatabase()->Execute("SELECT group FROM group_rights WHERE group=? AND right=?", array($px->getGID(), $this->mnID));
-    
+            $loResult = wl\main::getDatabase()->Execute("SELECT group FROM group_rights WHERE group=? AND rights=?", array($px->getID(), $this->mnID));
+
         return !$loResult->EOF;
     }
     
@@ -221,9 +224,9 @@ class right implements \Serializable {
             wl\main::phperror( "argument must be a user or group object", E_USER_ERROR );
         
         if ($px instanceof user)
-            $loResult = wl\main::getDatabase()->Execute("INSERT IGNORE INTO user_rights VALUES (?,?)", array($px->getUID(), $this->mnID));
+            $loResult = wl\main::getDatabase()->Execute("INSERT IGNORE INTO user_rights VALUES (?,?)", array($px->getID(), $this->mnID));
         else
-            $loResult = wl\main::getDatabase()->Execute("INSERT IGNORE INTO  group_rights VALUES (?,?)", array($px->getGID(), $this->mnID));
+            $loResult = wl\main::getDatabase()->Execute("INSERT IGNORE INTO  group_rights VALUES (?,?)", array($px->getID(), $this->mnID));
     }
     
     /** removes the right of the group or user
@@ -234,9 +237,9 @@ class right implements \Serializable {
             wl\main::phperror( "argument must be a user or group object", E_USER_ERROR );
         
         if ($px instanceof user)
-            wl\main::getDatabase()->Execute("DELETE FROM user_rights WHERE user=? AND right=?", array($px->getUID(), $this->mnID));
+            wl\main::getDatabase()->Execute("DELETE FROM user_rights WHERE user=? AND rights=?", array($px->getID(), $this->mnID));
         else
-            wl\main::getDatabase()->Execute("DELETE FROM group_rights WHERE group=? AND right=?", array($px->getGID(), $this->mnID));
+            wl\main::getDatabase()->Execute("DELETE FROM group_rights WHERE group=? AND rights=?", array($px->getID(), $this->mnID));
     }
     
     /** print method of the object
@@ -266,13 +269,13 @@ class right implements \Serializable {
         $this->mlSystem = $la["system"];
     }
     
-    /** checks if another right object points to the same rid
+    /** checks if another right object points to the same right id
      * @param $poRight right object
-     * @return if the rid is equal
+     * @return if the right id is equal
      **/
     function isEqual( $poRight ) {
         if ($poRight instanceof $this)
-            return $poRight->getRID() === $this->mnID;
+            return $poRight->getID() === $this->mnID;
         return false;
     }
     
