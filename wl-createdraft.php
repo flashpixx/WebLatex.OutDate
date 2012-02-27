@@ -81,19 +81,13 @@ if (empty($loDraft)) {
     echo "<p><label for=\"draft_copyfrom\">"._("copy from")."<br/>";
     echo "<select name=\"draft_copyfrom\" size=\"1\">\n";
     echo "<option value=\"\">"._("not copy")."</option>\n";
-    foreach(doc\draft::getList() as $laItem) {
-        print_r($laItem);
+    foreach(doc\draft::getList() as $loDraft) {
     
-        // check if the user is owner of the draft
-        if ( $loUser->isEqual($laItem["user"]) )
+        if ( ($loUser->isEqual($loDraft->getOwner())) ||
+            (wm\right::hasOne($loUser, $loDraft->getRights())) ||
+            (wl\main::any( wm\right::hasOne($loUser->getGroups(), $loDraft->getRights()) ))
+            )
             echo "<option value=\"".$laItem["id"]."\">".$laItem["name"]."</option>\n";
-        
-        // if not the owner, user must be administrator or draft administrator or has the right
-        else {
-            $loDraft  = new doc\draft($laItem["id"]);
-            if ( wm\right::hasOne($loUser, array_merge($loDraft->getRights(), array( wl\config::$system_groups["administrator"], wl\config::$system_groups["draft"] ))) )
-                echo "<option value=\"".$laItem["id"]."\">".$laItem["name"]."</option>\n";
-        }
     }
     echo "</select>\n";
 } else {

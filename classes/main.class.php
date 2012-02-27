@@ -113,6 +113,34 @@ class main {
         bind_textdomain_codeset($pcDomain, "UTF-8");
         textdomain($pcDomain);
     }
+    
+    /** returns true if all elements within the array are true
+     * @param $pa boolean array
+     * @return boolean if all is true
+     **/
+    static function all($pa) {
+        if (!is_array($pa))
+            self::phperror( "argument must be a boolean array", E_USER_ERROR );
+        
+        foreach($pa as $la)
+            if (!$la)
+                return false;
+        return true;
+    }
+    
+    /** returns true if any elements within the array are true
+     * @param $pa boolean array
+     * @return boolean if any is true
+     **/
+    static function any($pa) {
+        if (!is_array($pa))
+            self::phperror( "argument must be a boolean array", E_USER_ERROR );
+        
+        foreach($pa as $la)
+            if ($la)
+                return true;
+        return false;
+    }
 	
 }
 

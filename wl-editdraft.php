@@ -39,10 +39,13 @@ require_once(__DIR__."/classes/document/draft.class.php");
 // create theme and run initialization
 $loTheme = new wd\theme();    
 $loUser  = $loTheme->init();
-    
+
+// the system "draft" right can do everything
 $loDraftRight   = new wm\right( wl\config::$system_groups["draft"] );
     
-// read draft object and save the new data
+    
+
+// read draft object and save the new data, if the rights are correct
 if ( (isset($_GET["id"])) || (isset($_POST["id"])) ) {
     if (isset($_GET["id"]))
         $loDraft = new doc\draft(intval($_GET["id"]));
@@ -51,21 +54,26 @@ if ( (isset($_GET["id"])) || (isset($_POST["id"])) ) {
        
     if ( (isset($_POST["elm1"])) && (
          ($loUser->isEqual($loDraft->getOwner())) ||
-         (wm\right::hasOne($loUser, $loDraft->getRights("write")))
+         ($loDraftRight->hasRigh($loUser)) ||
+         (wm\right::hasOne($loUser, $loDraft->getRights("write"))) ||
+         (wl\main::any( wm\right::hasOne($loUser->getGroups(), $loDraft->getRights("write")) ))
          )
        ) {
         $loDraft->setContent($_POST["elm1"]);
+        $loDraft->setArchivable( isset($_POST["archivable"]) && !empty($_POST["archivable"]) );
         $loDraft->save();
     }
 }
     
-// delete draft objects
+// delete draft objects if the rights are correct
 if (isset($_POST["delete"])) {
     foreach($_POST["delete"] as $lnID) {
         $loDraft = new doc\draft(intval($lnID));
         
         if ( ($loUser->isEqual($loDraft->getOwner())) ||
-             (wm\right::hasOne($loUser, $loDraft->getRights("write")))
+             ($loDraftRight->hasRight($loUser)) ||
+             (wm\right::hasOne($loUser, $loDraft->getRights("write"))) ||
+             (wl\main::any( wm\right::hasOne($loUser->getGroups(), $loDraft->getRights("write")) ))
            )
             doc\draft::delete($lnID);
     }
@@ -89,8 +97,17 @@ echo "<form action=\"".$_SERVER["PHP_SELF"]."\" method=\"post\">\n";
 // if the ID parameter is set
 if (!empty($loDraft)) {
     echo "<input type=\"hidden\" name=\"id\" value=\"".$loDraft->getID()."\"/>";
-    echo "<div><textarea id=\"elm1\" name=\"elm1\" rows=\"15\" cols=\"80\">".$loDraft->getContent()."</textarea></div>";
-
+    echo "<div><textarea id=\"elm1\" name=\"elm1\" rows=\"15\" cols=\"80\" tabindex=\"30\">".$loDraft->getContent()."</textarea></div>";
+    
+    if ( ($loUser->isEqual($loDraft->getOwner())) ||
+         ($loDraftRight->hasRight($loUser)) ||
+         (wm\right::hasOne($loUser, $loDraft->getRights("write"))) ||
+         (wl\main::any( wm\right::hasOne($loUser->getGroups(), $loDraft->getRights("write")) ))
+       ) {
+        echo "<p><label for=\"archivable\">"._("changes to archive")." <input type=\"checkbox\" name=\"archivable\" tabindex=\"50\" ".($loDraft->isArchivable() ? "checked=\"checked\"" : null)." /></label></p>\n";
+        echo "<p><input type=\"submit\" name=\"submit\" class=\"weblatex-button\" value=\""._("save")."\" tabindex=\"100\"/></p>\n";
+    }
+    
 // if the ID not set, we create a list of drafts
 } else {
 
@@ -98,19 +115,18 @@ if (!empty($loDraft)) {
     echo "<tr><th>"._("delete")."</th><th>"._("draft name")."</th></tr>\n";
     foreach(doc\draft::getList() as $loDraft) {
         
-        // check rights of the draft
-        $llShow = $loUser->isEqual($loDraft->getOwner());
-        if (!$llShow)
-            $llShow = wm\user::hasOne( $loUser, $loDraft->getRight() );
         
-        // show draft entry
-        if ($llShow)
+        if ( ($loUser->isEqual($loDraft->getOwner())) ||
+             ($loDraftRight->hasRight($loUser)) ||
+             (wm\right::hasOne($loUser, $loDraft->getRights())) ||
+             (wl\main::any( wm\right::hasOne($loUser->getGroups(), $loDraft->getRights()) ))
+           )
             echo "<tr><td><input type=\"checkbox\" name=\"delete[]\" value=\"".$loDraft->getID()."\"/></td><td><a href=\"".$_SERVER["PHP_SELF"]."?".http_build_query(array("id" => $loDraft->getID()))."\">".$loDraft->getName()."</a></td></tr>\n";
     }
     echo "</table>\n";
+    echo "<p><input type=\"submit\" name=\"submit\" class=\"weblatex-button\" value=\""._("delete")."\" tabindex=\"100\"/></p>\n";
 }
 
-echo "<p><input type=\"submit\" name=\"submit\" class=\"weblatex-button\" value=\""._("accept")."\" tabindex=\"100\"/></p>\n";
 echo "</form>\n";
 echo "</div>\n";
 

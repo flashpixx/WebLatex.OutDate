@@ -196,7 +196,7 @@ class draft {
      **/
     function isArchivable() {
         $loResult = wl\main::getDatabase()->Execute( "SELECT archivable FROM draft WHERE id=?", array($this->mnID) );
-        return $loResult->fields["archivable"] == true;
+        return $loResult->fields["archivable"] === "true";
     }
     
     /** sets the archivable flag

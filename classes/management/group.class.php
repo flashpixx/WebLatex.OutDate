@@ -117,7 +117,7 @@ class group implements \Serializable {
         
         $this->mcName   = $loResult->fields["name"];
         $this->mnID     = intval($loResult->fields["id"]);
-        $this->mlSystem = $loResult->fields["system"] == "true";
+        $this->mlSystem = $loResult->fields["system"] === "true";
     }
     
     /** returns the groupname

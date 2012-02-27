@@ -90,17 +90,26 @@ class right implements \Serializable {
     }
     
     /** retuns a boolean if the user or group as all the rights
-     * @param $poUserGroup user or group object
+     * @param $pxUserGroup user or group object or array of them
      * @param $pa array with right ids or names
-     * @return boolean if all rights are set
+     * @return boolean if all rights are set (or array with boolean values for each group / user object)
      **/
-    static function hasAll( $poUserGroup, $pa ) {
+    static function hasAll( $pxUserGroup, $pa ) {
         if (!is_array($pa))
             wl\main::phperror( "argument must be a numeric or string array", E_USER_ERROR );
         
+        // if the user/group parameter is an array
+        if (is_array($pxUserGroup)) {
+            $la = array();
+            foreach($pxUserGroup as $lo)
+                array_push($la, self::hasAll($lo, $pa));
+            return $la;
+        }
+            
+        // returns the boolean
         foreach($pa as $lxItem) {
             $loRight = new right($lxItem);
-            if (!$loRight->hasRight($poUserGroup))
+            if (!$loRight->hasRight($pxUserGroup))
                 return false;
         }
         
@@ -108,17 +117,26 @@ class right implements \Serializable {
     }
     
     /** returns a boolean if the user or group as one of the rights
-     * @param $poUserGroup user or group object
+     * @param $pxUserGroup user or group object or array of them
      * @param $pa array with right ids or names
-     * @return boolean if one right is set
+     * @return boolean if one right is set  (or array with boolean values for each group / user object)
      **/
-    static function hasOne( $poUserGroup, $pa ) {
+    static function hasOne( $pxUserGroup, $pa ) {
         if (!is_array($pa))
             wl\main::phperror( "argument must be a numeric or string array", E_USER_ERROR );
     
+        // if the user/group parameter is an array
+        if (is_array($pxUserGroup)) {
+            $la = array();
+            foreach($pxUserGroup as $lo)
+                array_push($la, self::hasOne($lo, $pa));
+            return $la;
+        }
+        
+        // returns the boolean
         foreach($pa as $lxItem) {
             $loRight = new right($lxItem);
-            if ($loRight->hasRight($poUserGroup))
+            if ($loRight->hasRight($pxUserGroup))
                 return true;
         }
         
@@ -146,7 +164,7 @@ class right implements \Serializable {
         
         $this->mcName   = $loResult->fields["name"];
         $this->mnID     = intval($loResult->fields["id"]);
-        $this->mlSystem = $loResult->fields["system"] == "true";
+        $this->mlSystem = $loResult->fields["system"] === "true";
     }
     
     /** returns the rightname

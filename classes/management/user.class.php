@@ -153,7 +153,7 @@ class user implements \Serializable {
         $loResult = wl\main::getDatabase()->Execute("SELECT loginenable FROM user WHERE id=?", array($this->mnID));
         
         if (!$loResult->EOF)
-            return $loResult->fields["loginenable"] == "true";
+            return $loResult->fields["loginenable"] === "true";
         
         return false;
     }
