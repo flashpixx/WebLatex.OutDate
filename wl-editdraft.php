@@ -39,7 +39,8 @@ require_once(__DIR__."/classes/document/draft.class.php");
 // create theme and run initialization
 $loTheme = new wd\theme();    
 $loUser  = $loTheme->init();
-
+    
+$loDraftRight   = new wm\right( wl\config::$system_groups["draft"] );
     
 // read draft object and save the new data
 if ( (isset($_GET["id"])) || (isset($_POST["id"])) ) {
@@ -48,7 +49,11 @@ if ( (isset($_GET["id"])) || (isset($_POST["id"])) ) {
     else
         $loDraft = new doc\draft(intval($_POST["id"]));
        
-    if (isset($_POST["elm1"])) {
+    if ( (isset($_POST["elm1"])) && (
+         ($loUser->isEqual($loDraft->getOwner())) ||
+         (wm\right::hasOne($loUser, $loDraft->getRights("write")))
+         )
+       ) {
         $loDraft->setContent($_POST["elm1"]);
         $loDraft->save();
     }
@@ -56,8 +61,18 @@ if ( (isset($_GET["id"])) || (isset($_POST["id"])) ) {
     
 // delete draft objects
 if (isset($_POST["delete"])) {
-    
+    foreach($_POST["delete"] as $lnID) {
+        $loDraft = new doc\draft(intval($lnID));
+        
+        if ( ($loUser->isEqual($loDraft->getOwner())) ||
+             (wm\right::hasOne($loUser, $loDraft->getRights("write")))
+           )
+            doc\draft::delete($lnID);
+    }
+    unset($loDraft);
 }
+    
+    
 
 // create HTML header, body and main menu
 if (empty($loDraft))
@@ -74,29 +89,19 @@ echo "<form action=\"".$_SERVER["PHP_SELF"]."\" method=\"post\">\n";
 // if the ID parameter is set
 if (!empty($loDraft)) {
     echo "<input type=\"hidden\" name=\"id\" value=\"".$loDraft->getID()."\"/>";
-    echo "<div><textarea id=\"elm1\" name=\"elm1\" rows=\"15\" cols=\"80\" style=\"width: 80%\">".$loDraft->getContent()."</textarea></div>";
+    echo "<div><textarea id=\"elm1\" name=\"elm1\" rows=\"15\" cols=\"80\">".$loDraft->getContent()."</textarea></div>";
 
 // if the ID not set, we create a list of drafts
 } else {
 
-    $loDraftRight   = new wm\right( wl\config::$system_groups["draft"] );
-    $llShow         = $loDraftRight->hasRight($loUser);
-
     echo "<table>\n";
     echo "<tr><th>"._("delete")."</th><th>"._("draft name")."</th></tr>\n";
     foreach(doc\draft::getList() as $loDraft) {
-    
-        // check rights of the draft
-        if (!$llShow) {
-            $llShow = $loUser->isEqual($loDraft->getOwner());
         
-            if (!$llShow)
-                foreach($loDraft->getRights as $laRight)
-                    if ($laRight["right"]->hasRight($loUser)) {
-                        $llShow = true;
-                        break;
-                    }
-        }
+        // check rights of the draft
+        $llShow = $loUser->isEqual($loDraft->getOwner());
+        if (!$llShow)
+            $llShow = wm\user::hasOne( $loUser, $loDraft->getRight() );
         
         // show draft entry
         if ($llShow)

@@ -100,7 +100,7 @@ class right implements \Serializable {
         
         foreach($pa as $lxItem) {
             $loRight = new right($lxItem);
-            if (!$loRight->hasRight())
+            if (!$loRight->hasRight($poUserGroup))
                 return false;
         }
         
@@ -118,7 +118,7 @@ class right implements \Serializable {
     
         foreach($pa as $lxItem) {
             $loRight = new right($lxItem);
-            if ($loRight->hasRight())
+            if ($loRight->hasRight($poUserGroup))
                 return true;
         }
         
@@ -201,10 +201,17 @@ class right implements \Serializable {
     }
     
     /** checks if the group or user is member of the right
-     * @param $px group or user object
-     * @return boolean value (true if the right is set)
+     * @param $px group or user object (or array of them)
+     * @return boolean value (true if the right is set) or array of booleans
      **/
     function hasRight( $px ) {
+        if (is_array($px)) {
+            $la = array();
+            foreach($px as $loObj)
+                array_push($la, $this->hasRight($loObj));
+            return $la;
+        }
+        
         if ( (!($px instanceof user)) && (!($px instanceof group)) )
             wl\main::phperror( "argument must be a user or group object", E_USER_ERROR );
         

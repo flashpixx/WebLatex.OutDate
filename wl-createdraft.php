@@ -98,7 +98,7 @@ if (empty($loDraft)) {
     echo "</select>\n";
 } else {
     echo "<input type=\"hidden\" name=\"draft_id\" value=\"".$loDraft->getID()."\"/>";
-    echo "<div><textarea id=\"elm1\" name=\"elm1\" rows=\"15\" cols=\"80\" style=\"width: 80%\">".$loDraft->getContent()."</textarea></div>";
+    echo "<div><textarea id=\"elm1\" name=\"elm1\" rows=\"15\" cols=\"80\">".$loDraft->getContent()."</textarea></div>";
 }
     
 echo "<p><input type=\"submit\" name=\"submit\" class=\"weblatex-button\" value=\""._("save")."\" tabindex=\"100\"/></p>\n";

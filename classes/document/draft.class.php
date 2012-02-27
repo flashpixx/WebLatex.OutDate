@@ -173,20 +173,24 @@ class draft {
         wl\main::getDatabase()->Execute("DELETE FROM draft_rights WHERE draft=? AND right=?", array($this->mnID, $poRight->getRID()));
     }
     
-    /** returns an array with right objects of this draft
-     * @return array with right obejcts (right) and boolean flag if the right can write the draft (writeable)
+    /** returns an array with right objects
+     * @param $pcType type of the right, empty all rights, "write" only write access, "read" only read access
+     * @return array with rights
      **/
-    function getRights() {
-        $loResult = wl\main::getDatabase()->Execute("SELECT right, access FROM draft_rights WHERE draft=?", array($this->mnID));
+    function getRights($pcType = null) {
+        if (empty($pcType))
+            $loResult = wl\main::getDatabase()->Execute("SELECT rights FROM draft_rights WHERE draft=?", array($this->mnID));
+        else
+            $loResult = wl\main::getDatabase()->Execute("SELECT rights FROM draft_rights WHERE draft=? AND access=?", array($this->mnID, $pcType));
         
         $la = array();
         if (!$loResult->EOF)
             foreach($loResult as $laRow)
-                array_push($la, array( "right" => new man\right($laRow["right"]), "writeable" => $laRow["access"] == "write"));
+                array_push($la, new man\right($laRow["right"]));
         
         return $la;
     }
-    
+
     /** returns the archivable flag
      * @return boolean is the document is archivable
      **/
