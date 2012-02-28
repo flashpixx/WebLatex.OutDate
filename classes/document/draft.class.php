@@ -148,7 +148,42 @@ class draft {
     
     /** saves draft data to database **/
     function save() {
-        wl\main::getDatabase()->Execute("UPDATE draft SET content=? WHERE id=?", array($this->mcData, $this->mnID));
+        $loDB = wl\main::getDatabase();
+        
+        //check first the archivable flag and stores the old data
+        if ($this->isArchivable())
+            $loDB->Execute("INSERT IGNORE INTO draft_history (draftid, content) SELECT id, content FROM draft WHERE id=?", array($this->mnID));
+            
+        $loDB->Execute("UPDATE draft SET content=? WHERE id=?", array($this->mcData, $this->mnID));
+    }
+    
+    /** returns an array with the draft history
+     * @returns assoc array with history, "content" data, "time" of the backup time, id history ID
+     **/
+    function getHistory() {
+        $la = array();
+        
+        $loResult = wl\main::getDatabase()->Execute("SELECT content, backuptime, id FROM draft_history WHERE draftid=?", array($this->mnID));
+        foreach($loResult as $laRow)
+            array_push($la, array("id" => intval($laRow["id"]), "content" => $laRow["content"], "time" => $laRow["backuptime"]));
+        
+        return $la;
+    }
+    
+    /** restores a draft history version
+     * @param $pnID
+     **/
+    function restoreHistory($pnID) {
+        if (!is_numeric($pnID))
+            wl\main::phperror( "first argument must be a numeric value", E_USER_ERROR );
+        
+        $loDB     = wl\main::getDatabase();
+        
+        $loResult = $loDB->Execute("SELECT content FROM draft_history WHERE id=? AND draftid=?", array($pnID, $this->mnID));
+        if (!$loResult->EOF) {
+            $this->mcData = $loResult->fields["content"];
+            $loDB->Execute("UPDATE draft SET content=? WHERE id=?", array($this->mcData, $this->mnID));
+        }
     }
     
     /** adds a right or changes the access of the right

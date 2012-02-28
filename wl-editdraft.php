@@ -59,9 +59,14 @@ if ( (isset($_GET["id"])) || (isset($_POST["id"])) ) {
          (wl\main::any( wm\right::hasOne($loUser->getGroups(), $loDraft->getRights("write")) ))
          )
        ) {
-        $loDraft->setContent($_POST["elm1"]);
+        
         $loDraft->setArchivable( isset($_POST["archivable"]) && !empty($_POST["archivable"]) );
-        $loDraft->save();
+        if ( (isset($_POST["restore"])) && (!empty($_POST["restore"])) )
+            $loDraft->restoreHistory(intval($_POST["restore"]));
+        else {
+            $loDraft->setContent($_POST["elm1"]);
+            $loDraft->save();
+        }
     }
 }
     
@@ -98,15 +103,24 @@ echo "<form action=\"".$_SERVER["PHP_SELF"]."\" method=\"post\">\n";
 if (!empty($loDraft)) {
     echo "<input type=\"hidden\" name=\"id\" value=\"".$loDraft->getID()."\"/>";
     echo "<div><textarea id=\"elm1\" name=\"elm1\" rows=\"15\" cols=\"80\" tabindex=\"30\">".$loDraft->getContent()."</textarea></div>";
+    echo "<p><label for=\"archivable\">"._("changes to archive")." <input type=\"checkbox\" name=\"archivable\" tabindex=\"50\" ".($loDraft->isArchivable() ? "checked=\"checked\"" : null)." /></label></p>\n";
+    
+    $laHistory = $loDraft->getHistory();
+    if (!empty($laHistory)) {
+        echo "<p><label for=\"restore\">"._("restore archive version")."<select name=\"restore\" size=\"1\">\n";
+        echo "<option value=\"\">---</option>\n";
+        
+        foreach($laHistory as $laItem)
+            echo "<option value=\"".$laItem["id"]."\">".$laItem["time"]."</option>\n";
+        echo "</select></label></p>";
+    }
     
     if ( ($loUser->isEqual($loDraft->getOwner())) ||
          ($loDraftRight->hasRight($loUser)) ||
          (wm\right::hasOne($loUser, $loDraft->getRights("write"))) ||
          (wl\main::any( wm\right::hasOne($loUser->getGroups(), $loDraft->getRights("write")) ))
-       ) {
-        echo "<p><label for=\"archivable\">"._("changes to archive")." <input type=\"checkbox\" name=\"archivable\" tabindex=\"50\" ".($loDraft->isArchivable() ? "checked=\"checked\"" : null)." /></label></p>\n";
+       )
         echo "<p><input type=\"submit\" name=\"submit\" class=\"weblatex-button\" value=\""._("save")."\" tabindex=\"100\"/></p>\n";
-    }
     
 // if the ID not set, we create a list of drafts
 } else {
