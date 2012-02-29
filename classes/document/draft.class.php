@@ -186,6 +186,20 @@ class draft {
         }
     }
     
+    /** deletes a history entry or the whole history
+     * @param $pxID null or history id
+     **/
+    function deleteHistory($pxID = null) {
+        if (empty($pxID))
+            wl\main::getDatabase()->Execute("DELETE FROM draft_history WHERE draftid=?", array($this->mnID));
+        else {
+            if (!is_numeric($pxID))
+                wl\main::phperror( "first argument must be a numeric value", E_USER_ERROR );
+            
+            wl\main::getDatabase()->Execute("DELETE FROM draft_history WHERE id=? AND draftid=?", array($pxID, $this->mnID));
+        }
+    }
+    
     /** adds a right or changes the access of the right
      * @param $poRight right object
      * @param $plWrite access

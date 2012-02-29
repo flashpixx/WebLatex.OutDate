@@ -36,7 +36,7 @@ require_once( dirname(__DIR__)."/management/user.class.php" );
     
 /** class for loading the user-defined theme data **/
 class theme {
-    
+    /*
     const tinymce   =
         "<script type=\"text/javascript\" src=\"tools/tiny_mce/tiny_mce.js\"></script><script type=\"text/javascript\">
             tinyMCE.init({
@@ -63,6 +63,9 @@ class theme {
                 ]
             });
         </script>";
+     */
+    
+    const editorcode = "<script type=\"text/javascript\" src=\"tools/ckeditor/ckeditor.js\"></script>";
     
 
     /** theme object **/

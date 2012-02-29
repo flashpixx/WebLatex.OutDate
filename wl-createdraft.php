@@ -57,9 +57,9 @@ if (isset($_POST["draft_name"])) {
     }
 }
     
-if ( (isset($_POST["elm1"])) && (isset($_POST["draft_id"])) ) {
+if ( (isset($_POST["tex"])) && (isset($_POST["draft_id"])) ) {
     $loDraft = new doc\draft(intval($_POST["draft_id"]));
-    $loDraft->setContent( $_POST["elm1"] );
+    $loDraft->setContent( $_POST["tex"] );
     $loDraft->save();
 }
 
@@ -68,7 +68,7 @@ if ( (isset($_POST["elm1"])) && (isset($_POST["draft_id"])) ) {
 if (empty($loDraft))
     $loTheme->header( $loUser );
 else
-    $loTheme->header( $loUser, wd\theme::tinymce );
+    $loTheme->header( $loUser, wd\theme::editorcode );
 $loTheme->mainMenu( $loUser );
 
 
@@ -92,7 +92,7 @@ if (empty($loDraft)) {
     echo "</select>\n";
 } else {
     echo "<input type=\"hidden\" name=\"draft_id\" value=\"".$loDraft->getID()."\"/>";
-    echo "<div><textarea id=\"elm1\" name=\"elm1\" rows=\"15\" cols=\"80\">".$loDraft->getContent()."</textarea></div>";
+    echo "<div><textarea class=\"ckeditor\" name=\"tex\" rows=\"15\" cols=\"80\">".$loDraft->getContent()."</textarea></div>";
 }
     
 echo "<p><input type=\"submit\" name=\"submit\" class=\"weblatex-button\" value=\""._("save")."\" tabindex=\"100\"/></p>\n";

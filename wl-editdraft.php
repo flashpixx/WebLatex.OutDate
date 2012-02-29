@@ -52,7 +52,7 @@ if ( (isset($_GET["id"])) || (isset($_POST["id"])) ) {
     else
         $loDraft = new doc\draft(intval($_POST["id"]));
        
-    if ( (isset($_POST["elm1"])) && (
+    if ( (isset($_POST["tex"])) && (
          ($loUser->isEqual($loDraft->getOwner())) ||
          ($loDraftRight->hasRigh($loUser)) ||
          (wm\right::hasOne($loUser, $loDraft->getRights("write"))) ||
@@ -64,7 +64,7 @@ if ( (isset($_GET["id"])) || (isset($_POST["id"])) ) {
         if ( (isset($_POST["restore"])) && (!empty($_POST["restore"])) )
             $loDraft->restoreHistory(intval($_POST["restore"]));
         else {
-            $loDraft->setContent($_POST["elm1"]);
+            $loDraft->setContent($_POST["tex"]);
             $loDraft->save();
         }
     }
@@ -91,7 +91,7 @@ if (isset($_POST["delete"])) {
 if (empty($loDraft))
     $loTheme->header( $loUser );
 else
-    $loTheme->header( $loUser, wd\theme::tinymce );
+    $loTheme->header( $loUser, wd\theme::editorcode );
 $loTheme->mainMenu( $loUser );
 
     
@@ -102,12 +102,12 @@ echo "<form action=\"".$_SERVER["PHP_SELF"]."\" method=\"post\">\n";
 // if the ID parameter is set
 if (!empty($loDraft)) {
     echo "<input type=\"hidden\" name=\"id\" value=\"".$loDraft->getID()."\"/>";
-    echo "<div><textarea id=\"elm1\" name=\"elm1\" rows=\"15\" cols=\"80\" tabindex=\"30\">".$loDraft->getContent()."</textarea></div>";
+    echo "<div><textarea class=\"ckeditor\" name=\"tex\" rows=\"15\" cols=\"80\" tabindex=\"30\">".$loDraft->getContent()."</textarea></div>";
     echo "<p><label for=\"archivable\">"._("changes to archive")." <input type=\"checkbox\" name=\"archivable\" tabindex=\"50\" ".($loDraft->isArchivable() ? "checked=\"checked\"" : null)." /></label></p>\n";
     
     $laHistory = $loDraft->getHistory();
     if (!empty($laHistory)) {
-        echo "<p><label for=\"restore\">"._("restore archive version")."<select name=\"restore\" size=\"1\">\n";
+        echo "<p><label for=\"restore\">"._("restore archive version")." <select name=\"restore\" size=\"1\">\n";
         echo "<option value=\"\">---</option>\n";
         
         foreach($laHistory as $laItem)
