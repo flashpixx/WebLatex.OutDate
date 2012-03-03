@@ -59,8 +59,10 @@ if (isset($_POST["draft_name"])) {
     
 if ( (isset($_POST["tex"])) && (isset($_POST["draft_id"])) ) {
     $loDraft = new doc\draft(intval($_POST["draft_id"]));
+    
     $loDraft->setContent( $_POST["tex"] );
     $loDraft->setArchivable( isset($_POST["archivable"]) && !empty($_POST["archivable"]) );
+    
     $loDraft->save();
 }
 

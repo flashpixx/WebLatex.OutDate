@@ -84,6 +84,15 @@ CREATE TABLE IF NOT EXISTS `draft_history` (
   KEY `draftid` (`draftid`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='table for storing draft history';
 
+DROP TABLE IF EXISTS `draft_lock`;
+CREATE TABLE IF NOT EXISTS `draft_lock` (
+  `draft` bigint(20) unsigned NOT NULL,
+  `user` bigint(20) unsigned NOT NULL,
+  `lastactivity` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`draft`),
+  KEY `user` (`user`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='table for storing the draft locks';
+
 DROP TABLE IF EXISTS `draft_rights`;
 CREATE TABLE IF NOT EXISTS `draft_rights` (
   `draft` bigint(20) unsigned NOT NULL,
@@ -99,7 +108,7 @@ CREATE TABLE IF NOT EXISTS `groups` (
   `name` varchar(32) COLLATE utf8_bin NOT NULL,
   `system` enum('true','false') COLLATE utf8_bin NOT NULL DEFAULT 'false',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='table for storing the user groups';
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='table for storing the user groups';
 
 DROP TABLE IF EXISTS `group_rights`;
 CREATE TABLE IF NOT EXISTS `group_rights` (
@@ -205,6 +214,10 @@ ALTER TABLE `draft`
 
 ALTER TABLE `draft_history`
   ADD CONSTRAINT `draft_history_ibfk_1` FOREIGN KEY (`draftid`) REFERENCES `draft` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE `draft_lock`
+  ADD CONSTRAINT `draft_lock_ibfk_1` FOREIGN KEY (`draft`) REFERENCES `draft` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `draft_lock_ibfk_2` FOREIGN KEY (`user`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 ALTER TABLE `draft_rights`
   ADD CONSTRAINT `draft_rights_ibfk_1` FOREIGN KEY (`draft`) REFERENCES `draft` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,

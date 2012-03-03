@@ -28,6 +28,7 @@ use weblatex as wl;
 
 require_once( dirname(__DIR__)."/main.class.php" );
 
+    
 
 /** class of representation a right with the database **/
 class right implements \Serializable {
@@ -68,6 +69,12 @@ class right implements \Serializable {
     static function delete( $pnRID, $plForce = false ) {
         if (!is_numeric($pnRID))
             wl\main::phperror( "argument must be a numeric value", E_USER_ERROR );
+        
+        // we check the numeric value of the system rights, so that this right cannot be deleted
+        if (in_array($pnRID, array_values(wl\config::$system_rights), true)) {
+            wl\main::phperror( "system right [".$pnRID."] cannot be deleted", E_USER_NOTICE );
+            throw new \Exception( "system right [".$pnRID."] cannot be deleted" );
+        }
         
         if ($plForce)
             wl\main::getDatabase()->Execute( "DELETE FROM rights WHERE id=?", array($pnRID) );

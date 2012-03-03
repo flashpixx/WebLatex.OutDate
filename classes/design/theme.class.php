@@ -108,12 +108,13 @@ class theme {
         
         
         $lcArchive = null;
-        
         if (is_array($paArchiveList))
             foreach($paArchiveList as $laItem)
                 $lcArchive .= "this.add( '".$laItem["id"]."', '".$laItem["time"]."', '".$laItem["time"]."' );\n"; 
         
-        $lcReturn = "<script type=\"text/javascript\" src=\"tools/ckeditor/ckeditor.js\"></script>
+        $lcReturn = "
+                <script type=\"text/javascript\" src=\"tools/jquery-1.7.1.min.js\"></script>
+                <script type=\"text/javascript\" src=\"tools/ckeditor/ckeditor.js\"></script>
                 <script type=\"text/javascript\">
         
                 CKEDITOR.plugins.add( 'Archive', {
@@ -165,11 +166,11 @@ class theme {
                 });
                 
                 
-                CKEDITOR.config.skin              = 'office2003';
-                CKEDITOR.config.autoParagraph     = false;
-                CKEDITOR.config.extraPlugins      = 'Archive,autosave';
-                CKEDITOR.config.autosaveTargetUrl = '".$pcAutoSaveURL."';
-                
+                CKEDITOR.config.skin                = 'office2003';
+                CKEDITOR.config.autoParagraph       = false;
+                CKEDITOR.config.extraPlugins        = 'Archive,autosave';
+                CKEDITOR.config.autosaveTargetUrl   = '".$pcAutoSaveURL."';
+                CKEDITOR.config.autosaveRefreshTime = ".wl\config::autosavetime.";
                 
                 CKEDITOR.config.toolbar         = 
                 [

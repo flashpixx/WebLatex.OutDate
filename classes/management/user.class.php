@@ -180,7 +180,7 @@ class user implements \Serializable {
         $la = array();
         if (!$loResult->EOF)
             foreach($loResult as $laRow)
-                array_push($la, new group($laRow["groupid"]) );
+                array_push($la, new group(intval($laRow["groupid"])) );
         return $la;
     }
     

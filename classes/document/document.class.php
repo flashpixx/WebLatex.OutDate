@@ -31,10 +31,12 @@ require_once( dirname(dirname(__DIR__))."/config.inc.php" );
 require_once( dirname(__DIR__)."/main.class.php" );
 require_once( dirname(__DIR__)."/management/user.class.php" );
 require_once( __DIR__."/draft.class.php" );
+require_once( __DIR__."/basedocument.class.php" );
 
+    
 
 /** class of representation a document **/
-class document {
+class document implements basedocument {
     
     /* document id **/
     private $mnID      = null;

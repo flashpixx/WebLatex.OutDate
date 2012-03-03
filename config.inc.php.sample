@@ -46,17 +46,28 @@ class config {
     /** number of iterations for key stretching (only used by phppass) **/
     const hashiteration     = 2;
     
+    /** lock time in seconds (release time of a lock) **/
+    const locktime          = 180;
+    
+    /** seconds for create the autosave call on editing **/
+    const autosavetime      = 120;
+    
     /** name of the class which is used for the designs **/
     const theme             = "defaulttheme";
     
     /** language code for setting translation **/
     const language          = "en_EN";
     
-    /** array with numbers of the system groups (change only the numbers) **/
+    /** array with numbers of the system rights (change only the numbers) **/
     static $system_groups   = array(
                                     "administrator" => 1,
-                                    "draft"         => 2,
-                                    "user"          => 3
+                                    "draft"         => 2
+    );
+    
+    /** array with numbers of the system rights (change only the numbers) **/
+    static $system_rights   = array(
+                                    "administrator" => 1,
+                                    "draft"         => 2
     );
 
 

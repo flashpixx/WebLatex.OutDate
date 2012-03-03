@@ -23,31 +23,40 @@
  @endcond
  **/
 
-namespace weblatex\design;
-    
-require_once( dirname(dirname(__DIR__))."/config.inc.php" );
-    
-    
 
-/** abstract class for the design themes **/
-abstract class design {
-    
-    /** method for the HTML header
-     * @param $poUser user object
-     **/
-    abstract function header( $poUser = null );
-    
-    /** method for the HTML footer
-     * @param $poUser user object
-     **/
-    abstract function footer( $poUser = null );
-    
-    /** create html body structure **/
-    abstract function body( $poUser = null );
-    
-    /** initialization function, before the header ist sended **/
-    function init() {}
+use weblatex\management as wm;
+use weblatex\document as doc;
 
+require_once(__DIR__."/classes/management/user.class.php");
+require_once(__DIR__."/classes/document/draft.class.php");
+
+
+// read session manually    
+$loUser = null;    
+
+if (isset($_GET["sess"]))
+@session_id($_GET["sess"]);
+@session_start();
+
+if ( (isset($_SESSION["weblatex::loginuser"])) && ($_SESSION["weblatex::loginuser"] instanceof wm\user) )
+    $loUser = $_SESSION["weblatex::loginuser"];
+
+
+if ( ($loUser instanceof wm\user) && (isset($_GET["id"])) && (isset($_GET["type"])) ) {
+
+    // check which document should be unlocked
+    switch (strtolower($_GET["type"])) {
+    
+        case "draft" :
+            $loDraft    = new doc\draft( intval($_GET["id"]) );
+            $loLockUser = $loDraft->lock($loUser);
+            
+            if ($loUser->isEqual($loLockUser)) 
+                $loDraft->unlock(); 
+        break;
+    
+    }
+    
 }
 
 

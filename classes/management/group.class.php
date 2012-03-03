@@ -29,6 +29,7 @@ use weblatex as wl;
 require_once( dirname(__DIR__)."/main.class.php" );
 require_once( dirname(dirname(__DIR__))."/config.inc.php" );
     
+    
 
 /** class of representation a group with the database **/
 class group implements \Serializable {

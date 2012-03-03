@@ -88,6 +88,7 @@ if (!isset($_GET["id"])) {
 // create draft object and write data
 if (isset($_POST["content"])) {
     $loDraft = new doc\draft(intval($_GET["id"]));
+    $loDraft->refreshLock($loUser);
     
     if ( ($loUser->isEqual($loDraft->getOwner())) ||
          ($loDraftRight->hasRigh($loUser)) ||

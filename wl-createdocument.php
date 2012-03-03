@@ -58,7 +58,7 @@ foreach(doc\draft::getList() as $laItem)
     // if not the owner, user must be administrator or draft administrator or has the right
     else {
         $loDraft  = new doc\draft($laItem["did"]);
-        if ( wm\right::hasOne($loUser, array_merge($loDraft->getRights(), array( wl\config::$system_groups["administrator"], wl\config::$system_groups["draft"] ))) )
+        if ( wm\right::hasOne($loUser, array_merge($loDraft->getRights(), array( wl\config::$system_rights["administrator"], wl\config::$system_rights["draft"] ))) )
             echo "<option value=\"".$laItem["did"]."\">".$laItem["name"]."</option>\n";
     }
 echo "</select>\n";

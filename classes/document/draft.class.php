@@ -28,10 +28,12 @@ use weblatex as wl;
 use weblatex\management as man;
     
 require_once( dirname(__DIR__)."/main.class.php" );
+require_once( __DIR__."/basedocument.class.php" );
+    
 
     
 /** class of representation a draft **/
-class draft {
+class draft implements basedocument {
     
     /** draft name **/
     private $mcName    = null;
@@ -41,6 +43,8 @@ class draft {
     private $mcData    = null;
     /** owner **/
     private $moOwner   = null;
+    /** database object **/
+    private $moDB      = null;
     
     
     /** creates a new draft and returns the object
@@ -94,12 +98,14 @@ class draft {
         if ( (!is_numeric($px)) && (!is_string($px)) && (!($px instanceof $this)) )
             wl\main::phperror( "argument must be a numeric, string or draft object value", E_USER_ERROR );
         
+        $this->moDB = wl\main::getDatabase();
+        
         if (is_numeric($px))
-            $loResult = wl\main::getDatabase()->Execute( "SELECT name, id, user, content FROM draft WHERE id=?", array($px) );
+            $loResult = $this->moDB->Execute( "SELECT name, id, user, content FROM draft WHERE id=?", array($px) );
         if ($px instanceof $this)
-            $loResult = wl\main::getDatabase()->Execute( "SELECT name, id, user, content FROM draft WHERE id=?", array($px->getID()) );        
+            $loResult = $this->moDB->Execute( "SELECT name, id, user, content FROM draft WHERE id=?", array($px->getID()) );        
         if (is_string($px))
-            $loResult = wl\main::getDatabase()->Execute( "SELECT name, id, user, content FROM draft WHERE name=?", array($px) );
+            $loResult = $this->moDB->Execute( "SELECT name, id, user, content FROM draft WHERE name=?", array($px) );
         
         if ($loResult->EOF)
             throw new \Exception( "draft data not found" );
@@ -109,6 +115,7 @@ class draft {
         $this->mcData  = $loResult->fields["content"];
         if (!empty($loResult->fields["user"]))
             $this->moOwner = new man\user(intval($loResult->fields["user"]));
+    
     }
     
     /** returns the draftname
@@ -148,13 +155,11 @@ class draft {
     
     /** saves draft data to database **/
     function save() {
-        $loDB = wl\main::getDatabase();
-        
         //check first the archivable flag and stores the old data
         if ($this->isArchivable())
-            $loDB->Execute("INSERT IGNORE INTO draft_history (draftid, content) SELECT id, content FROM draft WHERE id=?", array($this->mnID));
+            $this->moDB->Execute("INSERT IGNORE INTO draft_history (draftid, content) SELECT id, content FROM draft WHERE id=?", array($this->mnID));
             
-        $loDB->Execute("UPDATE draft SET content=? WHERE id=?", array($this->mcData, $this->mnID));
+        $this->moDB->Execute("UPDATE draft SET content=? WHERE id=?", array($this->mcData, $this->mnID));
     }
     
     /** returns an array with the draft history
@@ -163,7 +168,7 @@ class draft {
     function getHistory() {
         $la = array();
         
-        $loResult = wl\main::getDatabase()->Execute("SELECT backuptime, id FROM draft_history WHERE draftid=?", array($this->mnID));
+        $loResult = $this->moDB->Execute("SELECT backuptime, id FROM draft_history WHERE draftid=?", array($this->mnID));
         foreach($loResult as $laRow)
             array_push($la, array("id" => intval($laRow["id"]), "time" => $laRow["backuptime"]));
         
@@ -178,7 +183,7 @@ class draft {
         if (!is_numeric($pnID))
             wl\main::phperror( "first argument must be a numeric value", E_USER_ERROR );
         
-        $loResult = wl\main::getDatabase()->Execute("SELECT content FROM draft_history WHERE id=? AND draftid=?", array($pnID, $this->mnID));
+        $loResult = $this->moDB->Execute("SELECT content FROM draft_history WHERE id=? AND draftid=?", array($pnID, $this->mnID));
         if (!$loResult->EOF)
             return $loResult->fields["content"];
         
@@ -192,27 +197,84 @@ class draft {
         if (!is_numeric($pnID))
             wl\main::phperror( "first argument must be a numeric value", E_USER_ERROR );
         
-        $loDB     = wl\main::getDatabase();
-        
-        $loResult = $loDB->Execute("SELECT content FROM draft_history WHERE id=? AND draftid=?", array($pnID, $this->mnID));
+        $loResult = $this->moDB->Execute("SELECT content FROM draft_history WHERE id=? AND draftid=?", array($pnID, $this->mnID));
         if (!$loResult->EOF) {
             $this->mcData = $loResult->fields["content"];
-            $loDB->Execute("UPDATE draft SET content=? WHERE id=?", array($this->mcData, $this->mnID));
+            $this->moDB->Execute("UPDATE draft SET content=? WHERE id=?", array($this->mcData, $this->mnID));
         }
     }
     
     /** deletes a history entry or the whole history
-     * @param $pxID null or history id
+     * @param $pxID null or history id / array
      **/
     function deleteHistory($pxID = null) {
+        if ( (!empty($pxID)) && (!is_array($pxID)) && (!is_numeric($pcID)) )
+            wl\main::phperror( "first argument must be a numeric value or an array of numeric values", E_USER_ERROR );
+        
         if (empty($pxID))
-            wl\main::getDatabase()->Execute("DELETE FROM draft_history WHERE draftid=?", array($this->mnID));
-        else {
-            if (!is_numeric($pxID))
-                wl\main::phperror( "first argument must be a numeric value", E_USER_ERROR );
+            $this->moDB->Execute("DELETE FROM draft_history WHERE draftid=?", array($this->mnID));
+    
+        if (is_numeric($pxID))
+            $this->moDB->Execute("DELETE FROM draft_history WHERE id=? AND draftid=?", array($pxID, $this->mnID));
+        
+        if (is_array($pxID))
+            foreach($pxID as $id)
+                $this->moDB->Execute("DELETE FROM draft_history WHERE id=? AND draftid=?", array($id, $this->mnID));
+    }
+    
+    /** tries to create a lock of the draft and remove old locks if needed
+     * @param $poUser user object
+     * @param $plRefresh if a lock exists, the data should be refreshed if the user are equal
+     * @return null if the lock can be stored, the user object, which hold the lock
+     **/
+    function lock( $poUser, $plRefresh = false ) {
+        if (!($poUser instanceof man\user))
+            wl\main::phperror( "argument must be a user object", E_USER_ERROR );
+        
+        // remove old locks
+        $this->moDB->Execute("DELETE FROM draft_lock WHERE lastactivity < DATE_SUB(NOW(), INTERVAL ? SECOND)", array(wl\config::locktime));
+        
+        // check if a lock exists (refresh it if needed)
+        $loLockUser = $this->hasLock();
+        if (!empty($loLockUser)) {
+            if ( ($plRefresh) && ($loLockUser->isEqual($poUser)) ) {
+                $this->refreshLock($poUser);
+                return null;
+            }
             
-            wl\main::getDatabase()->Execute("DELETE FROM draft_history WHERE id=? AND draftid=?", array($pxID, $this->mnID));
+            return $loLockUser;
         }
+            
+        // set the lock
+        $this->moDB->Execute("INSERT IGNORE INTO draft_lock (draft, user) VALUES (?,?)", array($this->mnID, $poUser->getID()));
+        
+        return null;
+    }
+    
+    /** returns the user object if a lock exists
+     * @return null or use object
+    **/
+    function hasLock() {
+        $loResult = $this->moDB->Execute("SELECT user FROM draft_lock WHERE draft=?", array($this->mnID));
+        if (!$loResult->EOF)
+            return new man\user( intval($loResult->fields["user"]) );
+        
+        return null;
+    }
+    
+    /** refresh the lock time
+     * @param $poUser user object
+     **/
+    function refreshLock( $poUser ) {
+        if (!($poUser instanceof man\user))
+            wl\main::phperror( "argument must be a user object", E_USER_ERROR );
+        
+        $this->moDB->Execute("UPDATE draft_lock SET lastactivity=NOW() WHERE draft=? AND user=?", array($this->mnID, $poUser->getID()));
+    }
+    
+    /** remove the lock of the draft **/
+    function unlock() {
+        $this->moDB->Execute("DELETE FROM draft_lock WHERE draft=?", array($this->mnID));
     }
     
     /** adds a right or changes the access of the right
@@ -224,7 +286,7 @@ class draft {
             wl\main::phperror( "first argument must be a right object", E_USER_ERROR );
         
         $access = $plWrite ? "write" : "read";
-        wl\main::getDatabase()->Execute("INSERT INTO draft_rights VALUES (?,?,?) ON DUPLICATE KEY UPDATE access=?", array($this->mnID, $poRight->getRID(), $access, $access));
+        $this->moDB->Execute("INSERT INTO draft_rights VALUES (?,?,?) ON DUPLICATE KEY UPDATE access=?", array($this->mnID, $poRight->getID(), $access, $access));
     }
     
     /** deletes the right 
@@ -234,7 +296,7 @@ class draft {
         if (!($poRight instanceof man\right))
             wl\main::phperror( "argument must be a right object", E_USER_ERROR );
         
-        wl\main::getDatabase()->Execute("DELETE FROM draft_rights WHERE draft=? AND right=?", array($this->mnID, $poRight->getRID()));
+        $this->moDB->Execute("DELETE FROM draft_rights WHERE draft=? AND right=?", array($this->mnID, $poRight->getID()));
     }
     
     /** returns an array with right objects
@@ -243,9 +305,9 @@ class draft {
      **/
     function getRights($pcType = null) {
         if (empty($pcType))
-            $loResult = wl\main::getDatabase()->Execute("SELECT rights FROM draft_rights WHERE draft=?", array($this->mnID));
+            $loResult = $this->moDB->Execute("SELECT rights FROM draft_rights WHERE draft=?", array($this->mnID));
         else
-            $loResult = wl\main::getDatabase()->Execute("SELECT rights FROM draft_rights WHERE draft=? AND access=?", array($this->mnID, $pcType));
+            $loResult = $this->moDB->Execute("SELECT rights FROM draft_rights WHERE draft=? AND access=?", array($this->mnID, $pcType));
         
         $la = array();
         if (!$loResult->EOF)
@@ -259,7 +321,7 @@ class draft {
      * @return boolean is the document is archivable
      **/
     function isArchivable() {
-        $loResult = wl\main::getDatabase()->Execute( "SELECT archivable FROM draft WHERE id=?", array($this->mnID) );
+        $loResult = $this->moDB->Execute( "SELECT archivable FROM draft WHERE id=?", array($this->mnID) );
         return $loResult->fields["archivable"] === "true";
     }
     
@@ -267,7 +329,7 @@ class draft {
      * @param $plArchiveable boolean
      **/
     function setArchivable( $plArchiveable ) {
-        wl\main::getDatabase()->Execute( "UPDATE draft SET archivable=? WHERE id=?", array( ($plArchiveable ? "true" : "false"), $this->mnID) );
+        $this->moDB->Execute( "UPDATE draft SET archivable=? WHERE id=?", array( ($plArchiveable ? "true" : "false"), $this->mnID) );
     }
 }
 

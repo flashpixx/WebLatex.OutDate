@@ -32,6 +32,7 @@ require_once(__DIR__."/config.inc.php");
 require_once(__DIR__."/classes/design/theme.class.php");
 require_once(__DIR__."/classes/management/right.class.php");
 require_once(__DIR__."/classes/management/user.class.php");
+require_once(__DIR__."/classes/management/group.class.php");
 require_once(__DIR__."/classes/document/draft.class.php");
 
 
@@ -41,7 +42,7 @@ $loTheme = new wd\theme();
 $loUser  = $loTheme->init();
 
 // the system "draft" right can do everything
-$loDraftRight   = new wm\right( wl\config::$system_groups["draft"] );
+$loDraftRight   = new wm\right( wl\config::$system_rights["draft"] );
     
     
 
@@ -51,7 +52,12 @@ if ( (isset($_GET["id"])) || (isset($_POST["id"])) ) {
         $loDraft = new doc\draft(intval($_GET["id"]));
     else
         $loDraft = new doc\draft(intval($_POST["id"]));
-       
+    
+    $loLockUser = $loDraft->lock($loUser, true);
+    if ($loLockUser instanceof wm\user)
+        die("is locked");
+    
+    
     if ( (isset($_POST["tex"])) && (
          ($loUser->isEqual($loDraft->getOwner())) ||
          ($loDraftRight->hasRigh($loUser)) ||
@@ -75,6 +81,10 @@ if (isset($_POST["delete"])) {
     foreach($_POST["delete"] as $lnID) {
         $loDraft = new doc\draft(intval($lnID));
         
+        $loLock = $loDraft->hasLock();
+        if (!empty($loLock))
+            continue;
+        
         if ( ($loUser->isEqual($loDraft->getOwner())) ||
              ($loDraftRight->hasRight($loUser)) ||
              (wm\right::hasOne($loUser, $loDraft->getRights("write"))) ||
@@ -96,7 +106,11 @@ else
                                 !( ($loUser->isEqual($loDraft->getOwner())) || ($loDraftRight->hasRight($loUser)) || 
                                    (wm\right::hasOne($loUser, $loDraft->getRights("write"))) || (wl\main::any( wm\right::hasOne($loUser->getGroups(), $loDraft->getRights("write")) )) 
                                  )
-                      ) 
+                      ).
+                     
+                     "<script type=\"text/javascript\">
+                            $(window).unload( function() { $.ajax( { url : 'wl-unlock.php?".http_build_query(array("sess" => session_id(), "id" => $loDraft->getID(), "type" => "draft"))."', async : false } ); } );
+                     </script>"
                     );
 
 $loTheme->mainMenu( $loUser );
@@ -127,8 +141,15 @@ if (!empty($loDraft)) {
              ($loDraftRight->hasRight($loUser)) ||
              (wm\right::hasOne($loUser, $loDraft->getRights())) ||
              (wl\main::any( wm\right::hasOne($loUser->getGroups(), $loDraft->getRights()) ))
-           )
-            echo "<tr><td><input type=\"checkbox\" name=\"delete[]\" value=\"".$loDraft->getID()."\"/></td><td><a href=\"".$_SERVER["PHP_SELF"]."?".http_build_query(array("id" => $loDraft->getID()))."\">".$loDraft->getName()."</a></td></tr>\n";
+           ) {
+            echo "<tr><td><input type=\"checkbox\" name=\"delete[]\" value=\"".$loDraft->getID()."\"/></td><td>";
+            $loLockUser = $loDraft->hasLock();
+            if (empty($loLockUser))
+                echo "<a href=\"".$_SERVER["PHP_SELF"]."?".http_build_query(array("id" => $loDraft->getID()))."\">".$loDraft->getName()."</a>";
+            else
+                echo $loDraft->getName()." ("._("locked by")." ".$loLockUser->getName().")";
+            echo "</td></tr>\n";
+        }
     }
     echo "</table>\n";
     echo "<p><input type=\"submit\" name=\"submit\" class=\"weblatex-button\" value=\""._("delete")."\" tabindex=\"100\"/></p>\n";
