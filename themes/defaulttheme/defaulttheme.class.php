@@ -41,8 +41,8 @@ class defaulttheme extends design {
         echo "<head><title>WebLaTeX</title>\n\n";
         
         echo "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n";
-        echo "<meta http-equiv=\"Content-Style-Type\" content=\"text/css\">\n";
-        echo "<meta http-equiv=\"Content-Script-Type\" content=\"text/javascript\">\n";
+        echo "<meta http-equiv=\"Content-Style-Type\" content=\"text/css\" />\n";
+        echo "<meta http-equiv=\"Content-Script-Type\" content=\"text/javascript\" />\n";
         
         echo "<link rel=\"stylesheet\" href=\"".wl\main::getThemeDir()."layout.css\" type=\"text/css\" media=\"screen\" />\n";
     }

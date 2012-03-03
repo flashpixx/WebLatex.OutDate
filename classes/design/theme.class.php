@@ -174,7 +174,7 @@ class theme {
                 
                 CKEDITOR.config.toolbar         = 
                 [
-                    { name: 'document',    items : [ 'Save','NewPage','DocProps','Print'] },
+                    { name: 'document',    items : [ ".($plReadOnly ? null : "'Save',")."'NewPage','DocProps','Print'] },
                     { name: 'clipboard',   items : [ 'Cut','Copy','Paste','PasteText','PasteFromWord','-','Undo','Redo' ] },
                     { name: 'editing',     items : [ 'Find','Replace','-','SelectAll','-','SpellChecker', 'Scayt' ] },
                     { name: 'tools',       items : [ 'Autosave','Archive','ArchiveList','-','Maximize','-','About' ] },
@@ -226,7 +226,7 @@ class theme {
         echo "      </ul>\n";
         echo "  </li>\n";
         
-        echo "  <li><a href=\"wl-logout.php\">"._("logout")."</a></li>\n";
+        echo "  <li><a href=\"wl-logout.php\">"._("logout").(empty($poUser) ? null : " (".$poUser->getName().")")."</a></li>\n";
         
         echo "  <li><a>"._("help")."</a>\n";
         echo "      <ul>\n";

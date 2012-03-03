@@ -54,11 +54,7 @@ if ( (isset($_GET["id"])) || (isset($_POST["id"])) ) {
         $loDraft = new doc\draft(intval($_POST["id"]));
     
     $loLockUser = $loDraft->lock($loUser, true);
-    if ($loLockUser instanceof wm\user)
-        die("is locked");
-    
-    
-    if ( (isset($_POST["tex"])) && (
+    if ( (!($loLockUser instanceof wm\user)) && (isset($_POST["tex"])) && (
          ($loUser->isEqual($loDraft->getOwner())) ||
          ($loDraftRight->hasRigh($loUser)) ||
          (wm\right::hasOne($loUser, $loDraft->getRights("write"))) ||
@@ -99,7 +95,45 @@ if (isset($_POST["delete"])) {
 
 // create HTML header, body and main menu
 if (empty($loDraft))
-    $loTheme->header( $loUser );
+    $loTheme->header( $loUser, 
+                     "<script type=\"text/javascript\" src=\"tools/jquery-1.7.1.min.js\"></script>
+                      <script type=\"text/javascript\">
+                      var goTimer = setInterval( 
+                        function() { 
+                            $.ajax( {
+                                url      : 'wl-refreshdraftlist.php?".http_build_query(array("sess" => session_id()))."', 
+                                dataType : 'xml', 
+                                success  : function(poXML) {
+                                    $('#draftlist > tbody').remove();
+                            
+                                    $(poXML).find('item').each( function() {
+                                        lcText = $(this).attr('name');
+                                        if (typeof $(this).attr('lock') != 'undefined')
+                                            lcText += ' ("._("locked by")." '+$(this).attr('lock')+')';
+                     ;
+                     
+                                        $('#draftlist').append($('<tr>')
+                                            .append($('<td>')
+                                                .append($('<input>')
+                                                    .attr('type', 'checkbox')
+                                                    .attr('name', 'delete[]')
+                                                    .attr('value', $(this).attr('id'))
+                                                )
+                                            )
+                                            .append($('<td>')
+                                                .append($('<a>')
+                                                    .attr('href', '".$_SERVER["PHP_SELF"]."?id='+$(this).attr('id'))
+                                                    .text(lcText)
+                                                )
+                                            )
+                                        );
+                                    });
+                                }
+                            } );
+                        }, ".(wl\config::autosavetime*100).");
+                     $(window).unload( function() { clearInterval(goTimer); } );
+                     </script>"
+                    );
 else {
     $lcURLParameter = http_build_query(array("sess" => session_id(), "id" => $loDraft->getID(), "type" => "draft"));
 
@@ -107,9 +141,9 @@ else {
                       wd\theme::getEditorCode("wl-autosavedraft.php?".http_build_query(array("sess" => session_id(), "id" => $loDraft->getID())), $loDraft->getHistory(), 
                                 !( ($loUser->isEqual($loDraft->getOwner())) || ($loDraftRight->hasRight($loUser)) || 
                                    (wm\right::hasOne($loUser, $loDraft->getRights("write"))) || (wl\main::any( wm\right::hasOne($loUser->getGroups(), $loDraft->getRights("write")) )) 
-                                 )
+                                 ) || ($loLockUser instanceof wm\user)
                       ).
-                     
+                     // jQuery code für remove the lock after closing the webpage and timer for refreshing lock
                      "<script type=\"text/javascript\">
                             var goTimer = setInterval( function() { $.ajax( { url : 'wl-refreshlock.php?".$lcURLParameter."' } ); }, ".(wl\config::autosavetime*1000).");
                             $(window).unload( function() { clearInterval(goTimer); $.ajax( { url : 'wl-unlock.php?".$lcURLParameter."', async : false } ); } );
@@ -135,8 +169,9 @@ if (!empty($loDraft)) {
 // if the ID not set, we create a list of drafts
 } else {
 
-    echo "<table>\n";
-    echo "<tr><th>"._("delete")."</th><th>"._("draft name")."</th></tr>\n";
+    echo "<table  id=\"draftlist\">\n";
+    echo "<thead><tr><th>"._("delete")."</th><th>"._("draft name")."</th></tr></thead>\n";
+    echo "<tbody>\n";
     foreach(doc\draft::getList() as $loDraft) {
         
         
@@ -146,15 +181,15 @@ if (!empty($loDraft)) {
              (wl\main::any( wm\right::hasOne($loUser->getGroups(), $loDraft->getRights()) ))
            ) {
             echo "<tr><td><input type=\"checkbox\" name=\"delete[]\" value=\"".$loDraft->getID()."\"/></td><td>";
+            echo "<a href=\"".$_SERVER["PHP_SELF"]."?".http_build_query(array("id" => $loDraft->getID()))."\">".$loDraft->getName();
+            
             $loLockUser = $loDraft->hasLock();
-            if (empty($loLockUser))
-                echo "<a href=\"".$_SERVER["PHP_SELF"]."?".http_build_query(array("id" => $loDraft->getID()))."\">".$loDraft->getName()."</a>";
-            else
-                echo $loDraft->getName()." ("._("locked by")." ".$loLockUser->getName().")";
-            echo "</td></tr>\n";
+            if (!empty($loLockUser))
+                echo " ("._("locked by")." ".$loLockUser->getName().")";
+            echo "</a></td></tr>\n";
         }
     }
-    echo "</table>\n";
+    echo "</tbody></table>\n";
     echo "<p><input type=\"submit\" name=\"submit\" class=\"weblatex-button\" value=\""._("delete")."\" tabindex=\"100\"/></p>\n";
 }
 

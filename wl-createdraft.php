@@ -70,8 +70,23 @@ if ( (isset($_POST["tex"])) && (isset($_POST["draft_id"])) ) {
 // create HTML header, body and main menu
 if (empty($loDraft))
     $loTheme->header( $loUser );
-else
-    $loTheme->header( $loUser, wd\theme::getEditorCode("wl-autosavedraft.php?".http_build_query(array("sess" => session_id(), "id" => $loDraft->getID()))) );
+else {
+    $lcURLParameter = http_build_query(array("sess" => session_id(), "id" => $loDraft->getID(), "type" => "draft"));
+    
+    $loTheme->header( $loUser, 
+                     wd\theme::getEditorCode("wl-autosavedraft.php?".http_build_query(array("sess" => session_id(), "id" => $loDraft->getID())), $loDraft->getHistory(), 
+                                             !( ($loUser->isEqual($loDraft->getOwner())) || ($loDraftRight->hasRight($loUser)) || 
+                                               (wm\right::hasOne($loUser, $loDraft->getRights("write"))) || (wl\main::any( wm\right::hasOne($loUser->getGroups(), $loDraft->getRights("write")) )) 
+                                               )
+                                             ).
+                     // jQuery code für remove the lock after closing the webpage and timer for refreshing lock
+                     "<script type=\"text/javascript\">
+                     var goTimer = setInterval( function() { $.ajax( { url : 'wl-refreshlock.php?".$lcURLParameter."' } ); }, ".(wl\config::autosavetime*1000).");
+                     $(window).unload( function() { clearInterval(goTimer); $.ajax( { url : 'wl-unlock.php?".$lcURLParameter."', async : false } ); } );
+                     </script>"
+                     );
+    
+}
 $loTheme->mainMenu( $loUser );
 
 
