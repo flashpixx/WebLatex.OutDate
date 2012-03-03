@@ -90,29 +90,22 @@ if (isset($_POST["delete"])) {
 // create HTML header, body and main menu
 if (empty($loDraft))
     $loTheme->header( $loUser );
-else {
-    $lcReadOnly = "<script type=\"text/javascript\">
-            CKEDITOR.on( 'instanceReady', function( poEvent ) {
-                poEvent.editor.setReadOnly( 'none' );
-            });
-            </script>";
-    
-    if ( ($loUser->isEqual($loDraft->getOwner())) ||
-        ($loDraftRight->hasRight($loUser)) ||
-        (wm\right::hasOne($loUser, $loDraft->getRights("write"))) ||
-        (wl\main::any( wm\right::hasOne($loUser->getGroups(), $loDraft->getRights("write")) ))
-        )
-        $lcReadOnly = Null;
-    
-    $loTheme->header( $loUser, wd\theme::getEditorCode("wl-autosavedraft.php?".http_build_query(array("sess" => session_id(), "id" => $loDraft->getID()))).$lcReadOnly );
+else
+    $loTheme->header( $loUser, 
+                      wd\theme::getEditorCode("wl-autosavedraft.php?".http_build_query(array("sess" => session_id(), "id" => $loDraft->getID())), $loDraft->getHistory(), 
+                                !( ($loUser->isEqual($loDraft->getOwner())) || ($loDraftRight->hasRight($loUser)) || 
+                                   (wm\right::hasOne($loUser, $loDraft->getRights("write"))) || (wl\main::any( wm\right::hasOne($loUser->getGroups(), $loDraft->getRights("write")) )) 
+                                 )
+                      ) 
+                    );
 
-}    
 $loTheme->mainMenu( $loUser );
 
 
     
 echo "<h1>".(empty($loDraft) ? _("draft list") : _("draft")." [".$loDraft->getName()."] "._("edit"))."</h1>\n";
 echo "<div id=\"weblatex-document\">\n";
+
 echo "<form action=\"".$_SERVER["PHP_SELF"]."\" method=\"post\">\n";
   
 // if the ID parameter is set
@@ -120,16 +113,7 @@ if (!empty($loDraft)) {
     echo "<input type=\"hidden\" name=\"id\" value=\"".$loDraft->getID()."\"/>";
     echo "<div><textarea class=\"ckeditor\" name=\"tex\" rows=\"15\" cols=\"80\" tabindex=\"30\">".$loDraft->getContent()."</textarea></div>";
     echo "<input type=\"hidden\" name=\"archivable\" id=\"archivable\" value=\"".($loDraft->isArchivable() ? "1" : null)."\" />\n";
-    
-    $laHistory = $loDraft->getHistory();
-    if (!empty($laHistory)) {
-        echo "<p><label for=\"restore\">"._("restore archive version")." <select name=\"restore\" size=\"1\">\n";
-        echo "<option value=\"\">---</option>\n";
-        
-        foreach($laHistory as $laItem)
-            echo "<option value=\"".$laItem["id"]."\">".$laItem["time"]."</option>\n";
-        echo "</select></label></p>";
-    }
+    echo "<input type=\"hidden\" name=\"restore\" id=\"restore\" value=\"\" />\n";
  
 // if the ID not set, we create a list of drafts
 } else {

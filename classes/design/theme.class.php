@@ -98,8 +98,22 @@ class theme {
     /** returns the code of the JavaScript editor
      * @return html configuration code 
      **/
-    static function getEditorCode( $pcAutoSaveURL = null ) {
-        return "<script type=\"text/javascript\" src=\"tools/ckeditor/ckeditor.js\"></script>
+    static function getEditorCode( $pcAutoSaveURL = null, $paArchiveList = null, $plReadOnly = false ) {
+        if ( (!empty($pcAutoSaveURL)) && (!is_string($pcAutoSaveURL)) )
+            wl\main::phperror( "first argument must be a string", E_USER_ERROR );
+        if ( (!empty($paArchiveList)) && (!is_array($paArchiveList)) )
+            wl\main::phperror( "second argument must be an array", E_USER_ERROR );
+        if (!is_bool($plReadOnly))
+            wl\main::phperror( "third argument must be a boolean", E_USER_ERROR );
+        
+        
+        $lcArchive = null;
+        
+        if (is_array($paArchiveList))
+            foreach($paArchiveList as $laItem)
+                $lcArchive .= "this.add( '".$laItem["id"]."', '".$laItem["time"]."', '".$laItem["time"]."' );\n"; 
+        
+        $lcReturn = "<script type=\"text/javascript\" src=\"tools/ckeditor/ckeditor.js\"></script>
                 <script type=\"text/javascript\">
         
                 CKEDITOR.plugins.add( 'Archive', {
@@ -122,6 +136,31 @@ class theme {
                             label   : 'data will be archived',
                             command : 'Archiveable'
                         });
+        
+                        editor.ui.addRichCombo( 'ArchiveList', {
+                            label       : 'Archive',
+                            multiSelect : false,
+        
+                            panel : {
+                                css : [ CKEDITOR.getUrl( editor.skinPath + 'editor.css' ) ].concat( editor.config.contentsCss )
+                            },
+        
+                            init : function() {
+                                this.startGroup( 'Archives' );
+                                this.add( '', '---', '---' );
+                                ".$lcArchive."    
+                                this.setValue( '', '---');
+                            },
+        
+                            onClick : function( value ) {
+                                var lo = document.getElementById('restore');
+                                if (lo == null)
+                                    return;
+        
+                                lo.value = value;
+                            }
+                        });
+        
                     }
                 });
                 
@@ -137,7 +176,7 @@ class theme {
                     { name: 'document',    items : [ 'Save','NewPage','DocProps','Print'] },
                     { name: 'clipboard',   items : [ 'Cut','Copy','Paste','PasteText','PasteFromWord','-','Undo','Redo' ] },
                     { name: 'editing',     items : [ 'Find','Replace','-','SelectAll','-','SpellChecker', 'Scayt' ] },
-                    { name: 'tools',       items : [ 'Archive','Autosave','-','Maximize','-','About' ] },
+                    { name: 'tools',       items : [ 'Autosave','Archive','ArchiveList','-','Maximize','-','About' ] },
                     '/',
                     { name: 'basicstyles', items : [ 'Bold','Italic','Underline','-','RemoveFormat' ] },
                     { name: 'paragraph',   items : [ 'NumberedList','BulletedList','-','Blockquote','-','JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock' ] },
@@ -148,6 +187,14 @@ class theme {
             </script>
         ";
         
+        if ($plReadOnly)
+            $lcReturn .= "<script type=\"text/javascript\">
+                            CKEDITOR.on( 'instanceReady', function( poEvent ) {
+                                poEvent.editor.setReadOnly( 'none' );
+                            });
+                        </script>";
+        
+        return $lcReturn;
     }
     
     /** main menu
