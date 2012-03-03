@@ -23,18 +23,26 @@
  @endcond
  **/
  
+use weblatex as wl;
 use weblatex\design as wd;
 use weblatex\management as wm;
-    
+
+require_once(__DIR__."/classes/main.class.php");
 require_once(__DIR__."/classes/design/theme.class.php");
 require_once(__DIR__."/classes/management/user.class.php");
 
     
-    
 // create theme and run initialization
 $loTheme = new wd\theme();    
-$loTheme->init();
+$loUser = $loTheme->init();
 
+// remove all locks
+if ($loUser instanceof wm\user) {
+    $loDB = wl\main::getDatabase();
+    
+    $loDB->Execute("DELETE FROM draft_lock WHERE user=?", array($loUser->getID()));
+}
+    
 // set session to null and refresh the location
 $_SESSION["weblatex::loginuser"] = null;
 
