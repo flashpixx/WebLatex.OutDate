@@ -90,9 +90,25 @@ if (isset($_POST["delete"])) {
 // create HTML header, body and main menu
 if (empty($loDraft))
     $loTheme->header( $loUser );
-else
-    $loTheme->header( $loUser, wd\theme::editorcode );
+else {
+    $lcReadOnly = "<script type=\"text/javascript\">
+            CKEDITOR.on( 'instanceReady', function( poEvent ) {
+                poEvent.editor.setReadOnly( 'none' );
+            });
+            </script>";
+    
+    if ( ($loUser->isEqual($loDraft->getOwner())) ||
+        ($loDraftRight->hasRight($loUser)) ||
+        (wm\right::hasOne($loUser, $loDraft->getRights("write"))) ||
+        (wl\main::any( wm\right::hasOne($loUser->getGroups(), $loDraft->getRights("write")) ))
+        )
+        $lcReadOnly = Null;
+    
+    $loTheme->header( $loUser, wd\theme::getEditorCode().$lcReadOnly );
+
+}    
 $loTheme->mainMenu( $loUser );
+
 
     
 echo "<h1>".(empty($loDraft) ? _("draft list") : _("draft")." [".$loDraft->getName()."] "._("edit"))."</h1>\n";
@@ -103,7 +119,7 @@ echo "<form action=\"".$_SERVER["PHP_SELF"]."\" method=\"post\">\n";
 if (!empty($loDraft)) {
     echo "<input type=\"hidden\" name=\"id\" value=\"".$loDraft->getID()."\"/>";
     echo "<div><textarea class=\"ckeditor\" name=\"tex\" rows=\"15\" cols=\"80\" tabindex=\"30\">".$loDraft->getContent()."</textarea></div>";
-    echo "<p><label for=\"archivable\">"._("changes to archive")." <input type=\"checkbox\" name=\"archivable\" tabindex=\"50\" ".($loDraft->isArchivable() ? "checked=\"checked\"" : null)." /></label></p>\n";
+    echo "<input type=\"hidden\" name=\"archivable\" id=\"archivable\" value=\"".($loDraft->isArchivable() ? "1" : null)."\" />\n";
     
     $laHistory = $loDraft->getHistory();
     if (!empty($laHistory)) {
@@ -114,14 +130,7 @@ if (!empty($loDraft)) {
             echo "<option value=\"".$laItem["id"]."\">".$laItem["time"]."</option>\n";
         echo "</select></label></p>";
     }
-    
-    if ( ($loUser->isEqual($loDraft->getOwner())) ||
-         ($loDraftRight->hasRight($loUser)) ||
-         (wm\right::hasOne($loUser, $loDraft->getRights("write"))) ||
-         (wl\main::any( wm\right::hasOne($loUser->getGroups(), $loDraft->getRights("write")) ))
-       )
-        echo "<p><input type=\"submit\" name=\"submit\" class=\"weblatex-button\" value=\""._("save")."\" tabindex=\"100\"/></p>\n";
-    
+ 
 // if the ID not set, we create a list of drafts
 } else {
 

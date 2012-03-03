@@ -42,12 +42,13 @@ input {
 }
 
 .weblatex-button {
-    background: #EDEDED;
+    background: #EEEEFF;
     text-decoration: none;
     line-height: 13px;
     padding: 3px 8px;
     border-width: 1px;
     border-style: solid;
+    border-color: #7C7C7C;
     border-radius: 11px;
     box-sizing: content-box;
 }

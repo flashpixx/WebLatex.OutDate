@@ -36,38 +36,7 @@ require_once( dirname(__DIR__)."/management/user.class.php" );
     
 /** class for loading the user-defined theme data **/
 class theme {
-    /*
-    const tinymce   =
-        "<script type=\"text/javascript\" src=\"tools/tiny_mce/tiny_mce.js\"></script><script type=\"text/javascript\">
-            tinyMCE.init({
-                mode                                : \"textareas\",
-                theme                               : \"advanced\",
-                font_size_style_values              : \"xx-small,x-small,small,medium,large,x-large,xx-large\",
-                plugins                             : \"lists,pagebreak,table,searchreplace,print,contextmenu,paste,directionality,fullscreen,noneditable,wordcount,advlist,autosave\",
-        
-                // Theme options
-                theme_advanced_buttons1             : \"newdocument,|,cut,copy,paste,pastetext,pasteword,|,search,replace,undo,redo|,print,fullscreen,|,bold,italic,underline,strikethrough,|,bullist,numlist,|,justifyleft,justifycenter,justifyright,justifyfull,styleselect,formatselect,fontselect,fontsizeselect,|,tablecontrols\",
-                theme_advanced_buttons2             : null,
-                theme_advanced_buttons3             : null,
-                theme_advanced_buttons4             : null,
-                theme_advanced_toolbar_location     : \"top\",
-                theme_advanced_toolbar_align        : \"left\",
-                theme_advanced_statusbar_location   : \"bottom\",
-                theme_advanced_resizing             : true,
-        
-                // Style formats
-                style_formats : [
-                    {title  : 'Section',        inline  : 'section'},
-                    {title  : 'SubSection',     inline  : 'subsection'},
-                    {title  : 'SubSubSection',  inline  : 'subsubsection'}
-                ]
-            });
-        </script>";
-     */
     
-    const editorcode = "<script type=\"text/javascript\" src=\"tools/ckeditor/ckeditor.js\"></script>";
-    
-
     /** theme object **/
     private $moTheme = null;
     
@@ -124,6 +93,61 @@ class theme {
      **/
     function footer( $poUser = null ) {
         $this->moTheme->footer($poUser);
+    }
+    
+    /** returns the code of the JavaScript editor
+     * @return html configuration code 
+     **/
+    static function getEditorCode( $pcAutoSaverURL = null ) {
+        return "<script type=\"text/javascript\" src=\"tools/ckeditor/ckeditor.js\"></script>
+                <script type=\"text/javascript\">
+        
+                CKEDITOR.plugins.add( 'Archive', {
+                    init : function(editor){
+                
+                        editor.addCommand( 'Archiveable', {
+                            exec : function( editor ) {    
+                                var lo = document.getElementById('archivable');
+                                if (lo == null)
+                                    return;
+                
+                                if (lo.value == '')
+                                    lo.value = '1';
+                                else
+                                    lo.value = '';
+                            }
+                        });
+                
+                        editor.ui.addButton( 'Archive', {
+                            label   : 'data will be archived',
+                            command : 'Archiveable'
+                        });
+                    }
+                });
+                
+                
+                CKEDITOR.config.skin              = 'office2003';
+                CKEDITOR.config.autoParagraph     = false;
+                CKEDITOR.config.extraPlugins      = 'Archive,autosave';
+                CKEDITOR.config.autosaveTargetUrl = '".$pcAutoSaverURL."';
+                
+                
+                CKEDITOR.config.toolbar         = 
+                [
+                    { name: 'document',    items : [ 'Save','NewPage','DocProps','Print'] },
+                    { name: 'clipboard',   items : [ 'Cut','Copy','Paste','PasteText','PasteFromWord','-','Undo','Redo' ] },
+                    { name: 'editing',     items : [ 'Find','Replace','-','SelectAll','-','SpellChecker', 'Scayt' ] },
+                    { name: 'tools',       items : [ 'Archive','Autosave','-','Maximize','-','About' ] },
+                    '/',
+                    { name: 'basicstyles', items : [ 'Bold','Italic','Underline','-','RemoveFormat' ] },
+                    { name: 'paragraph',   items : [ 'NumberedList','BulletedList','-','Blockquote','-','JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock' ] },
+                    { name: 'insert',      items : [ 'Image','Table','PageBreak' ] },
+                    { name: 'styles',      items : [ 'Styles','Format','Font','FontSize' ] },
+                ];
+        
+            </script>
+        ";
+        
     }
     
     /** main menu

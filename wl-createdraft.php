@@ -31,6 +31,7 @@ use weblatex\document as doc;
 require_once(__DIR__."/config.inc.php");
 require_once(__DIR__."/classes/design/theme.class.php");
 require_once(__DIR__."/classes/management/user.class.php");
+require_once(__DIR__."/classes/management/right.class.php");
 require_once(__DIR__."/classes/document/draft.class.php");
 
 
@@ -49,7 +50,6 @@ if (isset($_POST["draft_name"])) {
         $loDraft = new doc\draft($_POST["draft_name"]);
     }
     
-    
     if ( (isset($_POST["draft_copyfrom"])) && (!empty($_POST["draft_copyfrom"])) ) {
         $loCopyDraft = new doc\draft(intval($_POST["draft_copyfrom"]));
         $loDraft->setContent( $loCopyDraft->getContent() );
@@ -60,6 +60,7 @@ if (isset($_POST["draft_name"])) {
 if ( (isset($_POST["tex"])) && (isset($_POST["draft_id"])) ) {
     $loDraft = new doc\draft(intval($_POST["draft_id"]));
     $loDraft->setContent( $_POST["tex"] );
+    $loDraft->setArchivable( isset($_POST["archivable"]) && !empty($_POST["archivable"]) );
     $loDraft->save();
 }
 
@@ -68,7 +69,7 @@ if ( (isset($_POST["tex"])) && (isset($_POST["draft_id"])) ) {
 if (empty($loDraft))
     $loTheme->header( $loUser );
 else
-    $loTheme->header( $loUser, wd\theme::editorcode );
+    $loTheme->header( $loUser, wd\theme::getEditorCode() );
 $loTheme->mainMenu( $loUser );
 
 
@@ -87,15 +88,15 @@ if (empty($loDraft)) {
             (wm\right::hasOne($loUser, $loDraft->getRights())) ||
             (wl\main::any( wm\right::hasOne($loUser->getGroups(), $loDraft->getRights()) ))
             )
-            echo "<option value=\"".$laItem["id"]."\">".$laItem["name"]."</option>\n";
+            echo "<option value=\"".$loDraft->getID()."\">".$loDraft->getName()."</option>\n";
     }
     echo "</select>\n";
+    echo "<p><input type=\"submit\" name=\"submit\" class=\"weblatex-button\" value=\""._("save")."\" tabindex=\"100\"/></p>\n";
+
 } else {
     echo "<input type=\"hidden\" name=\"draft_id\" value=\"".$loDraft->getID()."\"/>";
     echo "<div><textarea class=\"ckeditor\" name=\"tex\" rows=\"15\" cols=\"80\">".$loDraft->getContent()."</textarea></div>";
 }
-    
-echo "<p><input type=\"submit\" name=\"submit\" class=\"weblatex-button\" value=\""._("save")."\" tabindex=\"100\"/></p>\n";
     
 echo "</form>\n";
 echo "</div>\n";
