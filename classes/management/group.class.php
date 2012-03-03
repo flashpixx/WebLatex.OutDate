@@ -26,13 +26,14 @@
 namespace weblatex\management;
 use weblatex as wl;
     
+require_once( dirname(__DIR__)."/base.class.php" );
 require_once( dirname(__DIR__)."/main.class.php" );
 require_once( dirname(dirname(__DIR__))."/config.inc.php" );
     
     
 
 /** class of representation a group with the database **/
-class group implements \Serializable {
+class group implements \Serializable, \weblatex\base {
 	
     /** group name **/
     private $mcName    = null;

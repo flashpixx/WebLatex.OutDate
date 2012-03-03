@@ -100,7 +100,9 @@ if (isset($_POST["delete"])) {
 // create HTML header, body and main menu
 if (empty($loDraft))
     $loTheme->header( $loUser );
-else
+else {
+    $lcURLParameter = http_build_query(array("sess" => session_id(), "id" => $loDraft->getID(), "type" => "draft"));
+
     $loTheme->header( $loUser, 
                       wd\theme::getEditorCode("wl-autosavedraft.php?".http_build_query(array("sess" => session_id(), "id" => $loDraft->getID())), $loDraft->getHistory(), 
                                 !( ($loUser->isEqual($loDraft->getOwner())) || ($loDraftRight->hasRight($loUser)) || 
@@ -109,10 +111,11 @@ else
                       ).
                      
                      "<script type=\"text/javascript\">
-                            $(window).unload( function() { $.ajax( { url : 'wl-unlock.php?".http_build_query(array("sess" => session_id(), "id" => $loDraft->getID(), "type" => "draft"))."', async : false } ); } );
+                            var goTimer = setInterval( function() { $.ajax( { url : 'wl-refreshlock.php?".$lcURLParameter."' } ); }, ".(wl\config::autosavetime*1000).");
+                            $(window).unload( function() { clearInterval(goTimer); $.ajax( { url : 'wl-unlock.php?".$lcURLParameter."', async : false } ); } );
                      </script>"
                     );
-
+}
 $loTheme->mainMenu( $loUser );
 
 

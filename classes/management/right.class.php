@@ -26,12 +26,13 @@
 namespace weblatex\management;
 use weblatex as wl;
 
+require_once( dirname(__DIR__)."/base.class.php" );
 require_once( dirname(__DIR__)."/main.class.php" );
 
     
 
 /** class of representation a right with the database **/
-class right implements \Serializable {
+class right implements \Serializable, \weblatex\base {
     
     /** right name **/
     private $mcName    = null;

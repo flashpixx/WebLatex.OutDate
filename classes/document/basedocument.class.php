@@ -25,20 +25,12 @@
 
 namespace weblatex\document;
 
-
+require_once( dirname(__DIR__)."/base.class.php" );
+    
+    
 
 /** interface for the documents **/
-interface basedocument {
-    
-    /** returns the document name
-     * @returns the document name
-     **/
-    function getName();
-    
-    /** returns the unique id
-     * @returns the id
-     **/
-    function getID();
+interface basedocument extends \weblatex\base {
     
     /** returns the owner user object of the document
      * @returns null or the owner user object
