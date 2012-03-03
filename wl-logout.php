@@ -37,6 +37,10 @@ $loTheme->init();
 
 // set session to null and refresh the location
 $_SESSION["weblatex::loginuser"] = null;
+
+@session_unset();
+@session_destroy();
+    
 @header("Location: index.php");
 
 ?>

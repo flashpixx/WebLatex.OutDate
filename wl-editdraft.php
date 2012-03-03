@@ -104,7 +104,7 @@ else {
         )
         $lcReadOnly = Null;
     
-    $loTheme->header( $loUser, wd\theme::getEditorCode().$lcReadOnly );
+    $loTheme->header( $loUser, wd\theme::getEditorCode("wl-autosavedraft.php?".http_build_query(array("sess" => session_id(), "id" => $loDraft->getID()))).$lcReadOnly );
 
 }    
 $loTheme->mainMenu( $loUser );

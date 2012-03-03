@@ -98,7 +98,7 @@ class theme {
     /** returns the code of the JavaScript editor
      * @return html configuration code 
      **/
-    static function getEditorCode( $pcAutoSaverURL = null ) {
+    static function getEditorCode( $pcAutoSaveURL = null ) {
         return "<script type=\"text/javascript\" src=\"tools/ckeditor/ckeditor.js\"></script>
                 <script type=\"text/javascript\">
         
@@ -129,7 +129,7 @@ class theme {
                 CKEDITOR.config.skin              = 'office2003';
                 CKEDITOR.config.autoParagraph     = false;
                 CKEDITOR.config.extraPlugins      = 'Archive,autosave';
-                CKEDITOR.config.autosaveTargetUrl = '".$pcAutoSaverURL."';
+                CKEDITOR.config.autosaveTargetUrl = '".$pcAutoSaveURL."';
                 
                 
                 CKEDITOR.config.toolbar         = 
