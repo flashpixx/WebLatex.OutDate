@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS `directory` (
   `name` varchar(128) COLLATE utf8_bin NOT NULL,
   PRIMARY KEY (`id`),
   KEY `parent` (`parent`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='table for storing directory structure' AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='table for storing directory structure';
 
 DROP TABLE IF EXISTS `directory_document`;
 CREATE TABLE IF NOT EXISTS `directory_document` (
@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS `document` (
   UNIQUE KEY `name` (`name`),
   KEY `uid` (`uid`),
   KEY `draftid` (`draftid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='table for storing document header information' AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='table for storing document header information';
 
 DROP TABLE IF EXISTS `documentpart`;
 CREATE TABLE IF NOT EXISTS `documentpart` (
@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS `documentpart` (
   `lastmodify` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `document` (`document`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='table for storing document parts / chapter' AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='table for storing document parts / chapter';
 
 DROP TABLE IF EXISTS `document_rights`;
 CREATE TABLE IF NOT EXISTS `document_rights` (
@@ -72,7 +72,7 @@ CREATE TABLE IF NOT EXISTS `draft` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`),
   KEY `user` (`user`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='table for storing documents drafts' AUTO_INCREMENT=11 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='table for storing documents drafts';
 
 DROP TABLE IF EXISTS `draft_history`;
 CREATE TABLE IF NOT EXISTS `draft_history` (
@@ -82,7 +82,7 @@ CREATE TABLE IF NOT EXISTS `draft_history` (
   `content` longtext COLLATE utf8_bin,
   PRIMARY KEY (`id`),
   KEY `draftid` (`draftid`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='table for storing draft history' AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='table for storing draft history';
 
 DROP TABLE IF EXISTS `draft_rights`;
 CREATE TABLE IF NOT EXISTS `draft_rights` (
@@ -99,7 +99,7 @@ CREATE TABLE IF NOT EXISTS `groups` (
   `name` varchar(32) COLLATE utf8_bin NOT NULL,
   `system` enum('true','false') COLLATE utf8_bin NOT NULL DEFAULT 'false',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='table for storing the user groups' AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='table for storing the user groups';
 
 DROP TABLE IF EXISTS `group_rights`;
 CREATE TABLE IF NOT EXISTS `group_rights` (
@@ -118,7 +118,7 @@ CREATE TABLE IF NOT EXISTS `media` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `media` (`name`,`extension`),
   KEY `user` (`user`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='table for storing information to the media' AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='table for storing information to the media';
 
 DROP TABLE IF EXISTS `media_documentpart`;
 CREATE TABLE IF NOT EXISTS `media_documentpart` (
@@ -144,15 +144,17 @@ CREATE TABLE IF NOT EXISTS `rights` (
   `system` enum('true','false') COLLATE utf8_bin NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='table for storing user / group rights' AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='table for storing user / group rights';
 
 DROP TABLE IF EXISTS `substitution`;
 CREATE TABLE IF NOT EXISTS `substitution` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `owner` bigint(20) unsigned DEFAULT NULL,
   `command` varchar(64) COLLATE utf8_bin NOT NULL,
   `data` longtext COLLATE utf8_bin NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='table for setting newcommands' AUTO_INCREMENT=1 ;
+  PRIMARY KEY (`id`),
+  KEY `owner` (`owner`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='table for setting newcommands';
 
 DROP TABLE IF EXISTS `user`;
 CREATE TABLE IF NOT EXISTS `user` (
@@ -162,7 +164,7 @@ CREATE TABLE IF NOT EXISTS `user` (
   `loginenable` enum('true','false') COLLATE utf8_bin NOT NULL DEFAULT 'true',
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='table for storing user information' AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='table for storing user information';
 
 DROP TABLE IF EXISTS `user_groups`;
 CREATE TABLE IF NOT EXISTS `user_groups` (
@@ -222,6 +224,9 @@ ALTER TABLE `media_documentpart`
 ALTER TABLE `media_rights`
   ADD CONSTRAINT `media_rights_ibfk_2` FOREIGN KEY (`right`) REFERENCES `rights` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `media_rights_ibfk_1` FOREIGN KEY (`media`) REFERENCES `media` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE `substitution`
+  ADD CONSTRAINT `substitution_ibfk_1` FOREIGN KEY (`owner`) REFERENCES `user` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 ALTER TABLE `user_groups`
   ADD CONSTRAINT `user_groups_ibfk_1` FOREIGN KEY (`user`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,

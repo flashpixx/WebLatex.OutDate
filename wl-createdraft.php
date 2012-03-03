@@ -69,7 +69,7 @@ if ( (isset($_POST["tex"])) && (isset($_POST["draft_id"])) ) {
 if (empty($loDraft))
     $loTheme->header( $loUser );
 else
-    $loTheme->header( $loUser, wd\theme::getEditorCode() );
+    $loTheme->header( $loUser, wd\theme::getEditorCode("wl-autosavedraft.php?".http_build_query(array("sess" => session_id(), "id" => $loDraft->getID()))) );
 $loTheme->mainMenu( $loUser );
 
 

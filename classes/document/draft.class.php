@@ -163,11 +163,26 @@ class draft {
     function getHistory() {
         $la = array();
         
-        $loResult = wl\main::getDatabase()->Execute("SELECT content, backuptime, id FROM draft_history WHERE draftid=?", array($this->mnID));
+        $loResult = wl\main::getDatabase()->Execute("SELECT backuptime, id FROM draft_history WHERE draftid=?", array($this->mnID));
         foreach($loResult as $laRow)
-            array_push($la, array("id" => intval($laRow["id"]), "content" => $laRow["content"], "time" => $laRow["backuptime"]));
+            array_push($la, array("id" => intval($laRow["id"]), "time" => $laRow["backuptime"]));
         
         return $la;
+    }
+    
+    /** returns the content of a history element
+     * @param $pnID history id
+     * @return content
+     **/
+    function getHistoryContent($pnID) {
+        if (!is_numeric($pnID))
+            wl\main::phperror( "first argument must be a numeric value", E_USER_ERROR );
+        
+        $loResult = wl\main::getDatabase()->Execute("SELECT content FROM draft_history WHERE id=? AND draftid=?", array($pnID, $this->mnID));
+        if (!$loResult->EOF)
+            return $loResult->fields["content"];
+        
+        return null;
     }
     
     /** restores a draft history version
