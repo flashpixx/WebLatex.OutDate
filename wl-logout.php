@@ -23,6 +23,20 @@
  @endcond
  **/
  
+/** @file wl-logout.php
+ * @brief file for destroying the session and removing the document locks
+ *
+ * This file destroys the session and remove all locks of the documents
+ *
+ *
+ * @var object $loTheme
+ * theme object for showing the HTML content
+ *
+ * @var object $loUser
+ * user object, that will be stored within the session and identify the logged-in user
+ **/
+    
+    
 use weblatex as wl;
 use weblatex\design as wd;
 use weblatex\management as wm;
@@ -34,7 +48,7 @@ require_once(__DIR__."/classes/management/user.class.php");
     
 // create theme and run initialization
 $loTheme = new wd\theme();    
-$loUser = $loTheme->init();
+$loUser  = $loTheme->init();
 
 // remove all locks
 if ($loUser instanceof wm\user) {

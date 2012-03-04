@@ -23,7 +23,18 @@
  @endcond
 **/
 
+/** @file config.inc.php.sample
+ * @brief configuration example class
+ *
+ * Example configuration class, which stores all individual parameters of the 
+ * installation. Informations are stored as static attributes of the class and
+ * this file must be rename to "config.inc.php". If this file does not exists
+ * the system creates fatal errors
+ **/
+ 
+ 
 namespace weblatex;
+
 
 
 /** configuration class of the system, that stores database login

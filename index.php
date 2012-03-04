@@ -23,6 +23,26 @@
  @endcond
  **/
 
+/** @file index.php
+ * @brief index file, that creates the login sreen or the main view
+ *
+ * This file creates the login screen, checks the login data and generates
+ * the session data. If the session data exists a main empty page with the
+ * menu will be shown. Other files, that checks the login data, redirects
+ * to this file, if the session can not be verified
+ *
+ *
+ * @var string $lcError
+ * error text, if the login is incorrect
+ *
+ * @var object $loTheme
+ * theme object for showing the HTML content
+ *
+ * @var object $loUser
+ * user object, that will be stored within the session and identify the logged-in user
+ **/
+    
+    
 use weblatex\design as wd;
 use weblatex\management as wm;
     
@@ -65,10 +85,10 @@ if ( (empty($loUser)) && (isset($_POST["user_login"])) && (isset($_POST["user_pa
 // create HTML header & body
 $loTheme->header( $loUser );
 
-// create HTML login form if use is not logged in, otherweise show "my documents"
-if (!empty($loUser)) {
+// create HTML login form if the user is not logged in, otherweise show the main screen
+if (!empty($loUser))
     $loTheme->mainMenu( $loUser );
-} else {
+else {
     echo "<div id=\"weblatex-admin\">\n";
     echo "<p id=\"weblatex-logo\"><a href=\"http://code.google.com/p/weblatex/\" target=\"_blank\">Web<img src=\"images/latex.png\"></a></p>\n";
     echo $lcError;

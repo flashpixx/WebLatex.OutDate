@@ -64,7 +64,7 @@ class right implements \Serializable, \weblatex\base {
     }
     
     /** deletes a right with the right id
-     * @param $pnGID right id
+     * @param $pnRID right id
      * @param $plForce system rights can be deleted only by setting force to true
      **/
     static function delete( $pnRID, $plForce = false ) {

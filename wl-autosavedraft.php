@@ -22,6 +22,24 @@
  ############################################################################
  @endcond
  **/
+
+/** @file wl-autosavedraft.php
+ * @brief file that connects the autosave CKEditor plugin with the database
+ *
+ * The file is called by the autosave CKEditor autosave plugin and stores
+ * the data into the correct database entry and returns the status with
+ * a XML file (see autosave documentation)
+ *
+ *
+ * @var object $loUser
+ * user object, that will be stored within the session and identify the logged-in user
+ *
+ * @var object $loXML
+ * XML DOM object for creating the XML answer
+ *
+ * @var object $loAttr
+ * XML attribute object
+ **/
     
     
 use weblatex as wl;
