@@ -31,12 +31,12 @@ require_once( dirname(dirname(__DIR__))."/config.inc.php" );
 require_once( dirname(__DIR__)."/main.class.php" );
 require_once( dirname(__DIR__)."/management/user.class.php" );
 require_once( __DIR__."/draft.class.php" );
-require_once( __DIR__."/basedocument.class.php" );
+require_once( __DIR__."/baseedit.class.php" );
 
     
 
 /** class of representation a document **/
-class document implements basedocument {
+class document implements baseedit {
     
     /* document id **/
     private $mnID      = null;
@@ -60,7 +60,7 @@ class document implements basedocument {
         if (!$loResult->EOF)
             throw new \Exception( "document [".$pcName."] exists" );
         
-        $loDB->Execute( "INSERT IGNORE INTO document (name,uid) VALUES (?,?)", array($pcName, $poUser->getID()) );
+        $loDB->Execute( "INSERT IGNORE INTO document (name,owner) VALUES (?,?)", array($pcName, $poUser->getID()) );
         
         return new document($pcName);
     }
@@ -85,18 +85,18 @@ class document implements basedocument {
             wl\main::phperror( "argument must be a numeric, string or document object value", E_USER_ERROR );
         
         if (is_numeric($px))
-            $loResult = wl\main::getDatabase()->Execute( "SELECT id, uid FROM document WHERE id=?", array($px) );
+            $loResult = wl\main::getDatabase()->Execute( "SELECT id, owner FROM document WHERE id=?", array($px) );
         if ($px instanceof $this)
-            $loResult = wl\main::getDatabase()->Execute( "SELECT id, uid FROM document WHERE id=?", array($px->getID()) );
+            $loResult = wl\main::getDatabase()->Execute( "SELECT id, owner FROM document WHERE id=?", array($px->getID()) );
         if (is_string($px))
-            $loResult = wl\main::getDatabase()->Execute( "SELECT id, uid FROM document WHERE name=?", array($px) );
+            $loResult = wl\main::getDatabase()->Execute( "SELECT id, owner FROM document WHERE name=?", array($px) );
         
         if ($loResult->EOF)
             throw new \Exception( "document data not found" );
         
         $this->mnID   = intval($loResult->fields["id"]);
-        if (!empty($loResult->fields["uid"]))
-            $this->moOwner = new wm\user(intval($loResult->fields["uid"]));
+        if (!empty($loResult->fields["owner"]))
+            $this->moOwner = new wm\user(intval($loResult->fields["owner"]));
     }
 
     /** returns the unique id
@@ -160,22 +160,19 @@ class document implements basedocument {
         wl\main::getDatabase()->Execute( "UPDATE document SET modifiable=? WHERE id=?", array( ($plModifiable ? "true" : "false"), $this->mnID) );
     }
     
-    /** sets the owner id
-     * @param $poUser user object
-     **/
-    function setOwner( $poUser ) {
-        if (!($poUser instanceof wm\user))
-            wl\main::phperror( "argument must be an user object", E_USER_ERROR );
-        
-        wl\main::getDatabase()->Execute( "UPDATE document SET uid=? WHERE id=?", array( $poUser->getID(), $this->mnID) );
-        $this->moOwner = $poUser;
-    }
-    
     /** returns the access of an user
      * @param $poUser user object
      * @return null for no access, "r" read access and "w" for read-write access
      **/
     function getAccess($poUser) {
+        
+    }
+    
+    /** returns an array with right objects
+     * @param $pcType type of the right, empty all rights, "write" only write access, "read" only read access
+     * @return array with rights
+     **/
+    function getRights($pcType = null) {
         
     }
     

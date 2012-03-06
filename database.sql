@@ -6,7 +6,6 @@ CREATE TABLE IF NOT EXISTS `directory` (
   `parent` bigint(20) unsigned DEFAULT NULL,
   `name` varchar(128) COLLATE utf8_bin NOT NULL,
   `owner` bigint(20) unsigned DEFAULT NULL,
-  `visibility` enum('private','group','public') COLLATE utf8_bin NOT NULL DEFAULT 'private',
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`parent`,`name`),
   KEY `parent` (`parent`),
@@ -29,18 +28,27 @@ CREATE TABLE IF NOT EXISTS `directory_draft` (
   KEY `directory` (`directory`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='table for storing draft-directory information';
 
+DROP TABLE IF EXISTS `directory_rights`;
+CREATE TABLE IF NOT EXISTS `directory_rights` (
+  `directory` bigint(20) unsigned NOT NULL,
+  `right` bigint(20) unsigned NOT NULL,
+  `access` enum('read','write') COLLATE utf8_bin NOT NULL DEFAULT 'read',
+  PRIMARY KEY (`directory`,`right`),
+  KEY `right` (`right`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='table for storing directory-right information';
+
 DROP TABLE IF EXISTS `document`;
 CREATE TABLE IF NOT EXISTS `document` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(128) COLLATE utf8_bin NOT NULL,
-  `uid` bigint(20) unsigned DEFAULT NULL,
+  `owner` bigint(20) unsigned DEFAULT NULL,
   `draft` longtext COLLATE utf8_bin,
   `draftid` bigint(20) unsigned DEFAULT NULL,
   `modifiable` enum('true','false') COLLATE utf8_bin NOT NULL DEFAULT 'true',
   `archivable` enum('true','false') COLLATE utf8_bin NOT NULL DEFAULT 'false',
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`),
-  KEY `uid` (`uid`),
+  KEY `uid` (`owner`),
   KEY `draftid` (`draftid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='table for storing document header information';
 
@@ -78,12 +86,12 @@ DROP TABLE IF EXISTS `draft`;
 CREATE TABLE IF NOT EXISTS `draft` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(128) COLLATE utf8_bin NOT NULL,
-  `user` bigint(20) unsigned DEFAULT NULL,
+  `owner` bigint(20) unsigned DEFAULT NULL,
   `archivable` enum('true','false') COLLATE utf8_bin NOT NULL DEFAULT 'false',
   `content` longtext COLLATE utf8_bin,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`),
-  KEY `user` (`user`)
+  KEY `user` (`owner`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='table for storing documents drafts';
 
 DROP TABLE IF EXISTS `draft_history`;
@@ -217,6 +225,10 @@ ALTER TABLE `directory_draft`
   ADD CONSTRAINT `directory_draft_ibfk_1` FOREIGN KEY (`draft`) REFERENCES `draft` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `directory_draft_ibfk_2` FOREIGN KEY (`directory`) REFERENCES `directory` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
+ALTER TABLE `directory_rights`
+  ADD CONSTRAINT `directory_rights_ibfk_2` FOREIGN KEY (`right`) REFERENCES `rights` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `directory_rights_ibfk_1` FOREIGN KEY (`directory`) REFERENCES `directory` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
 ALTER TABLE `documentpart`
   ADD CONSTRAINT `documentpart_ibfk_1` FOREIGN KEY (`document`) REFERENCES `document` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
@@ -229,7 +241,7 @@ ALTER TABLE `domentpart_rights`
   ADD CONSTRAINT `domentpart_rights_ibfk_2` FOREIGN KEY (`right`) REFERENCES `rights` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 ALTER TABLE `draft`
-  ADD CONSTRAINT `draft_ibfk_1` FOREIGN KEY (`user`) REFERENCES `user` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+  ADD CONSTRAINT `draft_ibfk_1` FOREIGN KEY (`owner`) REFERENCES `user` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 ALTER TABLE `draft_history`
   ADD CONSTRAINT `draft_history_ibfk_1` FOREIGN KEY (`draftid`) REFERENCES `draft` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;

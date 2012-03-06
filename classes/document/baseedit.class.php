@@ -25,31 +25,62 @@
 
 namespace weblatex\document;
 
-require_once( dirname(__DIR__)."/base.class.php" );
-    
-    
+require_once( __DIR__."/basedocument.class.php" );
 
-/** interface for the documents (directory / draft /document) **/
-interface basedocument extends \weblatex\base {
-    
-    /** returns the owner user object of the document
-     * @returns null or the owner user object
-     **/
-    function getOwner();
-    
-    /** returns the access of an user
+
+
+/** interface for the editable documents (draft / document) **/
+interface baseedit extends basedocument {
+
+    /** creates the lock of the document
      * @param $poUser user object
-     * @return null for no access, "r" read access and "w" for read-write access
      **/
-    function getAccess($poUser);
+    function lock( $poUser );
     
-    /** returns an array with right objects
-     * @param $pcType type of the right, empty all rights, "write" only write access, "read" only read access
-     * @return array with rights
+    /** refreshs the lock
+     * @param $poUser user object
      **/
-    function getRights($pcType = null);
+    function refreshLock( $poUser );
+    
+    /** unlocks the document **/
+    function unlock();
+    
+    /** returns the user object if a lock exists
+     * @return user object or null
+     **/
+    function hasLock();
+    
+    /** checks if the document can be archiveable
+     * @return boolean of the flag
+     **/
+    function isArchivable();
+    
+    /** sets the archivable flag
+     * @param $plArchiveable boolean for enabling / disabling the flag
+     **/
+    function setArchivable( $plArchiveable );
+    
+    /** restore a history entry
+     * @param $pnID history id
+     **/
+    function restoreHistory($pnID);
+    
+    /** deletes the whole history or a single entry
+     * @param $pxID null, numeric value or array of numeric values
+     **/
+    function deleteHistory($pxID = null);
+    
+    /** returns the content of a history entry
+     * @param $pnID entry id
+     * @return content
+     **/
+    function getHistoryContent($pnID);
+    
+    /** returns an array with ids and timestamps of the history entries
+     * @return assoc. array
+     **/
+    function getHistory();
     
 }
-
 
 ?>

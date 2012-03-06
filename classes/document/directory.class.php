@@ -32,13 +32,13 @@ require_once( dirname(__DIR__)."/main.class.php" );
 require_once( dirname(__DIR__)."/management/user.class.php" );
 require_once( dirname(__DIR__)."/management/group.class.php" );
 require_once( dirname(__DIR__)."/management/right.class.php" );
-require_once( dirname(__DIR__)."/base.class.php" );
+require_once( __DIR__."/basedocument.class.php" );
 require_once( __DIR__."/draft.class.php" );
 require_once( __DIR__."/document.class.php" );
 
 
 /** class for representating the directory structure **/
-class directory implements \weblatex\base {
+class directory implements basedocument {
     
     /** full qualified name **/
     private $mcFQN     = null;
@@ -53,9 +53,11 @@ class directory implements \weblatex\base {
     
     
     /** returns the new directory object
+     * @param $pcPath FQN path
+     * @param $poUser owner user object
      * @return directory object
      **/
-    static function create( $pcPath, $poUser, $pcVisibility = "private" ) {
+    static function create( $pcPath, $poUser ) {
         if ( (!is_string($pcPath)) || (!($poUser instanceof man\user)) )
             wl\main::phperror( "first argument must be string value, second argument a user object", E_USER_ERROR );
      
@@ -89,7 +91,7 @@ class directory implements \weblatex\base {
             if (!$loResult->EOF)
                 $lnParent = intval($loResult->fields["id"]);
             else {
-                $loDB->Execute("INSERT IGNORE INTO directory (parent, name, owner, visibility) VALUES (?,?,?,?)", array($lnParent, $lcDir, $poUser->getID(), $pcVisibility));
+                $loDB->Execute("INSERT IGNORE INTO directory (parent, name, owner) VALUES (?,?,?)", array($lnParent, $lcDir, $poUser->getID()));
                 $lnParent = intval($loDB->Insert_ID());
             }
         }
@@ -185,8 +187,8 @@ class directory implements \weblatex\base {
                 throw new \Exception( "directory data not found" );
 
             $this->mcName = $loResult->fields["name"];
-            if (!empty($loResult->fields["user"]))
-                $this->moOwner = new man\user(intval($loResult->fields["user"]));
+            if (!empty($loResult->fields["owner"]))
+                $this->moOwner = new man\user(intval($loResult->fields["owner"]));
             
             
             // read the FQN path into a string
@@ -363,6 +365,74 @@ class directory implements \weblatex\base {
         
         $this->moDB->Execute("UPDATE directory SET name=? WHERE id=?", array($this->mnID));
         $this->mcName = $pcName;
+    }
+    
+    /** returns the owner user object of the document
+     * @returns null or the owner user object
+     **/
+    function getOwner() {
+        return $this->moOwner;
+    }
+    
+    /** returns an array with right objects
+     * @param $pcType type of the right, empty all rights, "write" only write access, "read" only read access
+     * @return array with rights
+     **/
+    function getRights($pcType = null) {
+        if (empty($pcType))
+            $loResult = $this->moDB->Execute("SELECT rights FROM directory_rights WHERE directory=?", array($this->mnID));
+        else
+            $loResult = $this->moDB->Execute("SELECT rights FROM directory_rights WHERE directory=? AND access=?", array($this->mnID, $pcType));
+        
+        $la = array();
+        if (!$loResult->EOF)
+            foreach($loResult as $laRow)
+            array_push($la, new man\right($laRow["right"]));
+        
+        return $la;
+    }
+    
+    /** returns the access of an user
+     * @param $poUser user object
+     * @return null for no access, "r" read access and "w" for read-write access
+     **/
+    function getAccess($poUser) {
+        if (!($poUser instanceof man\user))
+            wl\main::phperror( "argument must be a user object", E_USER_ERROR );
+        
+        // administrator right
+        $loAdminRight = new man\right( wl\config::$system_rights["administrator"] );
+        
+        // check if the user is the owner or has administrator or draft right
+        if ( ($poUser->isEqual($this->getOwner())) || ($loAdminRight->hasRight($poUser)) )
+            return "w";
+        
+        // get user groups
+        $laGroups = $poUser->getGroups();
+        
+        // check if a user group has admin or draft right
+        if (wl\main::any( man\right::hasOne($laGroups, array($loAdminRight))))
+            return "w";
+        
+        //get read and write rights of this draft
+        $laReadRight  = $this->getRights("read");
+        $laWriteRight = $this->getRights("write");
+        
+        
+        // check the other rights of the user
+        if (man\right::hasOne($poUser, $laReadRight))
+            return "w";
+        if (man\right::hasOne($poUser, $laWriteRight))
+            return "r";
+        
+        // check groups of the user and their rights of this draft
+        if (wl\main::any( man\right::hasOne($laGroups, $laReadRight)))
+            return "r";
+        if (wl\main::any( man\right::hasOne($laGroups, $laWriteRight)))
+            return "w";
+        
+        
+        return null;
     }
     
     /** print method of the object

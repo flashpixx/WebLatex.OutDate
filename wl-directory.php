@@ -95,18 +95,34 @@ if ( ($lnSystemItems > 0) && ($laSystemItems[0] == "WebLaTeX") ) {
     exit();
 }
     
+// we check if the "mydrafts" folder used
+if ( ($lnSystemItems > 0) && ($laSystemItems[0] == "myDrafts") ) {
+    
+    foreach( doc\draft::getList($loUser) as $loItem )
+        echo "<li class=\"file ext_txt\"><a href=\"#\" rel=\"draft$".$loItem->getID()."\">".$loItem->getName()."</a></li>\n";
+    
+    exit();
+}
+    
     
     
 // add database content
 $loDirectory = new doc\directory($lcPath);
     
 // if we within the root node, add the system menu nodes
-if ($loDirectory->isRoot())
+if ($loDirectory->isRoot()) {
     echo "<li class=\"directory collapsed\"><a href=\"#\" rel=\"/WebLaTeX/\">WebLaTeX</a></li>\n";
+    echo "<li class=\"directory collapsed\"><a href=\"#\" rel=\"/myDrafts/\">"._("my drafts")."</a></li>\n";
+}
 
    
 // read subtree
 foreach($loDirectory->getChildren() as $loItem) {
+    
+    $lxAccess = $loItem->getAccess($loUser);
+    if (empty($lxAccess))
+        continue;
+    
     
     if ($loItem instanceof doc\directory)
         // we need a slash at the end, otherwise a infinit loop
@@ -128,6 +144,10 @@ foreach($loDirectory->getChildren() as $loItem) {
 // if we within the root node, we list all documents and draft, that are not linked within the tree
 if ($loDirectory->isRoot())
     foreach($loDirectory->getChildrenNotLinked() as $loItem) {
+        
+        $lxAccess = $loItem->getAccess($loUser);
+        if (empty($lxAccess))
+            continue;
 
         if ($loItem instanceof doc\draft) {
             $lcName = "draft$".$loItem->getID();

@@ -32,7 +32,7 @@ require_once( dirname(__DIR__)."/main.class.php" );
 require_once( dirname(__DIR__)."/management/user.class.php" );
 require_once( dirname(__DIR__)."/management/group.class.php" );
 require_once( dirname(__DIR__)."/management/right.class.php" );
-require_once( __DIR__."/basedocument.class.php" );
+require_once( __DIR__."/baseedit.class.php" );
     
 
     
@@ -65,7 +65,7 @@ class draft implements basedocument {
         if (!$loResult->EOF)
             throw new \Exception( "draft [".$pcName."] exists" );
         
-        $loDB->Execute("INSERT IGNORE INTO draft (name,user) VALUES (?,?)", array($pcName, $poUser->getID()));
+        $loDB->Execute("INSERT IGNORE INTO draft (name,owner) VALUES (?,?)", array($pcName, $poUser->getID()));
         return new draft($pcName);
     }
     
@@ -79,13 +79,19 @@ class draft implements basedocument {
         wl\main::getDatabase()->Execute( "DELETE FROM draft WHERE id=?", array($pnDID) );
     }
     
-    /** returns a assoc array with draft information
+    /** returns an array with drafts
+     * @param $poUser user object, for getting drafts of this user
      * @return array with draft object
      **/
-    static function getList() {
+    static function getList( $poUser =  null) {
         $la = array();
         
-        $loResult = wl\main::getDatabase()->Execute("SELECT id FROM draft");
+        if ($poUser instanceof man\user)
+            $loResult = wl\main::getDatabase()->Execute("SELECT id FROM draft WHERE owner=?", array($poUser->getID()));
+        else    
+            $loResult = wl\main::getDatabase()->Execute("SELECT id FROM draft");
+        
+        
         if (!$loResult->EOF)
             foreach($loResult as $laRow)
                 array_push( $la, new draft(intval($laRow["id"])) );
@@ -105,11 +111,11 @@ class draft implements basedocument {
         $this->moDB = wl\main::getDatabase();
         
         if (is_numeric($px))
-            $loResult = $this->moDB->Execute( "SELECT name, id, user, content FROM draft WHERE id=?", array($px) );
+            $loResult = $this->moDB->Execute( "SELECT name, id, owner, content FROM draft WHERE id=?", array($px) );
         if ($px instanceof $this)
-            $loResult = $this->moDB->Execute( "SELECT name, id, user, content FROM draft WHERE id=?", array($px->getID()) );        
+            $loResult = $this->moDB->Execute( "SELECT name, id, owner, content FROM draft WHERE id=?", array($px->getID()) );        
         if (is_string($px))
-            $loResult = $this->moDB->Execute( "SELECT name, id, user, content FROM draft WHERE name=?", array($px) );
+            $loResult = $this->moDB->Execute( "SELECT name, id, owner, content FROM draft WHERE name=?", array($px) );
         
         if ($loResult->EOF)
             throw new \Exception( "draft data not found" );
@@ -117,8 +123,8 @@ class draft implements basedocument {
         $this->mcName  = $loResult->fields["name"];
         $this->mnID    = intval($loResult->fields["id"]);
         $this->mcData  = $loResult->fields["content"];
-        if (!empty($loResult->fields["user"]))
-            $this->moOwner = new man\user(intval($loResult->fields["user"]));
+        if (!empty($loResult->fields["owner"]))
+            $this->moOwner = new man\user(intval($loResult->fields["owner"]));
     
     }
     
