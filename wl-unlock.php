@@ -46,10 +46,8 @@ if ( (isset($_SESSION["weblatex::loginuser"])) && ($_SESSION["weblatex::loginuse
     
         case "draft" :
             $loDraft    = new doc\draft( intval($_GET["id"]) );
-            $loLockUser = $loDraft->hasLock();
+            $loDraft->unlock(); 
             
-            if ($loUser->isEqual($loLockUser)) 
-                $loDraft->unlock(); 
         break;
     
     }

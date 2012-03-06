@@ -45,9 +45,8 @@ interface basedocument extends \weblatex\base {
 
     /** creates the lock of the document
      * @param $poUser user object
-     * @param $plRefresh if the user has a lock, the lock is refreshed
      **/
-    function lock( $poUser, $plRefresh = false );
+    function lock( $poUser );
     
     /** refreshs the lock
      * @param $poUser user object

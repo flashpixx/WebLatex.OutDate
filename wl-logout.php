@@ -54,7 +54,7 @@ $loUser  = $loTheme->init();
 if ($loUser instanceof wm\user) {
     $loDB = wl\main::getDatabase();
     
-    $loDB->Execute("DELETE FROM draft_lock WHERE user=?", array($loUser->getID()));
+    $loDB->Execute("DELETE FROM draft_lock WHERE user=? AND session=?", array($loUser->getID(), session_id()));
 }
     
 // set session to null and refresh the location

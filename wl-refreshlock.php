@@ -49,7 +49,7 @@ if ( ($loUser instanceof wm\user) && (isset($_GET["id"])) && (isset($_GET["type"
             
         case "draft" :
             $loDraft    = new doc\draft( intval($_GET["id"]) );
-            $loDraft->lock($loUser, true);
+            $loDraft->refreshLock($loUser);
             break;
             
     }

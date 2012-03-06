@@ -70,7 +70,7 @@ if ( ($lnSystemItems > 0) && ($laSystemItems[0] == "WebLaTeX") ) {
         case 1 :
             echo "<li class=\"directory collapsed\"><a href=\"#\" rel=\"/WebLaTeX/Settings/\">"._("settings")."</a></li>\n";
             echo "<li class=\"directory collapsed\"><a href=\"#\" rel=\"/WebLaTeX/Help/\">"._("help")."</a></li>\n";
-            echo "<li class=\"file ext_application\"><a href=\"#\"><a href=\"wl-logout.php\">"._("logout")."</a></li>\n";
+            echo "<li class=\"file ext_exe\"><a href=\"wl-logout.php?".http_build_query(array("sess" => session_id()))."\">"._("logout")."</a></li>\n";
             break;
             
         case 2 :
@@ -78,12 +78,13 @@ if ( ($lnSystemItems > 0) && ($laSystemItems[0] == "WebLaTeX") ) {
             switch ($laSystemItems[1]) {
             
                 case "Settings" :
-                    echo "<li class=\"file ext_code\"><a href=\"#\" rel=\"url\$wl-password.php?".http_build_query(array("sess" => session_id()))."\">"._("change password")."</a></li>\n";
+                    echo "<li class=\"file ext_exe\"><a href=\"#\" rel=\"url\$wl-password.php?".http_build_query(array("sess" => session_id()))."\">"._("change password")."</a></li>\n";
                     break;
             
                 case "Help" :
-                    echo "<li class=\"file ext_code\">"._("GUI")."</li>\n";
-                    echo "<li class=\"file ext_code\">"._("LaTeX")."</li>\n";
+                    echo "<li class=\"file ext_html\">"._("GUI")."</li>\n";
+                    echo "<li class=\"file ext_html\">"._("Editor")."</li>\n";
+                    echo "<li class=\"file ext_html\">"._("LaTeX")."</li>\n";
                     break;
                     
             }

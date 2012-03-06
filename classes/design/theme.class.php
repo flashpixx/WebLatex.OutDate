@@ -118,7 +118,7 @@ class theme {
             echo "                  lcURL = 'wl-editdraft.php?'+lcURLParameter;\n";
             echo "              if (laItem[0] == 'url')\n";
             echo "                  lcURL = laItem[1];\n";
-            echo "console.log(lcURL);\n";
+            echo "\n";
             echo "              if (lcURL != null)\n";
             echo "                  $.get(lcURL, function(pcData) {\n";
             echo "                      $('#weblatex-content').fadeOut('slow', function() {\n";

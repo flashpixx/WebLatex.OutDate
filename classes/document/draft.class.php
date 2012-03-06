@@ -274,29 +274,22 @@ class draft implements basedocument {
     
     /** tries to create a lock of the draft and remove old locks if needed
      * @param $poUser user object
-     * @param $plRefresh if a lock exists, the data should be refreshed if the user are equal
      * @return null if the lock can be stored, the user object, which hold the lock
      **/
-    function lock( $poUser, $plRefresh = false ) {
+    function lock( $poUser ) {
         if (!($poUser instanceof man\user))
             wl\main::phperror( "argument must be a user object", E_USER_ERROR );
         
         // remove old locks
         $this->moDB->Execute("DELETE FROM draft_lock WHERE lastactivity < DATE_SUB(NOW(), INTERVAL ? SECOND)", array(wl\config::locktime));
         
-        // check if a lock exists (refresh it if needed)
+        // check if a lock exists
         $loLockUser = $this->hasLock();
-        if (!empty($loLockUser)) {
-            if ( ($plRefresh) && ($loLockUser->isEqual($poUser)) ) {
-                $this->refreshLock($poUser);
-                return null;
-            }
-            
+        if (!empty($loLockUser)) 
             return $loLockUser;
-        }
             
-        // set the lock
-        $this->moDB->Execute("INSERT IGNORE INTO draft_lock (draft, user) VALUES (?,?)", array($this->mnID, $poUser->getID()));
+        // try to set the lock or refresh the lock if exists
+        $this->moDB->Execute("INSERT INTO draft_lock (draft, user, session) VALUES (?,?,?) ON DUPLICATE KEY UPDATE user=?, session=?", array($this->mnID, $poUser->getID(), session_id(), $poUser->getID(), session_id()));
         
         return null;
     }
@@ -305,7 +298,7 @@ class draft implements basedocument {
      * @return null or use object
     **/
     function hasLock() {
-        $loResult = $this->moDB->Execute("SELECT user FROM draft_lock WHERE draft=?", array($this->mnID));
+        $loResult = $this->moDB->Execute("SELECT user FROM draft_lock WHERE draft=? AND session <> ?", array($this->mnID, session_id()));
         if (!$loResult->EOF)
             return new man\user( intval($loResult->fields["user"]) );
         
@@ -319,12 +312,12 @@ class draft implements basedocument {
         if (!($poUser instanceof man\user))
             wl\main::phperror( "argument must be a user object", E_USER_ERROR );
         
-        $this->moDB->Execute("UPDATE draft_lock SET lastactivity=NOW() WHERE draft=? AND user=?", array($this->mnID, $poUser->getID()));
+        $this->moDB->Execute("UPDATE draft_lock SET lastactivity=NOW() WHERE draft=? AND user=? AND session=?", array($this->mnID, $poUser->getID(), session_id()));
     }
     
     /** remove the lock of the draft **/
     function unlock() {
-        $this->moDB->Execute("DELETE FROM draft_lock WHERE draft=?", array($this->mnID));
+        $this->moDB->Execute("DELETE FROM draft_lock WHERE draft=? AND session=?", array($this->mnID, session_id()));
     }
     
     /** adds a right or changes the access of the right

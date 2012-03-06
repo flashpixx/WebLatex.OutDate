@@ -100,6 +100,7 @@ DROP TABLE IF EXISTS `draft_lock`;
 CREATE TABLE IF NOT EXISTS `draft_lock` (
   `draft` bigint(20) unsigned NOT NULL,
   `user` bigint(20) unsigned NOT NULL,
+  `session` varchar(255) COLLATE utf8_bin NOT NULL,
   `lastactivity` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`draft`),
   KEY `user` (`user`)
