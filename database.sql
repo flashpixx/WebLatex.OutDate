@@ -5,9 +5,13 @@ CREATE TABLE IF NOT EXISTS `directory` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `parent` bigint(20) unsigned DEFAULT NULL,
   `name` varchar(128) COLLATE utf8_bin NOT NULL,
+  `owner` bigint(20) unsigned DEFAULT NULL,
+  `visibility` enum('private','group','public') COLLATE utf8_bin NOT NULL DEFAULT 'private',
   PRIMARY KEY (`id`),
-  KEY `parent` (`parent`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='table for storing directory structure';
+  UNIQUE KEY `name` (`parent`,`name`),
+  KEY `parent` (`parent`),
+  KEY `owner` (`owner`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='table for storing directory structure';
 
 DROP TABLE IF EXISTS `directory_document`;
 CREATE TABLE IF NOT EXISTS `directory_document` (
@@ -16,6 +20,14 @@ CREATE TABLE IF NOT EXISTS `directory_document` (
   PRIMARY KEY (`document`,`directory`),
   KEY `directory` (`directory`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='table for storing document-directory information';
+
+DROP TABLE IF EXISTS `directory_draft`;
+CREATE TABLE IF NOT EXISTS `directory_draft` (
+  `draft` bigint(20) unsigned NOT NULL,
+  `directory` bigint(20) unsigned NOT NULL,
+  PRIMARY KEY (`draft`,`directory`),
+  KEY `directory` (`directory`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='table for storing draft-directory information';
 
 DROP TABLE IF EXISTS `document`;
 CREATE TABLE IF NOT EXISTS `document` (
@@ -108,7 +120,7 @@ CREATE TABLE IF NOT EXISTS `groups` (
   `name` varchar(32) COLLATE utf8_bin NOT NULL,
   `system` enum('true','false') COLLATE utf8_bin NOT NULL DEFAULT 'false',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='table for storing the user groups';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='table for storing the user groups';
 
 DROP TABLE IF EXISTS `group_rights`;
 CREATE TABLE IF NOT EXISTS `group_rights` (
@@ -193,10 +205,16 @@ CREATE TABLE IF NOT EXISTS `user_rights` (
 
 
 ALTER TABLE `directory`
-  ADD CONSTRAINT `directory_ibfk_1` FOREIGN KEY (`parent`) REFERENCES `directory` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+  ADD CONSTRAINT `directory_ibfk_1` FOREIGN KEY (`parent`) REFERENCES `directory` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `directory_ibfk_2` FOREIGN KEY (`owner`) REFERENCES `user` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 ALTER TABLE `directory_document`
-  ADD CONSTRAINT `directory_document_ibfk_2` FOREIGN KEY (`directory`) REFERENCES `directory` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+  ADD CONSTRAINT `directory_document_ibfk_1` FOREIGN KEY (`directory`) REFERENCES `directory` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `directory_document_ibfk_2` FOREIGN KEY (`document`) REFERENCES `document` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE `directory_draft`
+  ADD CONSTRAINT `directory_draft_ibfk_1` FOREIGN KEY (`draft`) REFERENCES `draft` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `directory_draft_ibfk_2` FOREIGN KEY (`directory`) REFERENCES `directory` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 ALTER TABLE `documentpart`
   ADD CONSTRAINT `documentpart_ibfk_1` FOREIGN KEY (`document`) REFERENCES `document` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
@@ -206,8 +224,8 @@ ALTER TABLE `document_rights`
   ADD CONSTRAINT `document_rights_ibfk_2` FOREIGN KEY (`right`) REFERENCES `rights` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 ALTER TABLE `domentpart_rights`
-  ADD CONSTRAINT `domentpart_rights_ibfk_2` FOREIGN KEY (`right`) REFERENCES `rights` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `domentpart_rights_ibfk_1` FOREIGN KEY (`documentpart`) REFERENCES `documentpart` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+  ADD CONSTRAINT `domentpart_rights_ibfk_1` FOREIGN KEY (`documentpart`) REFERENCES `documentpart` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `domentpart_rights_ibfk_2` FOREIGN KEY (`right`) REFERENCES `rights` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 ALTER TABLE `draft`
   ADD CONSTRAINT `draft_ibfk_1` FOREIGN KEY (`user`) REFERENCES `user` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
@@ -235,8 +253,8 @@ ALTER TABLE `media_documentpart`
   ADD CONSTRAINT `media_documentpart_ibfk_2` FOREIGN KEY (`documentpart`) REFERENCES `documentpart` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 ALTER TABLE `media_rights`
-  ADD CONSTRAINT `media_rights_ibfk_2` FOREIGN KEY (`right`) REFERENCES `rights` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `media_rights_ibfk_1` FOREIGN KEY (`media`) REFERENCES `media` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+  ADD CONSTRAINT `media_rights_ibfk_1` FOREIGN KEY (`media`) REFERENCES `media` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `media_rights_ibfk_2` FOREIGN KEY (`right`) REFERENCES `rights` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 ALTER TABLE `substitution`
   ADD CONSTRAINT `substitution_ibfk_1` FOREIGN KEY (`owner`) REFERENCES `user` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
