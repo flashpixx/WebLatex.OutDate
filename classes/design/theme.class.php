@@ -84,6 +84,99 @@ class theme {
      **/
     function header( $poUser = null, $pcHeader = null ) {
         $this->moTheme->header( $poUser );
+        
+        if (!empty($poUser)) {
+        
+            // add jQuery, tree view, editor and context menu code
+            echo "<script src=\"tools/jquery.min.js\" type=\"text/javascript\"></script>\n";
+            echo "<script src=\"tools/jquery.easing.1.3.js\" type=\"text/javascript\"></script>\n";
+        
+            echo "<script src=\"tools/jcontextMenu/jquery.contextMenu.js\" type=\"text/javascript\"></script>\n";
+            echo "<link href=\"tools/jcontextMenu/jquery.contextMenu.css\" rel=\"stylesheet\" type=\"text/css\" />\n";
+        
+            echo "<script src=\"tools/jqueryFileTree/jqueryFileTree.js\" type=\"text/javascript\"></script>\n";
+            echo "<link href=\"tools/jqueryFileTree/jqueryFileTree.css\" rel=\"stylesheet\" type=\"text/css\" media=\"screen\" />\n";
+        
+            echo "<script type=\"text/javascript\" src=\"tools/ckeditor/ckeditor.js\"></script>\n";
+            echo "<script type=\"text/javascript\" src=\"tools/ckeditor/adapters/jquery.js\"></script>\n";
+        
+            // add jQuery data for visualization
+            echo "<script type=\"text/javascript\">\n";
+            echo "  var goRefreshLock     = null;\n";
+            echo "  var gcOldURLParameter = null;\n";
+            echo "\n";
+            echo "  $(document).ready( function() {\n";
+            echo "      $('#weblatex-directory').fileTree(\n";
+            echo "          {\n";
+            echo "              script      : 'wl-directorylist.php?".http_build_query(array("sess" => session_id()))."',\n";
+            echo "              loadMessage : '"._("loading")."'\n";
+            echo "          },\n";
+            echo "\n";
+            echo "          function(pcItem) {\n";
+            echo "              var laItem           = pcItem.split('$');\n";
+            echo "              if (laItem.length != 2)\n";
+            echo "                  return;\n";
+            echo "\n";
+            echo "              var lcURL            = null;\n";
+            echo "              var lcURLParameter   = $.param( { sess : '".session_id()."', id : laItem[1], type : laItem[0] } );\n";
+            echo "\n";
+            echo "              if (laItem[0] == 'draft')\n";
+            echo "                  lcURL = 'wl-editdraft.php?'+lcURLParameter;\n";
+            echo "\n";
+            echo "              if (lcURL != null)\n";
+            echo "                  $.get(lcURL, function(pcData) {\n";
+            echo "                      $('#weblatex-content').fadeOut('slow', function() {\n";
+            echo "                          var loEditor = CKEDITOR.instances['weblatex-editor'];\n";
+            echo "\n";
+            echo "                          if (loEditor) {\n";
+            echo "                              loEditor.destroy();\n";
+            echo "                              clearInterval(goRefreshLock);\n";
+            echo "                              if (gcOldURLParameter != null)\n";
+            echo "                                  $.ajax( { url : 'wl-unlock.php?'+gcOldURLParameter } );\n"; 
+            echo "                          }\n";
+            echo "\n";
+            echo "                          gcOldURLParameter = lcURLParameter;\n";
+            echo "                          goRefreshLock = setInterval( function() { $.ajax( { url : 'wl-refreshlock.php?'+lcURLParameter } ); }, ".(wl\config::autosavetime*1000).");\n";
+            echo "                          $('#weblatex-content').html(pcData).fadeIn('slow');\n";
+            echo "\n";
+            echo "                          $('#weblatex-editor').ckeditor({\n";
+            echo "                              skin                : 'office2003',\n";
+            echo "                              autoParagraph       : false,\n";
+            echo "                              extraPlugins        : 'autosave',\n";
+            echo "                              autosaveTargetUrl   : 'wl-autosavedraft.php?'+lcURLParameter,\n";
+            echo "                              autosaveRefreshTime : ".wl\config::autosavetime.",\n";
+            echo "                              toolbar             : [\n";
+            echo "                                  { name: 'document',    items : [ 'Save', 'NewPage','DocProps','Print'] },\n";
+            echo "                                  { name: 'clipboard',   items : [ 'Cut','Copy','Paste','PasteText','PasteFromWord','-','Undo','Redo' ] },\n";
+            echo "                                  { name: 'editing',     items : [ 'Find','Replace','-','SelectAll','-','SpellChecker', 'Scayt' ] },\n";
+            echo "                                  { name: 'tools',       items : [ 'Autosave', 'Maximize','-','About' ] },\n";
+            echo "                                  '/',\n";
+            echo "                                  { name: 'basicstyles', items : [ 'Bold','Italic','Underline','-','RemoveFormat' ] },\n";
+            echo "                                  { name: 'paragraph',   items : [ 'NumberedList','BulletedList','-','Blockquote','-','JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock' ] },\n";
+            echo "                                  { name: 'insert',      items : [ 'Image','Table','PageBreak' ] },\n";
+            echo "                                  { name: 'styles',      items : [ 'Styles','Format','Font','FontSize' ] },\n";
+            echo "                              ]\n";
+            echo "                          });\n";
+            echo "                      });\n";
+            echo "                  });\n";
+            echo "          }\n";
+            echo "      );";
+            echo "\n";
+            /*
+            echo "      $('#gibtsnicht').contextMenu(\n";
+            echo "          {\n";
+            echo "              menu : 'weblatex-filemenu'\n";
+            echo "          },\n";
+            echo "\n";
+            echo "          function(action, el, pos) {\n";
+            echo "              alert(action+' '+$(el).attr('href'));\n";
+            echo "          }\n";
+            echo "      );\n";
+            */
+            echo "  });\n";
+            echo "</script>";
+        }
+        
         echo $pcHeader;
         $this->moTheme->body( $poUser );
     }
@@ -97,7 +190,7 @@ class theme {
     
     /** returns the code of the JavaScript editor
      * @return html configuration code 
-     **/
+     **
     static function getEditorCode( $pcAutoSaveURL = null, $paArchiveList = null, $plReadOnly = false ) {
         if ( (!empty($pcAutoSaveURL)) && (!is_string($pcAutoSaveURL)) )
             wl\main::phperror( "first argument must be a string", E_USER_ERROR );
@@ -113,9 +206,20 @@ class theme {
                 $lcArchive .= "this.add( '".$laItem["id"]."', '".$laItem["time"]."', '".$laItem["time"]."' );\n"; 
         
         $lcReturn = "
-                <script type=\"text/javascript\" src=\"tools/jquery-1.7.1.min.js\"></script>
+        <script src=\"http://code.jquery.com/jquery-latest.js\" type=\"text/javascript\"></script>
+        <script src=\"tools/jquery.easing.1.3.js\" type=\"text/javascript\"></script>
+        
+        <script src=\"tools/jcontextMenu/jquery.contextMenu.js\" type=\"text/javascript\"></script>
+        <link href=\"tools/jcontextMenu/jquery.contextMenu.css\" rel=\"stylesheet\" type=\"text/css\" />
+        
+        <script src=\"tools/jqueryFileTree/jqueryFileTree.js\" type=\"text/javascript\"></script>
+        <link href=\"tools/jqueryFileTree/jqueryFileTree.css\" rel=\"stylesheet\" type=\"text/css\" media=\"screen\" />
+        
                 <script type=\"text/javascript\" src=\"tools/ckeditor/ckeditor.js\"></script>
-                <script type=\"text/javascript\">
+                <script type=\"text/javascript\" src=\"/ckeditor/adapters/jquery.js\"></script>
+                <script type=\"text/javascript\">$('.ckeditor').ckeditor();</script>
+        ";
+        /*        <script type=\"text/javascript\">
         
                 CKEDITOR.plugins.add( 'Archive', {
                     init : function(editor){
@@ -164,7 +268,7 @@ class theme {
         
                     }
                 });
-                
+            
                 
                 CKEDITOR.config.skin                = 'office2003';
                 CKEDITOR.config.autoParagraph       = false;
@@ -186,7 +290,7 @@ class theme {
                 ];
         
             </script>
-        ";
+
         
         if ($plReadOnly)
             $lcReturn .= "<script type=\"text/javascript\">
@@ -197,10 +301,10 @@ class theme {
         
         return $lcReturn;
     }
-    
+    */
     /** main menu
      * @param $poUser user object
-     **/
+     **
     function mainMenu( $poUser = null ) {
         echo "<div id=\"weblatex-menu\">";
         echo "<span class=\"weblatex-logomini\"><a href=\"http://code.google.com/p/weblatex/\" target=\"_blank\">Web<img src=\"images/latex.png\"></a></span>\n";
@@ -211,12 +315,6 @@ class theme {
         echo "          <li><a href=\"wl-createdraft.php\">"._("new draft")."</a></li>\n";
         echo "          <li><a href=\"wl-editdraft.php\">"._("drafts")."</a></li>\n";
         echo "          <li><a href=\"\">"._("documents")."</a></li>\n";
-        echo "      </ul>\n";
-        echo "  </li>\n";
-        
-        echo "  <li><a>"._("directories")."</a>\n";
-        echo "      <ul>\n";
-        echo "          <li><a href=\"\">"._("directories")."</a></li>\n";
         echo "      </ul>\n";
         echo "  </li>\n";
         
@@ -238,7 +336,7 @@ class theme {
         echo "</ul>\n";
         echo "</div>\n";
     }
-    
+    */
 }
 
 ?>

@@ -36,6 +36,12 @@ interface basedocument extends \weblatex\base {
      * @returns null or the owner user object
      **/
     function getOwner();
+    
+    /** returns the access of an user
+     * @param $poUser user object
+     * @return null for no access, "r" read access and "w" for read-write access
+     **/
+    function getAccess($poUser);
 
     /** creates the lock of the document
      * @param $poUser user object

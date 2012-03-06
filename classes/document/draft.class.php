@@ -27,7 +27,11 @@ namespace weblatex\document;
 use weblatex as wl;
 use weblatex\management as man;
     
+require_once( dirname(dirname(__DIR__))."/config.inc.php" );
 require_once( dirname(__DIR__)."/main.class.php" );
+require_once( dirname(__DIR__)."/management/user.class.php" );
+require_once( dirname(__DIR__)."/management/group.class.php" );
+require_once( dirname(__DIR__)."/management/right.class.php" );
 require_once( __DIR__."/basedocument.class.php" );
     
 
@@ -220,6 +224,52 @@ class draft implements basedocument {
         if (is_array($pxID))
             foreach($pxID as $id)
                 $this->moDB->Execute("DELETE FROM draft_history WHERE id=? AND draftid=?", array($id, $this->mnID));
+    }
+    
+    /** returns the access of the user on this draft
+     * @param $poUser user object
+     * @return null for no access, "r" read access and "w" for read-write access
+     **/
+    function getAccess($poUser) {
+        if (!($poUser instanceof man\user))
+            wl\main::phperror( "argument must be a user object", E_USER_ERROR );
+        
+        // draft & administrator right
+        $loDraftRight = new man\right( wl\config::$system_rights["draft"] );
+        $loAdminRight = new man\right( wl\config::$system_rights["administrator"] );
+        
+        // check if the user is the owner or has administrator or draft right
+        if ( ($poUser->isEqual($this->getOwner())) || ($loDraftRight->hasRight($poUser)) || ($loAdminRight->hasRight($poUser)) )
+            return "w";
+        
+        
+        // get user groups
+        $laGroups = $poUser->getGroups();
+        
+        // check if a user group has admin or draft right
+        if ( (wl\main::any( man\right::hasOne($laGroups, $loDraftRight))) || (wl\main::any( man\right::hasOne($laGroups, $loAdminRight))) )
+            return "w";
+        
+        
+        //get read and write rights of this draft
+        $laReadRight  = $this->getRights("read");
+        $laWriteRight = $this->getRights("write");
+        
+        
+        // check the other rights of the user
+        if (man\right::hasOne($poUser, $laReadRight))
+            return "w";
+        if (man\right::hasOne($poUser, $laWriteRight))
+            return "r";
+        
+        // check groups of the user and their rights of this draft
+        if (wl\main::any( man\right::hasOne($laGroups, $laReadRight)))
+            return "r";
+        if (wl\main::any( man\right::hasOne($laGroups, $laWriteRight)))
+            return "w";
+        
+            
+        return null;
     }
     
     /** tries to create a lock of the draft and remove old locks if needed

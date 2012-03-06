@@ -54,7 +54,6 @@ input {
 }
 
 .weblatex-logomini {
-    float: left;
     padding-left: 5px;
     font-variant: small-caps;
     font-size: 14px;
@@ -106,6 +105,29 @@ input {
 
 
 /* === menu ====================================================================== */
+
+#weblatex-left {
+    background-color: #F0F0FC;
+    border: 1px solid;
+    border-color: #D0D0FF;
+    width: 15%;
+    position: relative;
+    float: left;
+}
+
+#weblatex-content {
+    width: 84%;
+    background-color: #F0F0FC;
+    border: 1px solid;
+    border-color: #D0D0FF;
+    position: relative;
+    float: right;
+}
+
+
+
+
+
 #weblatex-menu {
     font-family: sans-serif;
     font-size: medium;

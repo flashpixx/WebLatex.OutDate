@@ -39,7 +39,7 @@ if (isset($_GET["sess"]))
 @session_start();
 
 if ( (isset($_SESSION["weblatex::loginuser"])) && ($_SESSION["weblatex::loginuser"] instanceof wm\user) )
-$loUser = $_SESSION["weblatex::loginuser"];
+    $loUser = $_SESSION["weblatex::loginuser"];
 
 
 if ( ($loUser instanceof wm\user) && (isset($_GET["id"])) && (isset($_GET["type"])) ) {

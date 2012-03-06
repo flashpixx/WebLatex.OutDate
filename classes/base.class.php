@@ -36,7 +36,7 @@ interface base {
     function getName();
     
     /** returns the unique id
-     * @return  id
+     * @return id
      **/
     function getID();
 

@@ -99,6 +99,13 @@ class document implements basedocument {
             $this->moOwner = new wm\user(intval($loResult->fields["uid"]));
     }
 
+    /** returns the unique id
+     * @return id
+     **/
+    function getID() {
+        return $this->mnID;
+    }
+    
     /** returns the user owner object
      * @return owner object or null if owner is deleted
      **/
@@ -120,7 +127,7 @@ class document implements basedocument {
         if (empty($loResult->fields["draftid"]))
             return $loResult->fields["draft"];
         else
-            return new draft($loResult->fields["draftid"]);
+            return new draft(intval($loResult->fields["draftid"]));
     }
     
     /** returns the archivable flag
@@ -162,6 +169,70 @@ class document implements basedocument {
         
         wl\main::getDatabase()->Execute( "UPDATE document SET uid=? WHERE id=?", array( $poUser->getID(), $this->mnID) );
         $this->moOwner = $poUser;
+    }
+    
+    /** returns the access of an user
+     * @param $poUser user object
+     * @return null for no access, "r" read access and "w" for read-write access
+     **/
+    function getAccess($poUser) {
+        
+    }
+    
+    /** creates the lock of the document
+     * @param $poUser user object
+     * @param $plRefresh if the user has a lock, the lock is refreshed
+     **/
+    function lock( $poUser, $plRefresh = false ) {
+        
+    }
+    
+    /** refreshs the lock
+     * @param $poUser user object
+     **/
+    function refreshLock( $poUser ) {
+        
+    }
+    
+    /** unlocks the document **/
+    function unlock() {
+        
+    }
+    
+    /** returns the user object if a lock exists
+     * @return user object or null
+     **/
+    function hasLock() {
+        
+    }
+    
+    /** restore a history entry
+     * @param $pnID history id
+     **/
+    function restoreHistory($pnID) {
+        
+    }
+    
+    /** deletes the whole history or a single entry
+     * @param $pxID null, numeric value or array of numeric values
+     **/
+    function deleteHistory($pxID = null) {
+        
+    }
+    
+    /** returns the content of a history entry
+     * @param $pnID entry id
+     * @return content
+     **/
+    function getHistoryContent($pnID) {
+        
+    }
+    
+    /** returns an array with ids and timestamps of the history entries
+     * @return assoc. array
+     **/
+    function getHistory() {
+        
     }
 }
 

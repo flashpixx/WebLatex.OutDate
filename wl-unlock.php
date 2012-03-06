@@ -35,21 +35,18 @@ require_once(__DIR__."/classes/document/draft.class.php");
 $loUser = null;    
 
 if (isset($_GET["sess"]))
-@session_id($_GET["sess"]);
+    @session_id($_GET["sess"]);
 @session_start();
 
-if ( (isset($_SESSION["weblatex::loginuser"])) && ($_SESSION["weblatex::loginuser"] instanceof wm\user) )
+if ( (isset($_SESSION["weblatex::loginuser"])) && ($_SESSION["weblatex::loginuser"] instanceof wm\user) && (isset($_GET["id"])) && (isset($_GET["type"])) ) {
     $loUser = $_SESSION["weblatex::loginuser"];
-
-
-if ( ($loUser instanceof wm\user) && (isset($_GET["id"])) && (isset($_GET["type"])) ) {
 
     // check which document should be unlocked
     switch (strtolower($_GET["type"])) {
     
         case "draft" :
             $loDraft    = new doc\draft( intval($_GET["id"]) );
-            $loLockUser = $loDraft->lock($loUser);
+            $loLockUser = $loDraft->hasLock();
             
             if ($loUser->isEqual($loLockUser)) 
                 $loDraft->unlock(); 
