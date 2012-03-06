@@ -60,6 +60,11 @@ input {
     font-family: serif;
 }
 
+.weblatex-logomini a {
+    text-decoration: none;
+    color: #222222;
+}
+
 .weblatex-logomini img {
     vertical-align: middle;
     height: 14px;

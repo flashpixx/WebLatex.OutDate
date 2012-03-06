@@ -1,5 +1,5 @@
 <?php
-
+    
 /** 
  @cond
  ############################################################################
@@ -23,46 +23,47 @@
  @endcond
  **/
 
+    
 use weblatex as wl;
-use weblatex\design as wd;
 use weblatex\management as wm;
-use weblatex\document as doc;
-
-require_once(__DIR__."/config.inc.php");
+    
 require_once(__DIR__."/classes/main.class.php");
-require_once(__DIR__."/classes/design/theme.class.php");
-require_once(__DIR__."/classes/management/right.class.php");
 require_once(__DIR__."/classes/management/user.class.php");
-require_once(__DIR__."/classes/management/group.class.php");
-require_once(__DIR__."/classes/document/draft.class.php");
-
-
+    
+   
+    
+    // do password change
+/*
+    $lcError = null;
+    if ( (isset($_POST["password1"])) && (isset($_POST["password2"])) )
+    if ($_POST["password1"] != $_POST["password2"])
+    $lcError = "<p id=\"weblatex-error\">"._("password are not equal")."</p>";
+    else
+    if (empty($_POST["password1"]))
+    $lcError = "<p id=\"weblatex-error\">"._("password should not be empty")."</p>";
+    else
+    $loUser->changePassword($_POST["password1"]);
+  */  
+    
+    
 // read session manually and set language
-wl\main::initLanguage();
+wl\main::initLanguage();  
 $loUser = null;    
-
+    
 if (isset($_GET["sess"]))
     @session_id($_GET["sess"]);
 @session_start();
-
+    
 if ( (isset($_SESSION["weblatex::loginuser"])) && ($_SESSION["weblatex::loginuser"] instanceof wm\user) )
     $loUser = $_SESSION["weblatex::loginuser"];
-    
-$loDraft = null;
-if (isset($_GET["id"]))
-    $loDraft = new doc\draft(intval($_GET["id"]));
-    
-if ( (empty($loDraft)) || (empty($loUser)) )
-    exit();
-    
-$loLockedUser = $loDraft->lock($loUser, true);
-    
-    
-// create content
-echo "<h1>"._("draft")." [".$loDraft->getName()."]</h1>\n";
-if ($loLockedUser instanceof wm\user)
-    echo "<p>"._("is locked by")." [".$loLockedUser->GetName()."]</p>\n";
-    
-echo "<div id=\"weblatex-editor\">".$loDraft->getContent()."</div>";
 
+if (empty($loUser))
+    exit();
+   
+// create content
+echo "<h1>"._("change password")."</h1>\n";
+  
+echo "<label for=\"password1\">"._("new password (insert twice)")."<br/><input type=\"password\" name=\"password1\" size=\"35\" tabindex=\"10\"/><input type=\"password\" name=\"password2\" size=\"35\" tabindex=\"20\"/></label>\n";
+echo "<p><input type=\"submit\" name=\"submit\" class=\"weblatex-button\" value=\""._("change")."\" tabindex=\"100\"/></p>\n";
+    
 ?>

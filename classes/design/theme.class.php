@@ -44,14 +44,8 @@ class theme {
     /** contructor creates the theme object **/
     function __construct() {
         
-        // create language addon via gettext
-        $lcLang = wl\config::language;
-        if (!empty($lcLang)) {
-            setlocale(LC_MESSAGES, $lcLang.".UTF-8");   
-            putenv("LANG=".$lcLang.".UTF-8");
-            putenv("LANGUAGE=".$lcLang.".UTF-8");
-            wl\main::bindLanguage("weblatex", dirname(dirname(__DIR__))."/language/");
-        }
+        // create language
+        wl\main::initLanguage();
         
         // create themes
         $lcTheme = wl\config::theme;
@@ -122,7 +116,9 @@ class theme {
             echo "\n";
             echo "              if (laItem[0] == 'draft')\n";
             echo "                  lcURL = 'wl-editdraft.php?'+lcURLParameter;\n";
-            echo "\n";
+            echo "              if (laItem[0] == 'url')\n";
+            echo "                  lcURL = laItem[1];\n";
+            echo "console.log(lcURL);\n";
             echo "              if (lcURL != null)\n";
             echo "                  $.get(lcURL, function(pcData) {\n";
             echo "                      $('#weblatex-content').fadeOut('slow', function() {\n";

@@ -29,6 +29,7 @@ use weblatex\management as wm;
 use weblatex\document as doc;
     
 require_once(__DIR__."/config.inc.php");
+require_once(__DIR__."/classes/main.class.php");
 require_once(__DIR__."/classes/management/right.class.php");
 require_once(__DIR__."/classes/management/user.class.php");
 require_once(__DIR__."/classes/management/group.class.php");
@@ -37,7 +38,8 @@ require_once(__DIR__."/classes/document/document.class.php");
 require_once(__DIR__."/classes/document/directory.class.php");
 
     
-// read session manually    
+// read session manually and set language
+wl\main::initLanguage();
 $loUser = null;    
     
 if (isset($_GET["sess"]))
@@ -54,7 +56,7 @@ if (isset($_POST["dir"]))
 if ( (empty($loUser)) || (empty($lcPath)) )
     exit();
 
-    
+
     
 echo "<ul class=\"jqueryFileTree\" style=\"display: none;\">\n";
 
@@ -76,7 +78,7 @@ if ( ($lnSystemItems > 0) && ($laSystemItems[0] == "WebLaTeX") ) {
             switch ($laSystemItems[1]) {
             
                 case "Settings" :
-                    echo "<li class=\"file ext_code\">"._("change password")."</li>\n";
+                    echo "<li class=\"file ext_code\"><a href=\"#\" rel=\"url\$wl-password.php?".http_build_query(array("sess" => session_id()))."\">"._("change password")."</a></li>\n";
                     break;
             
                 case "Help" :

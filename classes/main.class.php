@@ -114,6 +114,18 @@ class main {
         textdomain($pcDomain);
     }
     
+    /** creates the initialize language setup (must be call manually because jQuery calls) **/
+    static function initLanguage() {
+        $lcLang = config::language;
+        if (!empty($lcLang)) {
+            setlocale(LC_MESSAGES, $lcLang.".UTF-8");   
+            putenv("LANG=".$lcLang.".UTF-8");
+            putenv("LANGUAGE=".$lcLang.".UTF-8");
+        
+            self::bindLanguage("weblatex", dirname(dirname(__DIR__))."/language/");
+        }
+    }
+    
     /** returns true if all elements within the array are true
      * @param $pa boolean array
      * @return boolean if all is true
