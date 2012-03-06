@@ -31,10 +31,10 @@ CREATE TABLE IF NOT EXISTS `directory_draft` (
 DROP TABLE IF EXISTS `directory_rights`;
 CREATE TABLE IF NOT EXISTS `directory_rights` (
   `directory` bigint(20) unsigned NOT NULL,
-  `right` bigint(20) unsigned NOT NULL,
+  `rights` bigint(20) unsigned NOT NULL,
   `access` enum('read','write') COLLATE utf8_bin NOT NULL DEFAULT 'read',
-  PRIMARY KEY (`directory`,`right`),
-  KEY `right` (`right`)
+  PRIMARY KEY (`directory`,`rights`),
+  KEY `right` (`rights`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='table for storing directory-right information';
 
 DROP TABLE IF EXISTS `document`;
@@ -67,19 +67,19 @@ CREATE TABLE IF NOT EXISTS `documentpart` (
 DROP TABLE IF EXISTS `document_rights`;
 CREATE TABLE IF NOT EXISTS `document_rights` (
   `document` bigint(20) unsigned NOT NULL,
-  `right` bigint(20) unsigned NOT NULL,
+  `rights` bigint(20) unsigned NOT NULL,
   `access` enum('read','write') COLLATE utf8_bin NOT NULL DEFAULT 'read',
-  PRIMARY KEY (`document`,`right`),
-  KEY `right` (`right`)
+  PRIMARY KEY (`document`,`rights`),
+  KEY `right` (`rights`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='table for storing rights of the documents';
 
 DROP TABLE IF EXISTS `domentpart_rights`;
 CREATE TABLE IF NOT EXISTS `domentpart_rights` (
   `documentpart` bigint(20) unsigned NOT NULL,
-  `right` bigint(20) unsigned NOT NULL,
+  `rights` bigint(20) unsigned NOT NULL,
   `access` enum('read','write') COLLATE utf8_bin NOT NULL DEFAULT 'read',
-  PRIMARY KEY (`documentpart`,`right`),
-  KEY `right` (`right`)
+  PRIMARY KEY (`documentpart`,`rights`),
+  KEY `rights` (`rights`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 DROP TABLE IF EXISTS `draft`;
@@ -161,10 +161,10 @@ CREATE TABLE IF NOT EXISTS `media_documentpart` (
 DROP TABLE IF EXISTS `media_rights`;
 CREATE TABLE IF NOT EXISTS `media_rights` (
   `media` bigint(20) unsigned NOT NULL,
-  `right` bigint(20) unsigned NOT NULL,
+  `rights` bigint(20) unsigned NOT NULL,
   `access` enum('read','write') COLLATE utf8_bin NOT NULL DEFAULT 'read',
-  PRIMARY KEY (`media`,`right`),
-  KEY `right` (`right`)
+  PRIMARY KEY (`media`,`rights`),
+  KEY `rights` (`rights`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='table for storing media right connection';
 
 DROP TABLE IF EXISTS `rights`;
@@ -226,19 +226,19 @@ ALTER TABLE `directory_draft`
   ADD CONSTRAINT `directory_draft_ibfk_2` FOREIGN KEY (`directory`) REFERENCES `directory` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 ALTER TABLE `directory_rights`
-  ADD CONSTRAINT `directory_rights_ibfk_2` FOREIGN KEY (`right`) REFERENCES `rights` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `directory_rights_ibfk_2` FOREIGN KEY (`rights`) REFERENCES `rights` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `directory_rights_ibfk_1` FOREIGN KEY (`directory`) REFERENCES `directory` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 ALTER TABLE `documentpart`
   ADD CONSTRAINT `documentpart_ibfk_1` FOREIGN KEY (`document`) REFERENCES `document` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 ALTER TABLE `document_rights`
-  ADD CONSTRAINT `document_rights_ibfk_1` FOREIGN KEY (`document`) REFERENCES `document` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `document_rights_ibfk_2` FOREIGN KEY (`right`) REFERENCES `rights` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+  ADD CONSTRAINT `document_rights_ibfk_2` FOREIGN KEY (`rights`) REFERENCES `rights` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `document_rights_ibfk_1` FOREIGN KEY (`document`) REFERENCES `document` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 ALTER TABLE `domentpart_rights`
-  ADD CONSTRAINT `domentpart_rights_ibfk_1` FOREIGN KEY (`documentpart`) REFERENCES `documentpart` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `domentpart_rights_ibfk_2` FOREIGN KEY (`right`) REFERENCES `rights` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+  ADD CONSTRAINT `domentpart_rights_ibfk_2` FOREIGN KEY (`rights`) REFERENCES `rights` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `domentpart_rights_ibfk_1` FOREIGN KEY (`documentpart`) REFERENCES `documentpart` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 ALTER TABLE `draft`
   ADD CONSTRAINT `draft_ibfk_1` FOREIGN KEY (`owner`) REFERENCES `user` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
@@ -266,8 +266,8 @@ ALTER TABLE `media_documentpart`
   ADD CONSTRAINT `media_documentpart_ibfk_2` FOREIGN KEY (`documentpart`) REFERENCES `documentpart` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 ALTER TABLE `media_rights`
-  ADD CONSTRAINT `media_rights_ibfk_1` FOREIGN KEY (`media`) REFERENCES `media` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `media_rights_ibfk_2` FOREIGN KEY (`right`) REFERENCES `rights` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+  ADD CONSTRAINT `media_rights_ibfk_2` FOREIGN KEY (`rights`) REFERENCES `rights` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `media_rights_ibfk_1` FOREIGN KEY (`media`) REFERENCES `media` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 ALTER TABLE `substitution`
   ADD CONSTRAINT `substitution_ibfk_1` FOREIGN KEY (`owner`) REFERENCES `user` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;

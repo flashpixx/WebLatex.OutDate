@@ -70,7 +70,7 @@ if ( ($lnSystemItems > 0) && ($laSystemItems[0] == "WebLaTeX") ) {
         case 1 :
             echo "<li class=\"directory collapsed\"><a href=\"#\" rel=\"/WebLaTeX/Settings/\">"._("settings")."</a></li>\n";
             echo "<li class=\"directory collapsed\"><a href=\"#\" rel=\"/WebLaTeX/Help/\">"._("help")."</a></li>\n";
-            echo "<li class=\"file ext_exe\"><a href=\"wl-logout.php?".http_build_query(array("sess" => session_id()))."\">"._("logout")."</a></li>\n";
+            echo "<li class=\"file ext_exe\"><a href=\"wl-logout.php?".http_build_query(array("sess" => session_id()))."\">"._("logout")." (".$loUser->getName().")</a></li>\n";
             break;
             
         case 2 :

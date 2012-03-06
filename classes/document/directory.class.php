@@ -374,6 +374,30 @@ class directory implements basedocument {
         return $this->moOwner;
     }
     
+    /** adds a right or changes the access of the right
+     * @param $poRight right object
+     * @param $plWrite write access
+     **/
+    function addRight( $poRight, $plWrite = false ) {
+        if (!($poRight instanceof man\right))
+            wl\main::phperror( "first argument must be a right object", E_USER_ERROR );
+        if (!is_bool($plWrite))
+            wl\main::phperror( "second argument must be a boolean value", E_USER_ERROR );
+        
+        $access = $plWrite ? "write" : "read";
+        $this->moDB->Execute("INSERT INTO directory_rights VALUES (?,?,?) ON DUPLICATE KEY UPDATE access=?", array($this->mnID, $poRight->getID(), $access, $access));
+    }
+    
+    /** deletes a right 
+     * @param $poRight right object
+     **/
+    function deleteRight( $poRight ) {
+        if (!($poRight instanceof man\right))
+            wl\main::phperror( "argument must be a right object", E_USER_ERROR );
+        
+        $this->moDB->Execute("DELETE FROM directory_rights WHERE directory=? AND rights=?", array($this->mnID, $poRight->getID()));
+    }
+    
     /** returns an array with right objects
      * @param $pcType type of the right, empty all rights, "write" only write access, "read" only read access
      * @return array with rights
@@ -387,7 +411,7 @@ class directory implements basedocument {
         $la = array();
         if (!$loResult->EOF)
             foreach($loResult as $laRow)
-            array_push($la, new man\right($laRow["right"]));
+                array_push($la, new man\right(intval($laRow["rights"])));
         
         return $la;
     }

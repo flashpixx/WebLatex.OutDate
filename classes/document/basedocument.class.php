@@ -49,6 +49,17 @@ interface basedocument extends \weblatex\base {
      **/
     function getRights($pcType = null);
     
+    /** adds a right or changes the access of the right
+     * @param $poRight right object
+     * @param $plWrite write access
+     **/
+    function addRight( $poRight, $plWrite = false );
+    
+    /** deletes a right 
+     * @param $poRight right object
+     **/
+    function deleteRight( $poRight );
+    
 }
 
 

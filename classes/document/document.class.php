@@ -176,6 +176,21 @@ class document implements baseedit {
         
     }
     
+    /** adds a right or changes the access of the right
+     * @param $poRight right object
+     * @param $plWrite write access
+     **/
+    function addRight( $poRight, $plWrite = false ) {
+        
+    }
+    
+    /** deletes a right 
+     * @param $poRight right object
+     **/
+    function deleteRight( $poRight ) {
+        
+    }
+    
     /** creates the lock of the document
      * @param $poUser user object
      **/

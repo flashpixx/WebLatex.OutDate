@@ -328,11 +328,13 @@ class draft implements basedocument {
     
     /** adds a right or changes the access of the right
      * @param $poRight right object
-     * @param $plWrite access
+     * @param $plWrite write access
      **/
     function addRight( $poRight, $plWrite = false ) {
         if (!($poRight instanceof man\right))
             wl\main::phperror( "first argument must be a right object", E_USER_ERROR );
+        if (!is_bool($plWrite))
+            wl\main::phperror( "second argument must be a boolean value", E_USER_ERROR );
         
         $access = $plWrite ? "write" : "read";
         $this->moDB->Execute("INSERT INTO draft_rights VALUES (?,?,?) ON DUPLICATE KEY UPDATE access=?", array($this->mnID, $poRight->getID(), $access, $access));
@@ -345,7 +347,7 @@ class draft implements basedocument {
         if (!($poRight instanceof man\right))
             wl\main::phperror( "argument must be a right object", E_USER_ERROR );
         
-        $this->moDB->Execute("DELETE FROM draft_rights WHERE draft=? AND right=?", array($this->mnID, $poRight->getID()));
+        $this->moDB->Execute("DELETE FROM draft_rights WHERE draft=? AND rights=?", array($this->mnID, $poRight->getID()));
     }
     
     /** returns an array with right objects
@@ -361,7 +363,7 @@ class draft implements basedocument {
         $la = array();
         if (!$loResult->EOF)
             foreach($loResult as $laRow)
-                array_push($la, new man\right($laRow["right"]));
+                array_push($la, new man\right(intval($laRow["rights"])));
         
         return $la;
     }
