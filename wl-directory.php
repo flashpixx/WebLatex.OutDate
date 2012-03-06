@@ -45,10 +45,10 @@ $loUser = null;
 if (isset($_GET["sess"]))
     @session_id($_GET["sess"]);
 @session_start();
-    
+
 if ( (isset($_SESSION["weblatex::loginuser"])) && ($_SESSION["weblatex::loginuser"] instanceof wm\user) )
     $loUser = $_SESSION["weblatex::loginuser"];
-
+    
 $lcPath = null;
 if (isset($_POST["dir"]))
     $lcPath = urldecode($_POST["dir"]);

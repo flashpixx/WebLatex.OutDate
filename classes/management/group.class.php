@@ -33,7 +33,7 @@ require_once( dirname(dirname(__DIR__))."/config.inc.php" );
     
 
 /** class of representation a group with the database **/
-class group implements \Serializable, \weblatex\base {
+class group implements \weblatex\base {
 	
     /** group name **/
     private $mcName    = null;
@@ -41,6 +41,8 @@ class group implements \Serializable, \weblatex\base {
     private $mnID      = null;
     /** system group **/
     private $mlSystem  = false;
+    /** database object **/
+    private $moDB      = null;
     
     
     
@@ -55,7 +57,6 @@ class group implements \Serializable, \weblatex\base {
         
         $loDB     = wl\main::getDatabase();
         $loResult = $loDB->Execute( "SELECT id FROM groups WHERE name=?", array($pcName) );
-        
         if (!$loResult->EOF)
             throw new \Exception( "group [".$pcName."] exists" );
         
@@ -107,12 +108,14 @@ class group implements \Serializable, \weblatex\base {
         if ( (!is_numeric($px)) && (!is_string($px)) && (!($px instanceof $this)) )
             wl\main::phperror( "argument must be a numeric, string or group object value", E_USER_ERROR );
         
+        $this->moDB = wl\main::getDatabase();
+        
         if (is_numeric($px))
-            $loResult = wl\main::getDatabase()->Execute( "SELECT name, id, system FROM groups WHERE id=?", array($px) );
+            $loResult = $this->moDB->Execute( "SELECT name, id, system FROM groups WHERE id=?", array($px) );
         if ($px instanceof $this)
-            $loResult = wl\main::getDatabase()->Execute( "SELECT name, id, system FROM groups WHERE id=?", array($px->getID()) );
+            $loResult = $this->moDB->Execute( "SELECT name, id, system FROM groups WHERE id=?", array($px->getID()) );
         if (is_string($px))
-            $loResult = wl\main::getDatabase()->Execute( "SELECT name, id, system FROM groups WHERE name=?", array($px) );
+            $loResult = $this->moDB->Execute( "SELECT name, id, system FROM groups WHERE name=?", array($px) );
         
         if ($loResult->EOF)
             throw new \Exception( "group data not found" );
@@ -150,7 +153,7 @@ class group implements \Serializable, \weblatex\base {
         if (!($poUser instanceof user))
             wl\main::phperror( "argument must be a user object", E_USER_ERROR );
         
-        wl\main::getDatabase()->Execute("INSERT IGNORE INTO user_groups VALUES (?,?)", array($poUser->getUID(), $this->mnID));
+        $this->moDB->Execute("INSERT IGNORE INTO user_groups VALUES (?,?)", array($poUser->getUID(), $this->mnID));
     }
     
     /** removes a user from a group
@@ -160,7 +163,7 @@ class group implements \Serializable, \weblatex\base {
         if (!($poUser instanceof user))
             wl\main::phperror( "argument must be a user object", E_USER_ERROR );
         
-        wl\main::getDatabase()->Execute("DELETE FROM user_groups WHERE user=? AND groupid=?", array($poUser->getUID(), $this->mnID));
+        $this->moDB->Execute("DELETE FROM user_groups WHERE user=? AND groupid=?", array($poUser->getUID(), $this->mnID));
     }
     
     /** check if a user within this group
@@ -171,7 +174,7 @@ class group implements \Serializable, \weblatex\base {
         if (!($poUser instanceof user))
             wl\main::phperror( "argument must be a user object", E_USER_ERROR );
         
-        $loResult = wl\main::getDatabase()->Execute("SELECT user FROM user_groups WHERE user=? AND groupid=?", array($poUser->getUID(), $this->mnID));
+        $loResult = $this->moDB->Execute("SELECT user FROM user_groups WHERE user=? AND groupid=?", array($poUser->getUID(), $this->mnID));
         return !$loResult->EOF;
     }
     
@@ -180,7 +183,7 @@ class group implements \Serializable, \weblatex\base {
      * @return array with userobjects
      **/
     function getUser() {
-        $loResult = wl\main::getDatabase()->Execute("SELECT user FROM user_groups WHERE groupid=?", array($this->mnID));
+        $loResult = $this->moDB->Execute("SELECT user FROM user_groups WHERE groupid=?", array($this->mnID));
         
         $la = array();
         if (!$loResult->EOF)
@@ -197,23 +200,6 @@ class group implements \Serializable, \weblatex\base {
         if ($this->mlSystem)
             $lc .= " | System";
         return $lc.")";
-    }
-    
-    /** serializable method
-     * @return serialized string
-     **/
-    function serialize() {
-        return serialize( array("id" => $this->mnID, "name" => $this->mcName, "system" => $this->mlSystem) );
-    }
-    
-    /** unserialize method
-     * @param $pc string
-     **/
-    function unserialize($pc) {
-        $la             = unserialize($pc);
-        $this->mnID     = $la["id"];
-        $this->mcName   = $la["name"];
-        $this->mlSystem = $la["system"];
     }
     
     /** checks if another group object points to the same group id

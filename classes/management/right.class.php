@@ -32,7 +32,7 @@ require_once( dirname(__DIR__)."/main.class.php" );
     
 
 /** class of representation a right with the database **/
-class right implements \Serializable, \weblatex\base {
+class right implements \weblatex\base {
     
     /** right name **/
     private $mcName    = null;
@@ -40,6 +40,8 @@ class right implements \Serializable, \weblatex\base {
     private $mnID      = null;
     /** system right **/
     private $mlSystem  = false;
+    /** database object **/
+    private $moDB      = null;
     
     
     
@@ -160,12 +162,14 @@ class right implements \Serializable, \weblatex\base {
         if ( (!is_numeric($px)) && (!is_string($px)) && (!($px instanceof $this)) )
             wl\main::phperror( "argument must be a numeric, string or right object value", E_USER_ERROR );
         
+        $this->moDB = wl\main::getDatabase();
+        
         if (is_numeric($px))
-            $loResult = wl\main::getDatabase()->Execute( "SELECT name, id, system FROM rights WHERE id=?", array($px) );
+            $loResult = $this->moDB->Execute( "SELECT name, id, system FROM rights WHERE id=?", array($px) );
         if ($px instanceof $this)
-            $loResult = wl\main::getDatabase()->Execute( "SELECT name, id, system FROM rights WHERE id=?", array($px->getID()) );
+            $loResult = $this->moDB->Execute( "SELECT name, id, system FROM rights WHERE id=?", array($px->getID()) );
         if (is_string($px))
-            $loResult = wl\main::getDatabase()->Execute( "SELECT name, id, system FROM rights WHERE name=?", array($px) );
+            $loResult = $this->moDB->Execute( "SELECT name, id, system FROM rights WHERE name=?", array($px) );
         
         if ($loResult->EOF) 
             throw new \Exception( "right data not found" );
@@ -201,7 +205,7 @@ class right implements \Serializable, \weblatex\base {
      * @return array with groupobjects
      **/
     function getGroups() {
-        $loResult = wl\main::getDatabase()->Execute("SELECT group FROM group_rights WHERE rights=?", array($this->mnID));
+        $loResult = $this->moDB->Execute("SELECT group FROM group_rights WHERE rights=?", array($this->mnID));
         
         $la = array();
         if (!$loResult->EOF)
@@ -216,7 +220,7 @@ class right implements \Serializable, \weblatex\base {
      * @return array with userobjects
      **/
     function getUser() {
-        $loResult = wl\main::getDatabase()->Execute("SELECT user FROM user_rights WHERE rights=?", array($this->mnID));
+        $loResult = $this->moDB->Execute("SELECT user FROM user_rights WHERE rights=?", array($this->mnID));
         
         $la = array();
         if (!$loResult->EOF)
@@ -242,9 +246,9 @@ class right implements \Serializable, \weblatex\base {
             wl\main::phperror( "argument must be a user or group object", E_USER_ERROR );
         
         if ($px instanceof user)
-            $loResult = wl\main::getDatabase()->Execute("SELECT user FROM user_rights WHERE user=? AND rights=?", array($px->getID(), $this->mnID));
+            $loResult = $this->moDB->Execute("SELECT user FROM user_rights WHERE user=? AND rights=?", array($px->getID(), $this->mnID));
         else
-            $loResult = wl\main::getDatabase()->Execute("SELECT group FROM group_rights WHERE group=? AND rights=?", array($px->getID(), $this->mnID));
+            $loResult = $this->moDB->Execute("SELECT group FROM group_rights WHERE group=? AND rights=?", array($px->getID(), $this->mnID));
 
         return !$loResult->EOF;
     }
@@ -257,9 +261,9 @@ class right implements \Serializable, \weblatex\base {
             wl\main::phperror( "argument must be a user or group object", E_USER_ERROR );
         
         if ($px instanceof user)
-            $loResult = wl\main::getDatabase()->Execute("INSERT IGNORE INTO user_rights VALUES (?,?)", array($px->getID(), $this->mnID));
+            $loResult = $this->moDB->Execute("INSERT IGNORE INTO user_rights VALUES (?,?)", array($px->getID(), $this->mnID));
         else
-            $loResult = wl\main::getDatabase()->Execute("INSERT IGNORE INTO  group_rights VALUES (?,?)", array($px->getID(), $this->mnID));
+            $loResult = $this->moDB->Execute("INSERT IGNORE INTO  group_rights VALUES (?,?)", array($px->getID(), $this->mnID));
     }
     
     /** removes the right of the group or user
@@ -270,9 +274,9 @@ class right implements \Serializable, \weblatex\base {
             wl\main::phperror( "argument must be a user or group object", E_USER_ERROR );
         
         if ($px instanceof user)
-            wl\main::getDatabase()->Execute("DELETE FROM user_rights WHERE user=? AND rights=?", array($px->getID(), $this->mnID));
+            $this->moDB->Execute("DELETE FROM user_rights WHERE user=? AND rights=?", array($px->getID(), $this->mnID));
         else
-            wl\main::getDatabase()->Execute("DELETE FROM group_rights WHERE group=? AND rights=?", array($px->getID(), $this->mnID));
+            $this->moDB->Execute("DELETE FROM group_rights WHERE group=? AND rights=?", array($px->getID(), $this->mnID));
     }
     
     /** print method of the object
@@ -283,23 +287,6 @@ class right implements \Serializable, \weblatex\base {
         if ($this->mlSystem)
             $lc .= " | System";
         return $lc.")";
-    }
-    
-    /** serializable method
-     * @return serialized string
-     **/
-    function serialize() {
-        return serialize( array("id" => $this->mnID, "name" => $this->mcName, "system" => $this->mlSystem) );
-    }
-    
-    /** unserialize method
-     * @param $pc string
-     **/
-    function unserialize($pc) {
-        $la             = unserialize($pc);
-        $this->mnID     = $la["id"];
-        $this->mcName   = $la["name"];
-        $this->mlSystem = $la["system"];
     }
     
     /** checks if another right object points to the same right id

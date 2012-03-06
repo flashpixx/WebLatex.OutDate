@@ -31,12 +31,14 @@ require_once( dirname(__DIR__)."/main.class.php" );
 
 
 /** class of representation a user with the database **/
-class user implements \Serializable, \weblatex\base {
+class user implements \weblatex\base {
     
     /** username **/
     private $mcName    = null;
     /* user id **/
     private $mnID      = null;
+    /** database object **/
+    private $moDB      = null;
 
     
     
@@ -93,12 +95,14 @@ class user implements \Serializable, \weblatex\base {
         if ( (!is_numeric($px)) && (!is_string($px)) && (!($px instanceof $this)) )
             wl\main::phperror( "argument must be a numeric, string or user object value", E_USER_ERROR );
         
+        $this->moDB = wl\main::getDatabase();
+        
         if (is_numeric($px))
-            $loResult = wl\main::getDatabase()->Execute( "SELECT name, id FROM user WHERE id=?", array($px) );
+            $loResult = $this->moDB->Execute( "SELECT name, id FROM user WHERE id=?", array($px) );
         if ($px instanceof $this)
-            $loResult = wl\main::getDatabase()->Execute( "SELECT name, id FROM user WHERE id=?", array($px->getID()) );
+            $loResult = $this->moDB->Execute( "SELECT name, id FROM user WHERE id=?", array($px->getID()) );
         if (is_string($px))
-            $loResult = wl\main::getDatabase()->Execute( "SELECT name, id FROM user WHERE name=?", array($px) );
+            $loResult = $this->moDB->Execute( "SELECT name, id FROM user WHERE name=?", array($px) );
         
         if ($loResult->EOF)
             throw new \Exception( "user data not found" );
@@ -112,7 +116,7 @@ class user implements \Serializable, \weblatex\base {
      * @return boolean if authentification is correct
      **/
     function authentificate( $pcPassword ) {
-        $loResult = wl\main::getDatabase()->Execute( "SELECT hash FROM user WHERE id=?", array($this->mnID) );
+        $loResult = $this->moDB->Execute( "SELECT hash FROM user WHERE id=?", array($this->mnID) );
         if ($loResult->EOF)
             wl\main::phperror( "user record not found", E_USER_ERROR );
         
@@ -137,21 +141,21 @@ class user implements \Serializable, \weblatex\base {
      * @param $pcPassword password string
      **/
     function changePassword( $pcPassword ) {
-        wl\main::getDatabase()->Execute( "UPDATE user SET hash=? WHERE id=?", array(wl\main::generateHash($pcPassword), $this->mnID) );
+        $this->moDB->Execute( "UPDATE user SET hash=? WHERE id=?", array(wl\main::generateHash($pcPassword), $this->mnID) );
     }
     
     /** change the login state
      * @param $plState boolean for enable (true) or disable (false) login
      **/
     function changeLoginState( $plState ) {
-        wl\main::getDatabase()->Execute( "UPDATE user SET loginenable=? WHERE id=?", array( ($plState ? "true" : "false"), $this->mnID) );
+        $this->moDB->Execute( "UPDATE user SET loginenable=? WHERE id=?", array( ($plState ? "true" : "false"), $this->mnID) );
     }
     
     /** returns the login option
      * @return boolean, true login is enabled
      **/
     function canLogin() {
-        $loResult = wl\main::getDatabase()->Execute("SELECT loginenable FROM user WHERE id=?", array($this->mnID));
+        $loResult = $this->moDB->Execute("SELECT loginenable FROM user WHERE id=?", array($this->mnID));
         
         if (!$loResult->EOF)
             return $loResult->fields["loginenable"] === "true";
@@ -167,7 +171,7 @@ class user implements \Serializable, \weblatex\base {
         if (!($poUser instanceof group))
             wl\main::phperror( "argument must be a group object", E_USER_ERROR );
         
-        $loResult = wl\main::getDatabase()->Execute("SELECT user FROM user_groups WHERE groupid=? AND user=?", array($poGroup->getGID(), $this->mnID));
+        $loResult = $this->moDB->Execute("SELECT user FROM user_groups WHERE groupid=? AND user=?", array($poGroup->getGID(), $this->mnID));
         return !$loResult->EOF;
     }
     
@@ -176,7 +180,7 @@ class user implements \Serializable, \weblatex\base {
      * @return array with groupobjects
      **/
     function getGroups() {
-        $loResult = wl\main::getDatabase()->Execute("SELECT groupid FROM user_groups WHERE user=?", array($this->mnID));
+        $loResult = $this->moDB->Execute("SELECT groupid FROM user_groups WHERE user=?", array($this->mnID));
         
         $la = array();
         if (!$loResult->EOF)
@@ -192,22 +196,19 @@ class user implements \Serializable, \weblatex\base {
         return $this->mcName." (".$this->mnID.")";
     }
     
-    /** serializable method
-     * @return serialized string
-     **/
-    function serialize() {
-        return serialize( array("id" => $this->mnID, "name" => $this->mcName) );
+    /** wakeup call for serialization **/
+    function __wakeup() {
+        $this->moDB = wl\main::getDatabase();
     }
     
-    /** unserialize method
-     * @param $pc string
+    /** sleep method for writing down class data
+     * @return array with property names
      **/
-    function unserialize($pc) {
-        $la            = unserialize($pc);
-        $this->mnID    = $la["id"];
-        $this->mcName  = $la["name"];
+    function __sleep()
+    {
+        return array("mnID", "mcName");
     }
-    
+        
     /** checks if another user object points to the same user id
      * @param $poUser user object
      * @return if the user id is equal
