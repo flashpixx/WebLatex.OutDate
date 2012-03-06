@@ -50,73 +50,99 @@ require_once(__DIR__."/config.inc.php");
 require_once(__DIR__."/classes/management/right.class.php");
 require_once(__DIR__."/classes/management/user.class.php");
 require_once(__DIR__."/classes/document/draft.class.php");
+require_once(__DIR__."/classes/document/document.class.php");
 
     
+/** function for creating error XML structure
+ * @param $poXML DOM XML object
+ * @param $pcMsg error message
+ * @return XML string
+ **/
+function createErrorMsg($poXML, $pcMsg) {
+    $loRoot = $poXML->createElement( "error" );
+    $poXML->appendChild($loRoot);
+    
+    $loAttr = $poXML->createAttribute("statuscode");
+    $loAttr->value = "404";
+    $loRoot->appendChild( $loAttr );
+    
+    $loAttr = $poXML->createAttribute("message");
+    $loAttr->value = $pcMsg;
+    $loRoot->appendChild( $loAttr );
+    
+    return $poXML->saveXML();
+}
+    
+    
+    
+    
 // read session manually    
-$loUser = null;    
-
 if (isset($_GET["sess"]))
     @session_id($_GET["sess"]);
 @session_start();
-    
-if ( (isset($_SESSION["weblatex::loginuser"])) && ($_SESSION["weblatex::loginuser"] instanceof wm\user) )
-    $loUser = $_SESSION["weblatex::loginuser"];
-
-    
     
 // generate return XML
 header("Content-type: text/xml");
 $loXML = new DOMDocument("1.0", "UTF-8");
 
-// user session not found
-if (empty($loUser)) {
-    $loRoot = $loXML->createElement( "error" );
-    $loXML->appendChild($loRoot);
     
-    $loAttr = $loXML->createAttribute("statuscode");
-    $loAttr->value = "404";
-    $loRoot->appendChild( $loAttr );
-
-    $loAttr = $loXML->createAttribute("message");
-    $loAttr->value = _("no active user session found");
-    $loRoot->appendChild( $loAttr );
     
-    echo $loXML->saveXML();
+// check user session
+if ( (!isset($_SESSION["weblatex::loginuser"])) || (!($_SESSION["weblatex::loginuser"] instanceof wm\user)) ) {
+    echo createErrorMsg($loXML, _("no active user session found"));
     exit();
 }
 
-// try to read draft id
+// read user data
+$loUser = $_SESSION["weblatex::loginuser"];
+
+
+// try to read the id
 if (!isset($_GET["id"])) {
-    $loRoot = $loXML->createElement( "error" );
-    $loXML->appendChild($loRoot);
+    echo createErrorMsg($loXML, _("document id not found"));
+    exit();
+}
+
+// try to determine the document type
+if ( (!isset($_GET["type"])) || ($_GET["type"] != "draft") && ($_GET["type"] != "dcoument") ) {
+    echo createErrorMsg($loXML, _("document type can not be detected"));
+    exit();
+}
     
-    $loAttr = $loXML->createAttribute("statuscode");
-    $loAttr->value = "404";
-    $loRoot->appendChild( $loAttr );
+// create the document object
+$loDocument = null;
+switch ($_GET["type"]) {
+    case "draft"        : $loDocument = new doc\draft(intval($_GET["id"]));     break;
+    case "document"     : $loDocument = new doc\document(intval($_GET["id"]));  break;
+}
+  
     
-    $loAttr = $loXML->createAttribute("message");
-    $loAttr->value = _("draft id not found");
-    $loRoot->appendChild( $loAttr );
-    
-    echo $loXML->saveXML();
+// check content and document data
+if ( (empty($loDocument)) || (!isset($_POST["content"])) ) {
+    echo createErrorMsg($loXML, _("document can not be created"));
     exit();
 }
     
     
-// create draft object and write data
-if (isset($_POST["content"])) {
-    $loDraft = new doc\draft(intval($_GET["id"]));
-    $loDraft->refreshLock($loUser);
-    
-    if ( ($loUser->isEqual($loDraft->getOwner())) ||
-         ($loDraftRight->hasRigh($loUser)) ||
-         (wm\right::hasOne($loUser, $loDraft->getRights("write"))) ||
-         (wl\main::any( wm\right::hasOne($loUser->getGroups(), $loDraft->getRights("write")) ))
-       ) {
-        $loDraft->setContent($_POST["content"]);
-        $loDraft->save();
-    }
+// we check the lock state
+$loLockedUser = $loDocument->hasLock();
+if ($loLockedUser instanceof wm\user) {
+    echo createErrorMsg($loXML, _("draft is locked by")." [".$loLockedUser->getName()."]");
+    exit();
 }
+    
+// no lock, so we check the access to the draft,
+// on write access, we refresh the lock and set the data
+if ($loDocument->getAccess($loUser) != "w") {
+    echo createErrorMsg($loXML, _("no write access"));
+    exit();
+}
+        
+
+// write data
+$loDocument->refreshLock($loUser);
+$loDocument->setContent($_POST["content"]);
+$loDocument->save();
 
     
 // we can exit normally

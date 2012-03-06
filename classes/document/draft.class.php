@@ -247,7 +247,7 @@ class draft implements basedocument {
         $laGroups = $poUser->getGroups();
         
         // check if a user group has admin or draft right
-        if ( (wl\main::any( man\right::hasOne($laGroups, $loDraftRight))) || (wl\main::any( man\right::hasOne($laGroups, $loAdminRight))) )
+        if ( (wl\main::any( man\right::hasOne($laGroups, array($loDraftRight)))) || (wl\main::any( man\right::hasOne($laGroups, array($loAdminRight)))) )
             return "w";
         
         
@@ -295,7 +295,7 @@ class draft implements basedocument {
     }
     
     /** returns the user object if a lock exists
-     * @return null or use object
+     * @return null (for no lock) or use object
     **/
     function hasLock() {
         $loResult = $this->moDB->Execute("SELECT user FROM draft_lock WHERE draft=? AND session <> ?", array($this->mnID, session_id()));

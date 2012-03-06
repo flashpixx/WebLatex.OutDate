@@ -96,8 +96,8 @@ class theme {
         
             // add jQuery data for visualization
             echo "<script type=\"text/javascript\">\n";
-            echo "  var goRefreshLock     = null;\n";
-            echo "  var gcOldURLParameter = null;\n";
+            echo "  var goRefreshLock        = null;\n";
+            echo "  var goLoadedURLParameter = null;\n";
             echo "\n";
             echo "  $(document).ready( function() {\n";
             echo "      $('#weblatex-directory').fileTree(\n";
@@ -112,10 +112,10 @@ class theme {
             echo "                  return;\n";
             echo "\n";
             echo "              var lcURL            = null;\n";
-            echo "              var lcURLParameter   = $.param( { sess : '".session_id()."', id : laItem[1], type : laItem[0] } );\n";
+            echo "              var loURLParameter   = { sess : '".session_id()."', id : laItem[1], type : laItem[0] };\n";
             echo "\n";
             echo "              if (laItem[0] == 'draft')\n";
-            echo "                  lcURL = 'wl-editdraft.php?'+lcURLParameter;\n";
+            echo "                  lcURL = 'wl-editdraft.php?'+$.param(loURLParameter);\n";
             echo "              if (laItem[0] == 'url')\n";
             echo "                  lcURL = laItem[1];\n";
             echo "\n";
@@ -127,25 +127,25 @@ class theme {
             echo "                          if (loEditor) {\n";
             echo "                              loEditor.destroy();\n";
             echo "                              clearInterval(goRefreshLock);\n";
-            echo "                              if (gcOldURLParameter != null)\n";
-            echo "                                  $.ajax( { url : 'wl-unlock.php?'+gcOldURLParameter } );\n"; 
+            echo "                              if (goLoadedURLParameter != null)\n";
+            echo "                                  $.ajax( { url : 'wl-unlock.php?'+$.param(goLoadedURLParameter) } );\n"; 
             echo "                          }\n";
             echo "\n";
-            echo "                          gcOldURLParameter = lcURLParameter;\n";
-            echo "                          goRefreshLock = setInterval( function() { $.ajax( { url : 'wl-refreshlock.php?'+lcURLParameter } ); }, ".(wl\config::autosavetime*1000).");\n";
+            echo "                          goLoadedURLParameter = loURLParameter;\n";
+            echo "                          goRefreshLock = setInterval( function() { $.ajax( { url : 'wl-refreshlock.php?'+$.param(loURLParameter) } ); }, ".(wl\config::autosavetime*1000).");\n";
             echo "                          $('#weblatex-content').html(pcData).fadeIn('slow');\n";
             echo "\n";
             echo "                          $('#weblatex-editor').ckeditor({\n";
             echo "                              skin                : 'office2003',\n";
             echo "                              autoParagraph       : false,\n";
             echo "                              extraPlugins        : 'autosave',\n";
-            echo "                              autosaveTargetUrl   : 'wl-autosavedraft.php?'+lcURLParameter,\n";
+            echo "                              autosaveTargetUrl   : 'wl-autosave.php?'+$.param(loURLParameter),\n";
             echo "                              autosaveRefreshTime : ".wl\config::autosavetime.",\n";
             echo "                              toolbar             : [\n";
-            echo "                                  { name: 'document',    items : [ 'Save', 'NewPage','DocProps','Print'] },\n";
+            echo "                                  { name: 'document',    items : [ 'NewPage','Autosave','DocProps','Print'] },\n";
             echo "                                  { name: 'clipboard',   items : [ 'Cut','Copy','Paste','PasteText','PasteFromWord','-','Undo','Redo' ] },\n";
             echo "                                  { name: 'editing',     items : [ 'Find','Replace','-','SelectAll','-','SpellChecker', 'Scayt' ] },\n";
-            echo "                                  { name: 'tools',       items : [ 'Autosave', 'Maximize','-','About' ] },\n";
+            echo "                                  { name: 'tools',       items : [ 'Maximize','-','About' ] },\n";
             echo "                                  '/',\n";
             echo "                                  { name: 'basicstyles', items : [ 'Bold','Italic','Underline','-','RemoveFormat' ] },\n";
             echo "                                  { name: 'paragraph',   items : [ 'NumberedList','BulletedList','-','Blockquote','-','JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock' ] },\n";
