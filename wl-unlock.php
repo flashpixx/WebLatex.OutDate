@@ -22,6 +22,20 @@
  ############################################################################
  @endcond
  **/
+    
+/**
+ * @file wl-unlock.php
+ * @brief unlocks a document or draft
+ *
+ * The file removes a lock on a document or draft
+ *
+ *
+ * @var object $loUser
+ * logged-in user object
+ *
+ * @var object $loDraft
+ * draft object that should be unlocked
+ **/
 
 
 use weblatex\management as wm;
@@ -39,7 +53,7 @@ $loUser = wm\session::getLoggedInUser();
 if ( (!empty($loUser)) && (isset($_GET["id"])) && (isset($_GET["type"])) )
     
     // check which document should be unlocked
-    switch (strtolower($_GET["type"])) {
+    switch ($_GET["type"]) {
     
         case "draft" :
             $loDraft    = new doc\draft( intval($_GET["id"]) );

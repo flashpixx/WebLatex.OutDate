@@ -22,7 +22,32 @@
  ############################################################################
  @endcond
  **/
-
+    
+/** @file wl-directory.php
+ * @brief file for creating the directory structure
+ * @see http://www.abeautifulsite.net/blog/2008/03/jquery-file-tree
+ *
+ * The file creates the jQuery return values for the directory structure
+ * (a HTML ul list). Also creates it the main default options and checks
+ * before the list elements are create the accessibility with the user data
+ *
+ * @var string $lcPath
+ * string reprensation of the directory path
+ *
+ * @var array $laSystemItems
+ * array with the seperated directory data
+ * 
+ * @var string $lcAccess
+ * temporary variable for the access value (w, r, null)
+ *
+ * @var uint $lnSystemItems
+ * number of items of the $laSystemItems array
+ *
+ * @var object $loUser
+ * logged-in user object
+ **/
+    
+    
     
 use weblatex as wl;
 use weblatex\management as wm;
@@ -65,7 +90,7 @@ if ( ($lnSystemItems > 0) && ($laSystemItems[0] == "WebLaTeX") ) {
         case 1 :
             echo "<li class=\"directory collapsed\"><a href=\"#\" rel=\"/WebLaTeX/Settings/\">"._("settings")."</a></li>\n";
             echo "<li class=\"directory collapsed\"><a href=\"#\" rel=\"/WebLaTeX/Help/\">"._("help")."</a></li>\n";
-            echo "<li class=\"file ext_exe\"><a href=\"wl-logout.php?".http_build_query(array("sess" => session_id()))."\">"._("logout")." (".$loUser->getName().")</a></li>\n";
+            echo "<li class=\"file ext_exe\"><a href=\"wl-logout.php?".wm\session::buildURLParameter()."\">"._("logout")." (".$loUser->getName().")</a></li>\n";
             break;
             
         case 2 :
@@ -73,7 +98,7 @@ if ( ($lnSystemItems > 0) && ($laSystemItems[0] == "WebLaTeX") ) {
             switch ($laSystemItems[1]) {
             
                 case "Settings" :
-                    echo "<li class=\"file ext_exe\"><a href=\"#\" rel=\"url\$wl-password.php?".http_build_query(array("sess" => session_id()))."\">"._("change password")."</a></li>\n";
+                    echo "<li class=\"file ext_exe\"><a href=\"#\" rel=\"url\$wl-password.php?".wm\session::buildURLParameter()."\">"._("change password")."</a></li>\n";
                     break;
             
                 case "Help" :

@@ -29,12 +29,13 @@
  * This file destroys the session and remove all locks of the documents
  *
  *
- * @var object $loTheme
- * theme object for showing the HTML content
- *
  * @var object $loUser
  * user object, that will be stored within the session and identify the logged-in user
+ *
+ * @var object $loDB
+ * database object for removing the session locks
  **/
+    
     
     
 use weblatex as wl;

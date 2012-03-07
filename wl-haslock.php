@@ -22,6 +22,38 @@
  ############################################################################
  @endcond
  **/
+    
+/**
+ * @file wl-haslock.php
+ * @brief file for checking if a lock exists on a document or draft
+ *
+ * The file checks on a document or draft the lock with the user session
+ * data and returns a XML document, that is empty if there is no lock
+ * or the lock is created by the current user, otherwise it results
+ * the tree with the user data and id of the lock
+ *
+ *
+ * @var object $loUser
+ * logged-in user object
+ *
+ * @var object $loXML
+ * DOM XML object for creating the XML content
+ *
+ * @var object $loRoot
+ * DOM XML node, that represents the root element
+ *
+ * @var object $loDocument
+ * document or draft object that is checked for the lock state
+ *
+ * @var object $loLockedUser
+ * user object of the locked user or empty if there is no lock
+ *
+ * @var object $loXMLUser
+ * XML object for the node that represent the locked user data
+ *
+ * @var object $loAttr
+ * DOM XML attribute object, for adding the data to the node
+ **/
 
 
 use weblatex\management as wm;

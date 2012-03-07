@@ -23,7 +23,7 @@
  @endcond
  **/
 
-/** @file wl-autosavedraft.php
+/** @file wl-autosave.php
  * @brief file that connects the autosave CKEditor plugin with the database
  *
  * The file is called by the autosave CKEditor autosave plugin and stores
@@ -41,6 +41,7 @@
  * XML attribute object
  **/
     
+  
     
 use weblatex as wl;
 use weblatex\management as wm;

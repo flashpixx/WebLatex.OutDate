@@ -22,7 +22,30 @@
  ############################################################################
  @endcond
  **/
+    
+/**
+ * @file wl-editdraft.php
+ * @brief file for creating the HTML code of the editing draft data
+ *
+ * The file does not create the editor code, it creates only the content
+ * of the div element, in which the editor is loaded via jQuery. Also
+ * the script sets the global locked variable for enabeling / disabling
+ * the editor interface. The variable must be set, because the editor
+ * is created after this file is loaded
+ *
+ *
+ * @var object $loDraft
+ * draft object that should be editable
+ *
+ * @var object $loLockedUser
+ * user object if the draft is locked
+ *
+ * @var object $loUser
+ * user object for the logged-in user
+ **/
 
+    
+    
 use weblatex as wl;
 use weblatex\design as wd;
 use weblatex\management as wm;
@@ -59,7 +82,7 @@ echo "<h1>"._("draft")." [".$loDraft->getName()."]</h1>\n";
 if ($loLockedUser instanceof wm\user) {
     echo "<p id=\"weblatex-message\">"._("is locked by")." [".$loLockedUser->GetName()."]</p>\n";
     // set the global lock state, because if this is set, the ckeditor ist not instantiate, so
-    // teh configuration in the main file, used the glisLocked for setting the state. We set
+    // the configuration in the main file, used the glisLocked for setting the state. We set
     // set it here, because only this scripts knows the lock of the draft, otherwise
     // the lock will be refreshed after a while.
     echo "<script type=\"text/javascript\">glisLocked = true;</script>\n";

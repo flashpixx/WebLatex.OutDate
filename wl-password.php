@@ -23,6 +23,13 @@
  @endcond
  **/
 
+/**
+ * @file wl-password.php
+ * @brief file for changing the user password
+ *
+ * The file creates the HTML content for the password change page
+ * and runs the changing code
+ **/
     
 use weblatex as wl;
 use weblatex\management as wm;

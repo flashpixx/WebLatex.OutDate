@@ -337,7 +337,6 @@ class directory implements basedocument {
     
     /** adds a new child to the directory
      * @param $po draft, document or directory object
-     * @todo must check that the name and type of an object is unique within the directory
      **/
     function addChild($po){
         if ( (!($po instanceof draft)) && (!($po instanceof document)) )

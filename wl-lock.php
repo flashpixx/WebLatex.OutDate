@@ -23,7 +23,22 @@
  @endcond
  **/
 
-
+/**
+ * @file wl-lock.php
+ * @brief file for locking / refreshing a document lock
+ *
+ * The file creates with the session parameters a lock on
+ * a draft or refresh a existing lock for the user
+ *
+ *
+ * @var object $loUser
+ * logged-in user object
+ *
+ * @var object $loDoc
+ * document / draft object, on which the lock should be
+ * created or refreshed
+ **/
+    
 use weblatex\management as wm;
 use weblatex\document as doc;
 
