@@ -30,6 +30,7 @@ use weblatex\document as doc;
     
 require_once(__DIR__."/config.inc.php");
 require_once(__DIR__."/classes/main.class.php");
+require_once(__DIR__."/classes/management/session.class.php");
 require_once(__DIR__."/classes/management/right.class.php");
 require_once(__DIR__."/classes/management/user.class.php");
 require_once(__DIR__."/classes/management/group.class.php");
@@ -40,14 +41,8 @@ require_once(__DIR__."/classes/document/directory.class.php");
     
 // read session manually and set language
 wl\main::initLanguage();
-$loUser = null;    
-    
-if (isset($_GET["sess"]))
-    @session_id($_GET["sess"]);
-@session_start();
-
-if ( (isset($_SESSION["weblatex::loginuser"])) && ($_SESSION["weblatex::loginuser"] instanceof wm\user) )
-    $loUser = $_SESSION["weblatex::loginuser"];
+wm\session::init();
+$loUser = wm\session::getLoggedInUser();
     
 $lcPath = null;
 if (isset($_POST["dir"]))
@@ -106,8 +101,11 @@ if ( ($lnSystemItems > 0) && ($laSystemItems[0] == "myDrafts") ) {
     
     
     
-// add database content
+// add database content (and check access to the directory first)
 $loDirectory = new doc\directory($lcPath);
+$lcAccess    = $loDirectory->getAccess($loUser);
+if (empty($lcAccess))
+    exit();
     
 // if we within the root node, add the system menu nodes
 if ($loDirectory->isRoot()) {

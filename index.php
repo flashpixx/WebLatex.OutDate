@@ -48,7 +48,7 @@ use weblatex\management as wm;
     
 require_once(__DIR__."/classes/design/theme.class.php");
 require_once(__DIR__."/classes/management/user.class.php");
-
+require_once(__DIR__."/classes/management/session.class.php");
     
     
 // create theme and run initialization
@@ -70,13 +70,13 @@ if ( (empty($loUser)) && (isset($_POST["user_login"])) && (isset($_POST["user_pa
             $lcError = "<p id=\"weblatex-error\">"._("login disable")."</p>";
         else
             if ($loUser->authentificate($_POST["user_pass"]))
-                $_SESSION["weblatex::loginuser"] = $loUser;
+                wm\session::setLoggedInUser($loUser);
             else
                 $lcError = "<p id=\"weblatex-error\">"._("password incorrect")."</p>";
 
     if (!empty($lcError)) {
-        $_SESSION["weblatex::loginuser"] = null;
-        $loUser                          = null;
+        wm\session::clearLoggedInUser();
+        $loUser = null;
     }
 }
  

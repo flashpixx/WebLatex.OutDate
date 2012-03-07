@@ -28,6 +28,7 @@ use weblatex as wl;
     
 require_once( dirname(__DIR__)."/base.class.php" );
 require_once( dirname(__DIR__)."/main.class.php" );
+require_once( __DIR__."/group.class.php" );
 
 
 /** class of representation a user with the database **/

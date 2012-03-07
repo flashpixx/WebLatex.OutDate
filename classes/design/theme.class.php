@@ -31,6 +31,7 @@ require_once( dirname(dirname(__DIR__))."/config.inc.php" );
 require_once( dirname(__DIR__)."/autoload.php" );
 require_once( dirname(__DIR__)."/main.class.php" );
 require_once( dirname(__DIR__)."/management/user.class.php" );
+require_once( dirname(__DIR__)."/management/session.class.php" );
 
 
     
@@ -60,16 +61,15 @@ class theme {
      * @return user object
      **/
     function init( $plLocation = true ) {
-        @session_start();
+        wm\session::init();
         $this->moTheme->init();
+        $loUser = wm\session::getLoggedInUser();
         
-        // read login user object
-        if ( (!isset($_SESSION["weblatex::loginuser"])) || (!($_SESSION["weblatex::loginuser"] instanceof wm\user)) ) {
-            if ($plLocation)
-                @header("Location: index.php");
-            return null;
-        }
-        return $_SESSION["weblatex::loginuser"];
+        // check logged in user and create a redirect
+        if ( (empty($loUser)) && ($plLocation) )
+            @header("Location: index.php");
+        
+        return $loUser;
     }
     
     /** method that creates the header and body
@@ -102,7 +102,7 @@ class theme {
             echo "  $(document).ready( function() {\n";
             echo "      $('#weblatex-directory').fileTree(\n";
             echo "          {\n";
-            echo "              script      : 'wl-directory.php?".http_build_query(array("sess" => session_id()))."',\n";
+            echo "              script      : 'wl-directory.php?".wm\session::buildURLParameter()."',\n";
             echo "              loadMessage : '"._("loading")."'\n";
             echo "          },\n";
             echo "\n";
@@ -112,7 +112,7 @@ class theme {
             echo "                  return;\n";
             echo "\n";
             echo "              var lcURL            = null;\n";
-            echo "              var loURLParameter   = { sess : '".session_id()."', id : laItem[1], type : laItem[0] };\n";
+            echo "              var loURLParameter   = { ".wm\session::$sessionname." : '".session_id()."', id : laItem[1], type : laItem[0] };\n";
             echo "\n";
             echo "              if (laItem[0] == 'draft')\n";
             echo "                  lcURL = 'wl-editdraft.php?'+$.param(loURLParameter);\n";
@@ -136,7 +136,8 @@ class theme {
             echo "                          $('#weblatex-content').html(pcData).fadeIn('slow');\n";
             echo "\n";
             echo "                          $('#weblatex-editor').ckeditor({\n";
-            echo "                              skin                : 'office2003',\n";
+            echo "                              skin                : 'office2003',\n"; 
+            echo "                              readOnly            : false,";
             echo "                              autoParagraph       : false,\n";
             echo "                              extraPlugins        : 'autosave',\n";
             echo "                              autosaveTargetUrl   : 'wl-autosave.php?'+$.param(loURLParameter),\n";

@@ -47,6 +47,7 @@ use weblatex\management as wm;
 use weblatex\document as doc;
     
 require_once(__DIR__."/config.inc.php");
+require_once(__DIR__."/classes/management/session.class.php");
 require_once(__DIR__."/classes/management/right.class.php");
 require_once(__DIR__."/classes/management/user.class.php");
 require_once(__DIR__."/classes/document/draft.class.php");
@@ -77,18 +78,15 @@ function createErrorMsg($poXML, $pcMsg) {
     
     
 // read session manually    
-if (isset($_GET["sess"]))
-    @session_id($_GET["sess"]);
-@session_start();
+wm\session::init();
+$loUser = wm\session::getLoggedInUser();
     
 // generate return XML
 header("Content-type: text/xml");
 $loXML = new DOMDocument("1.0", "UTF-8");
-
-    
     
 // check user session
-if ( (!isset($_SESSION["weblatex::loginuser"])) || (!($_SESSION["weblatex::loginuser"] instanceof wm\user)) ) {
+if ( empty($loUser) ) {
     echo createErrorMsg($loXML, _("no active user session found"));
     exit();
 }

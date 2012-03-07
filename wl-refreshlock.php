@@ -27,22 +27,16 @@
 use weblatex\management as wm;
 use weblatex\document as doc;
 
+require_once(__DIR__."/classes/management/session.class.php");
 require_once(__DIR__."/classes/management/user.class.php");
 require_once(__DIR__."/classes/document/draft.class.php");
 
 
-// read session manually    
-$loUser = null;    
+// get session data
+wm\session::init();
+$loUser = wm\session::getLoggedInUser();
 
-if (isset($_GET["sess"]))
-    @session_id($_GET["sess"]);
-@session_start();
-
-if ( (isset($_SESSION["weblatex::loginuser"])) && ($_SESSION["weblatex::loginuser"] instanceof wm\user) )
-    $loUser = $_SESSION["weblatex::loginuser"];
-
-
-if ( ($loUser instanceof wm\user) && (isset($_GET["id"])) && (isset($_GET["type"])) ) {
+if ( (!empty($loUser)) && (isset($_GET["id"])) && (isset($_GET["type"])) )
     
     // check which document should be refreshed
     switch (strtolower($_GET["type"])) {
@@ -54,7 +48,6 @@ if ( ($loUser instanceof wm\user) && (isset($_GET["id"])) && (isset($_GET["type"
             
     }
     
-}
 
 
 ?>

@@ -29,6 +29,7 @@ use weblatex\management as wm;
     
 require_once(__DIR__."/classes/main.class.php");
 require_once(__DIR__."/classes/management/user.class.php");
+require_once(__DIR__."/classes/management/session.class.php");
     
    
     
@@ -47,16 +48,10 @@ require_once(__DIR__."/classes/management/user.class.php");
     
     
 // read session manually and set language
-wl\main::initLanguage();  
-$loUser = null;    
+wl\main::initLanguage(); 
+wm\session::init();
+$loUser = wm\session::getLoggedInUser();
     
-if (isset($_GET["sess"]))
-    @session_id($_GET["sess"]);
-@session_start();
-    
-if ( (isset($_SESSION["weblatex::loginuser"])) && ($_SESSION["weblatex::loginuser"] instanceof wm\user) )
-    $loUser = $_SESSION["weblatex::loginuser"];
-
 if (empty($loUser))
     exit();
    

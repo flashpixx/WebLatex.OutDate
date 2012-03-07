@@ -345,12 +345,22 @@ class directory implements basedocument {
         if ($this->mnID == 0)
             throw new \Exception( "under the root node can not be add a draft or document" );
         
-        if ($po instanceof draft)
-            $this->moDB->Execute("INSERT IGNORE INTO directory_draft VALUES (?,?)", array($po->getID(), $this->mnID));
+        if ($po instanceof draft) {
+            $loResult = $this->moDB->Execute("SELECT d.id FROM draft AS d JOIN directory_draft AS dd on dd.draft=d.id WHERE dd.directory=? AND d.name=?", array($this->mnID, $po->getName()));
+            if (!$loResult->EOF)
+                throw new \Exception( "under a directory node the draft name must be unique" );
             
-        if ($po instanceof document)
-            $this->moDB->Execute("INSERT IGNORE INTO directory_document VALUES (?,?)", array($po->getID(), $this->mnID));
+            $this->moDB->Execute("INSERT IGNORE INTO directory_draft VALUES (?,?)", array($po->getID(), $this->mnID));
+        }
+            
+            
+        if ($po instanceof document) {
+            $loResult = $this->moDB->Execute("SELECT d.id FROM document AS d JOIN directory_document AS dd on dd.document=d.id WHERE dd.directory=? AND d.name=?", array($this->mnID, $po->getName()));
+            if (!$loResult->EOF)
+                throw new \Exception( "under a directory node the document name must be unique" );
         
+            $this->moDB->Execute("INSERT IGNORE INTO directory_document VALUES (?,?)", array($po->getID(), $this->mnID));
+        }
     }
     
     /** deletes a child entry of the directory 
@@ -464,6 +474,21 @@ class directory implements basedocument {
         
         // administrator right
         $loAdminRight = new man\right( wl\config::$system_rights["administrator"] );
+        
+        // we can not get information if the directory is the root node (because the node is not stored)
+        // so we return on the root node only read access and with administrator right write access
+        if ($this->mnID == 0) {
+            if ($loAdminRight->hasRight($poUser))
+                return "w";
+            
+            $laGroups = $poUser->getGroups();
+            if (wl\main::any( man\right::hasOne($laGroups, array($loAdminRight))))
+                return "w";
+            
+            return "r";
+        }
+        
+        
         
         // check if the user is the owner or has administrator or draft right
         if ( ($poUser->isEqual($this->getOwner())) || ($loAdminRight->hasRight($poUser)) )

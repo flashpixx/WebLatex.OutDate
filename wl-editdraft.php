@@ -32,6 +32,7 @@ require_once(__DIR__."/config.inc.php");
 require_once(__DIR__."/classes/main.class.php");
 require_once(__DIR__."/classes/design/theme.class.php");
 require_once(__DIR__."/classes/management/right.class.php");
+require_once(__DIR__."/classes/management/session.class.php");
 require_once(__DIR__."/classes/management/user.class.php");
 require_once(__DIR__."/classes/management/group.class.php");
 require_once(__DIR__."/classes/document/draft.class.php");
@@ -39,15 +40,10 @@ require_once(__DIR__."/classes/document/draft.class.php");
 
 // read session manually and set language
 wl\main::initLanguage();
-$loUser = null;    
-
-if (isset($_GET["sess"]))
-    @session_id($_GET["sess"]);
-@session_start();
-
-if ( (isset($_SESSION["weblatex::loginuser"])) && ($_SESSION["weblatex::loginuser"] instanceof wm\user) )
-    $loUser = $_SESSION["weblatex::loginuser"];
+wm\session::init();
+$loUser = wm\session::getLoggedInUser();
     
+
 $loDraft = null;
 if (isset($_GET["id"]))
     $loDraft = new doc\draft(intval($_GET["id"]));
@@ -61,7 +57,7 @@ $loLockedUser = $loDraft->lock($loUser, true);
 // create content
 echo "<h1>"._("draft")." [".$loDraft->getName()."]</h1>\n";
 if ($loLockedUser instanceof wm\user)
-    echo "<p>"._("is locked by")." [".$loLockedUser->GetName()."]</p>\n";
+    echo "<p id=\"weblatex-message\">"._("is locked by")." [".$loLockedUser->GetName()."]</p>\n";
     
 echo "<div id=\"weblatex-editor\">".$loDraft->getContent()."</div>";
 
