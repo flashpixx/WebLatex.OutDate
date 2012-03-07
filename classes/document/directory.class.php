@@ -298,8 +298,46 @@ class directory implements basedocument {
         return $la;
     }
     
+    /** returns a child with the name and type of the directory
+     * @param $pcName name
+     * @param $pcType type of return object, allowed values "directory", "draft" and "document"
+     * @return null if no object is found, otherwise on of the allowed type objects
+     **/
+    function getChildByName( $pcName, $pcType ) {
+        if ( (!is_string($pcName)) || (!is_string($pcType)) )
+            wl\main::phperror( "arguments must be string values", E_USER_ERROR );
+        if ( ($pcType != "draft") && ($pcType != "document") && ($pcType != "directory") )
+            wl\main::phperror( "second arguments must be an allowed value [directory, draft, document]", E_USER_ERROR );
+        
+        $lo = null;
+        switch ($pcType) {
+            case "draft" :
+                $loResult =  $this->moDB->Execute("SELECT dd.draft FROM directory_draft AS dd JOIN draft AS da ON da.id=dd.draft WHERE da.name=? AND dd.directory=?", array($pcName, $this->mnID));
+                if (!$loResult->EOF)
+                    $lo = new draft(intval($loResult->fields["draft"]));
+                break;
+                
+                
+            case "document" :
+                $loResult =  $this->moDB->Execute("SELECT dd.document FROM directory_document AS dd JOIN document AS do ON do.id=dd.document WHERE do.name=? AND dd.directory=?", array($pcName, $this->mnID));
+                if (!$loResult->EOF)
+                    $lo = new document(intval($loResult->fields["document"]));
+                break;      
+                
+                
+            case "directory" :
+                $loResult =  $this->moDB->Execute("SELECT id FROM directory WHERE name=? AND parent=?", array($pcName, $this->mnID));
+                if (!$loResult->EOF)
+                    $lo = new directory(intval($loResult->fields["id"]));
+                break;      
+        }
+        
+        return $lo;
+    }
+    
     /** adds a new child to the directory
      * @param $po draft, document or directory object
+     * @todo must check that the name and type of an object is unique within the directory
      **/
     function addChild($po){
         if ( (!($po instanceof draft)) && (!($po instanceof document)) )

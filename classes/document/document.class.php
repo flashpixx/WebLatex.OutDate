@@ -84,12 +84,20 @@ class document implements baseedit {
         if ( (!is_numeric($px)) && (!is_string($px)) && (!($px instanceof $this)) )
             wl\main::phperror( "argument must be a numeric, string or document object value", E_USER_ERROR );
         
+        // if the parameter is a string, it must be a FQN path, so split in dir- and draftname
+        if (is_string($px)) {
+            $loDir   = new directory( dirname($px) );
+            $loDoc   = $loDir->getChildByName( basename($px), "document" );
+            if (empty($loDoc))
+                throw new \Exception( "document not found within the path" );
+        }
+        
         if (is_numeric($px))
             $loResult = wl\main::getDatabase()->Execute( "SELECT id, owner FROM document WHERE id=?", array($px) );
         if ($px instanceof $this)
             $loResult = wl\main::getDatabase()->Execute( "SELECT id, owner FROM document WHERE id=?", array($px->getID()) );
         if (is_string($px))
-            $loResult = wl\main::getDatabase()->Execute( "SELECT id, owner FROM document WHERE name=?", array($px) );
+            $loResult = wl\main::getDatabase()->Execute( "SELECT id, owner FROM document WHERE id=?", array($loDoc->getID()) );
         
         if ($loResult->EOF)
             throw new \Exception( "document data not found" );

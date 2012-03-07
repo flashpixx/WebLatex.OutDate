@@ -33,6 +33,7 @@ require_once( dirname(__DIR__)."/management/user.class.php" );
 require_once( dirname(__DIR__)."/management/group.class.php" );
 require_once( dirname(__DIR__)."/management/right.class.php" );
 require_once( __DIR__."/baseedit.class.php" );
+require_once( __DIR__."/directory.class.php" );
     
 
     
@@ -108,14 +109,22 @@ class draft implements basedocument {
         if ( (!is_numeric($px)) && (!is_string($px)) && (!($px instanceof $this)) )
             wl\main::phperror( "argument must be a numeric, string or draft object value", E_USER_ERROR );
         
-        $this->moDB = wl\main::getDatabase();
+        // if the parameter is a string, it must be a FQN path, so split in dir- and draftname
+        if (is_string($px)) {
+            $loDir   = new directory( dirname($px) );
+            $loDraft = $loDir->getChildByName( basename($px), "draft" );
+            if (empty($loDraft))
+                throw new \Exception( "draft not found within the path" );
+        }
         
+        
+        $this->moDB = wl\main::getDatabase();
         if (is_numeric($px))
             $loResult = $this->moDB->Execute( "SELECT name, id, owner, content FROM draft WHERE id=?", array($px) );
         if ($px instanceof $this)
             $loResult = $this->moDB->Execute( "SELECT name, id, owner, content FROM draft WHERE id=?", array($px->getID()) );        
         if (is_string($px))
-            $loResult = $this->moDB->Execute( "SELECT name, id, owner, content FROM draft WHERE name=?", array($px) );
+            $loResult = $this->moDB->Execute( "SELECT name, id, owner, content FROM draft WHERE id=?", array($loDraft->getID()) );
         
         if ($loResult->EOF)
             throw new \Exception( "draft data not found" );

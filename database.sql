@@ -47,7 +47,6 @@ CREATE TABLE IF NOT EXISTS `document` (
   `modifiable` enum('true','false') COLLATE utf8_bin NOT NULL DEFAULT 'true',
   `archivable` enum('true','false') COLLATE utf8_bin NOT NULL DEFAULT 'false',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `name` (`name`),
   KEY `uid` (`owner`),
   KEY `draftid` (`draftid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='table for storing document header information';
@@ -56,13 +55,22 @@ DROP TABLE IF EXISTS `documentpart`;
 CREATE TABLE IF NOT EXISTS `documentpart` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `document` bigint(20) unsigned NOT NULL,
-  `name` varchar(250) COLLATE utf8_bin DEFAULT NULL,
+  `description` varchar(250) COLLATE utf8_bin DEFAULT NULL,
   `position` bigint(20) unsigned DEFAULT NULL,
   `content` longtext COLLATE utf8_bin,
   `lastmodify` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `document` (`document`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='table for storing document parts / chapter';
+
+DROP TABLE IF EXISTS `documentpart_rights`;
+CREATE TABLE IF NOT EXISTS `documentpart_rights` (
+  `documentpart` bigint(20) unsigned NOT NULL,
+  `rights` bigint(20) unsigned NOT NULL,
+  `access` enum('read','write') COLLATE utf8_bin NOT NULL DEFAULT 'read',
+  PRIMARY KEY (`documentpart`,`rights`),
+  KEY `rights` (`rights`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 DROP TABLE IF EXISTS `document_rights`;
 CREATE TABLE IF NOT EXISTS `document_rights` (
@@ -73,15 +81,6 @@ CREATE TABLE IF NOT EXISTS `document_rights` (
   KEY `right` (`rights`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='table for storing rights of the documents';
 
-DROP TABLE IF EXISTS `domentpart_rights`;
-CREATE TABLE IF NOT EXISTS `domentpart_rights` (
-  `documentpart` bigint(20) unsigned NOT NULL,
-  `rights` bigint(20) unsigned NOT NULL,
-  `access` enum('read','write') COLLATE utf8_bin NOT NULL DEFAULT 'read',
-  PRIMARY KEY (`documentpart`,`rights`),
-  KEY `rights` (`rights`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-
 DROP TABLE IF EXISTS `draft`;
 CREATE TABLE IF NOT EXISTS `draft` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
@@ -90,7 +89,6 @@ CREATE TABLE IF NOT EXISTS `draft` (
   `archivable` enum('true','false') COLLATE utf8_bin NOT NULL DEFAULT 'false',
   `content` longtext COLLATE utf8_bin,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `name` (`name`),
   KEY `user` (`owner`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='table for storing documents drafts';
 
@@ -232,13 +230,13 @@ ALTER TABLE `directory_rights`
 ALTER TABLE `documentpart`
   ADD CONSTRAINT `documentpart_ibfk_1` FOREIGN KEY (`document`) REFERENCES `document` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
+ALTER TABLE `documentpart_rights`
+  ADD CONSTRAINT `documentpart_rights_ibfk_2` FOREIGN KEY (`rights`) REFERENCES `rights` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `documentpart_rights_ibfk_1` FOREIGN KEY (`documentpart`) REFERENCES `documentpart` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
 ALTER TABLE `document_rights`
   ADD CONSTRAINT `document_rights_ibfk_2` FOREIGN KEY (`rights`) REFERENCES `rights` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `document_rights_ibfk_1` FOREIGN KEY (`document`) REFERENCES `document` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-
-ALTER TABLE `domentpart_rights`
-  ADD CONSTRAINT `domentpart_rights_ibfk_2` FOREIGN KEY (`rights`) REFERENCES `rights` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `domentpart_rights_ibfk_1` FOREIGN KEY (`documentpart`) REFERENCES `documentpart` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 ALTER TABLE `draft`
   ADD CONSTRAINT `draft_ibfk_1` FOREIGN KEY (`owner`) REFERENCES `user` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
