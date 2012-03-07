@@ -21,6 +21,10 @@
  @endcond
  **/
 
+html {
+    height: 100%;
+}
+
 body {
     font-family: sans-serif;
     font-size: small;
@@ -28,6 +32,7 @@ body {
     color: #000000;
     overflow: auto;
     background: #EFEFEF;
+    height: 100%;
 }
 
 input {
@@ -115,8 +120,10 @@ input {
     border: 1px solid;
     border-color: #D0D0FF;
     width: 15%;
+    overflow: auto;
     position: relative;
     float: left;
+    height: 75%;
 }
 
 #weblatex-content {
@@ -124,6 +131,8 @@ input {
     background-color: #F0F0FC;
     border: 1px solid;
     border-color: #D0D0FF;
-    position: relative;
+    overflow: auto;
+    position: auto;
     float: right;
+    height: 75%;
 }

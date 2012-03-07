@@ -23,59 +23,55 @@
  @endcond
  **/
 
-namespace weblatex\document;
 
-require_once( __DIR__."/basedocument.class.php" );
+use weblatex\management as wm;
+use weblatex\document as doc;
+
+require_once(__DIR__."/classes/management/session.class.php");
+require_once(__DIR__."/classes/management/user.class.php");
+require_once(__DIR__."/classes/document/draft.class.php");
 
 
+// get session data
+wm\session::init();
+$loUser = wm\session::getLoggedInUser();
 
-/** interface for the editable documents (draft / document) **/
-interface baseedit extends basedocument {
+if ( (empty($loUser)) || (!isset($_GET["id"])) || (!isset($_GET["type"])) || ($_GET["type"] != "draft") && ($_GET["type"] != "dcoument") )
+    exit();
+    
+    
+    
+    
+// generate return XML
+header("Content-type: text/xml");
+$loXML = new DOMDocument("1.0", "UTF-8");
+$loRoot = $loXML->createElement( "lock" );
+$loXML->appendChild($loRoot);
 
-    /** creates the lock of the document or refresh the lock
-     * @param $poUser user object
-     **/
-    function lock( $poUser );
-    
-    /** unlocks the document **/
-    function unlock();
-    
-    /** returns the user object if a lock exists
-     * @return user object or null
-     **/
-    function hasLock();
-    
-    /** checks if the document can be archiveable
-     * @return boolean of the flag
-     **/
-    function isArchivable();
-    
-    /** sets the archivable flag
-     * @param $plArchiveable boolean for enabling / disabling the flag
-     **/
-    function setArchivable( $plArchiveable );
-    
-    /** restore a history entry
-     * @param $pnID history id
-     **/
-    function restoreHistory($pnID);
-    
-    /** deletes the whole history or a single entry
-     * @param $pxID null, numeric value or array of numeric values
-     **/
-    function deleteHistory($pxID = null);
-    
-    /** returns the content of a history entry
-     * @param $pnID entry id
-     * @return content
-     **/
-    function getHistoryContent($pnID);
-    
-    /** returns an array with ids and timestamps of the history entries
-     * @return assoc. array
-     **/
-    function getHistory();
-    
+$loDocument = null;
+switch ($_GET["type"]) {
+    case "draft"        : $loDocument = new doc\draft(intval($_GET["id"]));     break;
+    case "document"     : $loDocument = new doc\document(intval($_GET["id"]));  break;
 }
+
+$loLockedUser = null;
+if (!empty($loDocument)) {
+    $loLockedUser = $loDocument->hasLock();
+    
+    if (!empty($loLockedUser)) {
+        $loXMLUser = $loXML->createElement( "user" );
+        $loRoot->appendChild($loXMLUser);
+        
+        $loAttr = $loXML->createAttribute("name");
+        $loAttr->value = $loLockedUser->getName();
+        $loXMLUser->appendChild( $loAttr );
+        
+        $loAttr = $loXML->createAttribute("id");
+        $loAttr->value = $loLockedUser->getID();
+        $loXMLUser->appendChild( $loAttr );
+    }
+}
+    
+echo $loXML->saveXML();
 
 ?>

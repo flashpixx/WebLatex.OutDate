@@ -304,7 +304,7 @@ class draft implements basedocument {
             return $loLockUser;
             
         // try to set the lock or refresh the lock if exists
-        $this->moDB->Execute("INSERT INTO draft_lock (draft, user, session) VALUES (?,?,?) ON DUPLICATE KEY UPDATE user=?, session=?", array($this->mnID, $poUser->getID(), session_id(), $poUser->getID(), session_id()));
+        $this->moDB->Execute("INSERT INTO draft_lock (draft, user, session) VALUES (?,?,?) ON DUPLICATE KEY UPDATE user=?, session=?, lastactivity=NOW()", array($this->mnID, $poUser->getID(), session_id(), $poUser->getID(), session_id()));
         
         return null;
     }
@@ -318,16 +318,6 @@ class draft implements basedocument {
             return new man\user( intval($loResult->fields["user"]) );
         
         return null;
-    }
-    
-    /** refresh the lock time
-     * @param $poUser user object
-     **/
-    function refreshLock( $poUser ) {
-        if (!($poUser instanceof man\user))
-            wl\main::phperror( "argument must be a user object", E_USER_ERROR );
-        
-        $this->moDB->Execute("UPDATE draft_lock SET lastactivity=NOW() WHERE draft=? AND user=? AND session=?", array($this->mnID, $poUser->getID(), session_id()));
     }
     
     /** remove the lock of the draft **/

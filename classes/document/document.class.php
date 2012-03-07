@@ -206,13 +206,6 @@ class document implements baseedit {
         
     }
     
-    /** refreshs the lock
-     * @param $poUser user object
-     **/
-    function refreshLock( $poUser ) {
-        
-    }
-    
     /** unlocks the document **/
     function unlock() {
         

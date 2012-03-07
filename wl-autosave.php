@@ -121,24 +121,21 @@ if ( (empty($loDocument)) || (!isset($_POST["content"])) ) {
     exit();
 }
     
+
+// check write access
+if ($loDocument->getAccess($loUser) != "w") {
+    echo createErrorMsg($loXML, _("no write access"));  
+    exit();
+}
     
 // we check the lock state
-$loLockedUser = $loDocument->hasLock();
+$loLockedUser = $loDocument->lock($loUser);
 if ($loLockedUser instanceof wm\user) {
     echo createErrorMsg($loXML, _("draft is locked by")." [".$loLockedUser->getName()."]");
     exit();
 }
     
-// no lock, so we check the access to the draft,
-// on write access, we refresh the lock and set the data
-if ($loDocument->getAccess($loUser) != "w") {
-    echo createErrorMsg($loXML, _("no write access"));
-    exit();
-}
-        
-
 // write data
-$loDocument->refreshLock($loUser);
 $loDocument->setContent($_POST["content"]);
 $loDocument->save();
 

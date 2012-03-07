@@ -36,17 +36,21 @@ require_once(__DIR__."/classes/document/draft.class.php");
 wm\session::init();
 $loUser = wm\session::getLoggedInUser();
 
-if ( (!empty($loUser)) && (isset($_GET["id"])) && (isset($_GET["type"])) )
+if ( (!empty($loUser)) && (isset($_GET["id"])) && (isset($_GET["type"])) ) {
     
     // check which document should be refreshed
+    $loDoc = null;
     switch (strtolower($_GET["type"])) {
             
         case "draft" :
-            $loDraft    = new doc\draft( intval($_GET["id"]) );
-            $loDraft->refreshLock($loUser);
+            $loDoc    = new doc\draft( intval($_GET["id"]) );
             break;
             
     }
+    
+    if (!empty($loDoc))
+        $loDoc->lock($loUser);
+}
     
 
 

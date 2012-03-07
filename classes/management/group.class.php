@@ -73,13 +73,7 @@ class group implements \weblatex\base {
     static function delete( $pnGID, $plForce = false ) {
         if (!is_numeric($pnGID))
             wl\main::phperror( "argument must be a numeric value", E_USER_ERROR );
-        
-        // we check the numeric value of the system groups, so that this groups cannot be deleted
-        if (in_array($pnGID, array_values(wl\config::$system_groups), true)) {
-            wl\main::phperror( "system group [".$pnGID."] cannot be deleted", E_USER_NOTICE );
-            throw new \Exception( "system group [".$pnGID."] cannot be deleted" );
-        }
-        
+
         if ($plForce)
             wl\main::getDatabase()->Execute( "DELETE FROM groups WHERE id=?", array($pnGID) );
         else
