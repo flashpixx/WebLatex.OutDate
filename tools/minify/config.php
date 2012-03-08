@@ -128,7 +128,6 @@ $min_serveOptions['minifiers']['application/x-javascript'] = 'closureCompiler';
  */
 $min_serveOptions['minApp']['groupsOnly'] = true;
 
-
 /**
  * By default, Minify will not minify files with names containing .min or -min
  * before the extension. E.g. myFile.min.js will not be processed by JSMin

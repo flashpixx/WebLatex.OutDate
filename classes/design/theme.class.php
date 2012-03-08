@@ -80,11 +80,12 @@ class theme {
         $this->moTheme->header( $poUser );
         
         if (!empty($poUser)) {
-      
+     // $(".file").addcontextmenu("weblatex-filemenu");
+            
             // use the minified java- and css-script for a better performance
-            echo "<link type=\"text/css\" href=\"tools/minify/g=basecss\" rel=\"stylesheet\" />\n";
-            echo "<script type=\"text/javascript\" src=\"tools/minify/g=basejs\"></script>\n";
-
+            echo "<link type=\"text/css\" href=\"tools/minify/?g=basecss\" rel=\"stylesheet\" />\n";
+            echo "<script type=\"text/javascript\" src=\"tools/minify/?g=basejs\"></script>\n";
+            
             // we set the configuration data for the session
             echo "<script type=\"text/javascript\">";
             echo "var goConfig = {";

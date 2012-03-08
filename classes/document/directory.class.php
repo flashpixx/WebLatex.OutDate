@@ -471,17 +471,18 @@ class directory implements basedocument {
         if (!($poUser instanceof man\user))
             wl\main::phperror( "argument must be a user object", E_USER_ERROR );
         
-        // administrator right
+        // administrator and directory right
         $loAdminRight = new man\right( wl\config::$system_rights["administrator"] );
+        $loDirRight   = new man\right( wl\config::$system_rights["directory"] );
         
         // we can not get information if the directory is the root node (because the node is not stored)
         // so we return on the root node only read access and with administrator right write access
         if ($this->mnID == 0) {
-            if ($loAdminRight->hasRight($poUser))
+            if ( ($loAdminRight->hasRight($poUser)) || ($loDirRight->hasRight($poUser)) )
                 return "w";
             
             $laGroups = $poUser->getGroups();
-            if (wl\main::any( man\right::hasOne($laGroups, array($loAdminRight))))
+            if ( (wl\main::any( man\right::hasOne($laGroups, array($loAdminRight)))) || (wl\main::any( man\right::hasOne($laGroups, array($loDirRight)))) )
                 return "w";
             
             return "r";
@@ -490,14 +491,14 @@ class directory implements basedocument {
         
         
         // check if the user is the owner or has administrator or draft right
-        if ( ($poUser->isEqual($this->getOwner())) || ($loAdminRight->hasRight($poUser)) )
+        if ( ($poUser->isEqual($this->getOwner())) || ($loAdminRight->hasRight($poUser)) || ($loDirRight->hasRight($poUser)) )
             return "w";
         
         // get user groups
         $laGroups = $poUser->getGroups();
         
         // check if a user group has admin or draft right
-        if (wl\main::any( man\right::hasOne($laGroups, array($loAdminRight))))
+        if ( (wl\main::any( man\right::hasOne($laGroups, array($loAdminRight)))) || (wl\main::any( man\right::hasOne($laGroups, array($loDirRight)))) )
             return "w";
         
         //get read and write rights of this draft

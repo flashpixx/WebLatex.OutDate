@@ -85,17 +85,7 @@ $loTheme->header( $loUser );
     
 // create HTML login form if the user is not logged in, otherweise show the main screen
 if (!empty($loUser)) {
-    echo "<ul id=\"weblatex-filemenu\" class=\"contextMenu\">\n";
-    echo "<li class=\"edit\"><a href=\"#rename\">"._("rename")."</a></li>\n";
-    echo "<li class=\"delete\"><a href=\"#delete\">"._("delete")."</a></li>\n";
-    echo "</ul>\n";
-    
-    echo "<ul id=\"weblatex-directorymenu\" class=\"contextMenu\">\n";
-    echo "<li class=\"edit\"><a href=\"#rename\">"._("rename")."</a></li>\n";
-    echo "<li class=\"edit\"><a href=\"#delete\">"._("delete")."</a></li>\n";
-    echo "</ul>\n";
-    
-    echo "<div id=\"weblatex-left\">";
+    echo "<div id=\"weblatex-menu\">";
     echo "<p class=\"weblatex-logomini\"><a href=\"http://code.google.com/p/weblatex/\" target=\"_blank\">Web<img src=\"images/latex.png\"></a></p>";
     echo "<div id=\"weblatex-directory\"></div>\n";
     echo "</div>";

@@ -60,7 +60,10 @@ function setEditorInstance(poURLParameter) {
   });
 }
 
+
+
 $(document).ready( function() {
+                  
   $("#weblatex-directory").fileTree(
       {
           script      : "wl-directory.php?"+goConfig.sessionparam,
@@ -97,5 +100,21 @@ $(document).ready( function() {
                   });
               });
       }
-  );
+  )
 });
+
+
+
+//                $('li.directory').contextPopup({
+//                                             title: 'My Popup Menu',
+//                                           items: [
+//                                                   { label:'Some Item',
+//                                                   action:function() { alert('clicked 1') } },
+//                                                   { label:'Another Thing',
+//                                                   action:function() { alert('clicked 2') } },
+//                                                   // null can be used to add a separator to the menu items
+//                                                   null,
+//                                                   { label:'Blah Blah',
+//                                                   action:function() { alert('clicked 3') } }
+//                                                   ]})
+        
