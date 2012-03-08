@@ -44,7 +44,7 @@ class defaulttheme extends design {
         echo "<meta http-equiv=\"Content-Style-Type\" content=\"text/css\" />\n";
         echo "<meta http-equiv=\"Content-Script-Type\" content=\"text/javascript\" />\n";
         
-        echo "<link rel=\"stylesheet\" href=\"".wl\main::getThemeDir()."layout.css\" type=\"text/css\" media=\"screen\" />\n";
+        echo "<link rel=\"stylesheet\" href=\"".wl\main::getThemeDir()."layout.css\" type=\"text/css\" />\n";
     }
     
     /** close the header and create the body **/

@@ -148,7 +148,7 @@ foreach($loDirectory->getChildren() as $loItem) {
     
     
     if ($loItem instanceof doc\directory)
-        // we need a slash at the end, otherwise a infinit loop
+        // we need a slash at the end, otherwise a infinit loop is created
         echo "<li class=\"directory collapsed\"><a href=\"#\" rel=\"".$loItem->getFQN()."/\">".$loItem->getName()."</a></li>\n";
     
     if ($loItem instanceof doc\draft) {

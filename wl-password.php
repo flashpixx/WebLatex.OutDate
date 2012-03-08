@@ -64,8 +64,9 @@ if (empty($loUser))
    
 // create content
 echo "<h1>"._("change password")."</h1>\n";
-  
+//http://net.tutsplus.com/tutorials/javascript-ajax/submit-a-form-without-page-refresh-using-jquery/
+echo "<form action=\"".$_SERVER["PHP_SELF"]."\" method=\"post\">\n";
 echo "<label for=\"password1\">"._("new password (insert twice)")."<br/><input type=\"password\" name=\"password1\" size=\"35\" tabindex=\"10\"/><input type=\"password\" name=\"password2\" size=\"35\" tabindex=\"20\"/></label>\n";
 echo "<p><input type=\"submit\" name=\"submit\" class=\"weblatex-button\" value=\""._("change")."\" tabindex=\"100\"/></p>\n";
-    
+echo "</form>\n";
 ?>

@@ -80,118 +80,25 @@ class theme {
         $this->moTheme->header( $poUser );
         
         if (!empty($poUser)) {
-        
-            // add jQuery, tree view, editor and context menu code
-            echo "<script src=\"tools/jquery.min.js\" type=\"text/javascript\"></script>\n";
-            echo "<script src=\"tools/jquery.easing.1.3.js\" type=\"text/javascript\"></script>\n";
-        
-            echo "<script src=\"tools/jcontextMenu/jquery.contextMenu.js\" type=\"text/javascript\"></script>\n";
-            echo "<link href=\"tools/jcontextMenu/jquery.contextMenu.css\" rel=\"stylesheet\" type=\"text/css\" />\n";
-        
-            echo "<script src=\"tools/jqueryFileTree/jqueryFileTree.js\" type=\"text/javascript\"></script>\n";
-            echo "<link href=\"tools/jqueryFileTree/jqueryFileTree.css\" rel=\"stylesheet\" type=\"text/css\" media=\"screen\" />\n";
-        
+      
+            // use the minified java- and css-script for a better performance
+            echo "<link type=\"text/css\" href=\"tools/minify/g=basecss\" rel=\"stylesheet\" />\n";
+            echo "<script type=\"text/javascript\" src=\"tools/minify/g=basejs\"></script>\n";
+
+            // we set the configuration data for the session
+            echo "<script type=\"text/javascript\">";
+            echo "var goConfig = {";
+            echo "sessionname : \"".wm\session::$sessionname."\",";
+            echo "sessionid : \"".session_id()."\",";
+            echo "autosavetime : ".(wl\config::autosavetime*1000).",";
+            echo "dirloadmessage : \""._("loading")."\",";
+            echo "sessionparam : $.param({ ".wm\session::$sessionname." : \"".session_id()."\" })";
+            echo "};";
+            echo "</script>";
+            
+            // CKEditor does not work with minify, so we set the references manually
             echo "<script type=\"text/javascript\" src=\"tools/ckeditor/ckeditor.js\"></script>\n";
             echo "<script type=\"text/javascript\" src=\"tools/ckeditor/adapters/jquery.js\"></script>\n";
-        
-            // add jQuery data for visualization
-            echo "<script type=\"text/javascript\">\n";
-            echo "  var goRefreshLock        = null;\n";
-            echo "  var goLoadedURLParameter = null;\n";
-            echo "  var glisLocked           = false;\n";
-            echo "\n";
-            echo "  $(document).ready( function() {\n";
-            echo "      $('#weblatex-directory').fileTree(\n";
-            echo "          {\n";
-            echo "              script      : 'wl-directory.php?".wm\session::buildURLParameter()."',\n";
-            echo "              loadMessage : '"._("loading")."'\n";
-            echo "          },\n";
-            echo "\n";
-            echo "          function(pcItem) {\n";
-            echo "              var laItem           = pcItem.split('$');\n";
-            echo "              if (laItem.length != 2)\n";
-            echo "                  return;\n";
-            echo "\n";
-            echo "              var lcURL            = null;\n";
-            echo "              var loURLParameter   = { ".wm\session::$sessionname." : '".session_id()."', id : laItem[1], type : laItem[0] };\n";
-            echo "\n";
-            echo "              if (laItem[0] == 'draft')\n";
-            echo "                  lcURL = 'wl-editdraft.php?'+$.param(loURLParameter);\n";
-            echo "              if (laItem[0] == 'url')\n";
-            echo "                  lcURL = laItem[1];\n";
-            echo "\n";
-            echo "              if (lcURL != null)\n";
-            echo "                  $.get(lcURL, function(pcData) {\n";
-            echo "                      $('#weblatex-content').fadeOut('slow', function() {\n";
-            echo "                          var loEditor = CKEDITOR.instances['weblatex-editor'];\n";
-            echo "\n";
-            echo "                          if (loEditor) {\n";
-            echo "                              loEditor.destroy();\n";
-            echo "                              clearInterval(goRefreshLock);\n";
-            echo "                              if (goLoadedURLParameter != null)\n";
-            echo "                                  $.ajax( { url : 'wl-unlock.php?'+$.param(goLoadedURLParameter) } );\n"; 
-            echo "                          }\n";
-            echo "\n";
-            echo "                          goLoadedURLParameter = loURLParameter;\n";
-            echo "                          goRefreshLock = setInterval( function()\n";
-            echo "                              {\n";
-            echo "                                  $.ajax( {\n";
-            echo "                                      url     : 'wl-lock.php?'+$.param(loURLParameter)\n";
-            echo "                                  } );\n";
-            echo "                                  $.ajax({\n"; 
-            echo "                                      url     : 'wl-haslock.php?'+$.param(loURLParameter),\n";
-            echo "                                      success : function(pcResponse) {\n";
-            echo "                                          var llReadOnly = $(pcResponse).find('user').size() != 0;\n";
-            echo "                                          $('#weblatex-editor').ckeditorGet().setReadOnly( llReadOnly );\n";
-            echo "                                          if (!llReadOnly)\n";
-            echo "                                              $('#weblatex-message').remove();\n";
-            echo "                                      }\n";
-            echo "                                  });\n";
-            echo "                              },\n";
-            echo                                (wl\config::autosavetime*1000)."\n";
-            echo "                          );\n";
-            echo "                          $('#weblatex-content').html(pcData).fadeIn('slow');\n";
-            echo "\n";
-            echo "                          $('#weblatex-editor').ckeditor({\n";
-            echo "                              skin                : 'office2003',\n"; 
-            echo "                              readOnly            : glisLocked,";
-            echo "                              autoParagraph       : false,\n";
-            //echo "                              resize_enabled      : false,\n";
-            echo "                              ignoreEmptyParagraph: true,\n";
-            echo "                              extraPlugins        : 'autosave',\n";
-            echo "                              height              : $('#weblatex-content').height()*0.8 | 0,\n";
-            echo "                              autosaveTargetUrl   : 'wl-autosave.php?'+$.param(loURLParameter),\n";
-            echo "                              autosaveRefreshTime : ".wl\config::autosavetime.",\n";
-            echo "                              toolbar             : [\n";
-            echo "                                  { name: 'document',    items : [ 'NewPage','Autosave','DocProps','Print'] },\n";
-            echo "                                  { name: 'clipboard',   items : [ 'Cut','Copy','Paste','PasteText','PasteFromWord','-','Undo','Redo' ] },\n";
-            echo "                                  { name: 'editing',     items : [ 'Find','Replace','-','SelectAll','-','SpellChecker', 'Scayt' ] },\n";
-            echo "                                  { name: 'tools',       items : [ 'Maximize','-','About' ] },\n";
-            echo "                                  '/',\n";
-            echo "                                  { name: 'basicstyles', items : [ 'Bold','Italic','Underline','-','RemoveFormat' ] },\n";
-            echo "                                  { name: 'paragraph',   items : [ 'NumberedList','BulletedList','-','Blockquote','-','JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock' ] },\n";
-            echo "                                  { name: 'insert',      items : [ 'Image','Table','PageBreak' ] },\n";
-            echo "                                  { name: 'styles',      items : [ 'Styles','Format','Font','FontSize' ] },\n";
-            echo "                              ]\n";
-            echo "                          });\n";
-            echo "                      });\n";
-            echo "                  });\n";
-            echo "          }\n";
-            echo "      );";
-            echo "\n";
-            /*
-            echo "      $('#gibtsnicht').contextMenu(\n";
-            echo "          {\n";
-            echo "              menu : 'weblatex-filemenu'\n";
-            echo "          },\n";
-            echo "\n";
-            echo "          function(action, el, pos) {\n";
-            echo "              alert(action+' '+$(el).attr('href'));\n";
-            echo "          }\n";
-            echo "      );\n";
-            */
-            echo "  });\n";
-            echo "</script>";
         }
         
         echo $pcHeader;
