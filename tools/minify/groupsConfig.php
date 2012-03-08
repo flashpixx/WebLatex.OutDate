@@ -12,7 +12,7 @@
  **/
 
 return array(
-    "basejs"   =>  array("//tools/jquery.min.js", "//tools/jquery.easing.1.3.js", "//tools/jcontextMenu/jquery.contextMenu.js", "//tools/jqueryFileTree/jqueryFileTree.js", "//wl-base.js"),
+    "basejs"   =>  array("//tools/jquery-1.7.1.js", "//tools/jquery.easing.1.3.js", "//tools/jcontextMenu/jquery.contextMenu.js", "//tools/jqueryFileTree/jqueryFileTree.js", "//wl-base.js"),
 	"basecss"  =>  array("//tools/jcontextMenu/jquery.contextMenu.css", "//tools/jqueryFileTree/jqueryFileTree.css")
 );
 

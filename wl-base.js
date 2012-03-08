@@ -1,24 +1,37 @@
-var goRefreshLock        = null;
-var goLoadedURLParameter = null;
-var glisLocked           = false;
+// global variable for storing runtime options
+var goRuntime = {
+    
+    // object for the refresh timer
+    refreshtimer       : null,
+    // parameter of the loaded url
+    loadedurlparameter : null,
+    // boolean for storing the lock state of the editor
+    islocked           : false
+    
+};
 
+
+// calls the unlock PHP code for unlock the document and removes the
+// refresh timer object
 function releaseDocument() {
-    clearInterval(goRefreshLock);
-    if (goLoadedURLParameter != null)
-        $.ajax( { url : "wl-unlock.php?"+$.param(goLoadedURLParameter) } ); 
+    clearInterval(goRuntime.refreshtimer);
+    if (goRuntime.loadedurlparameter != null)
+        $.ajax( { url : "wl-unlock.php?"+$.param(goRuntime.loadedurlparameter) } ); 
 }
 
+// creates the document timer, that refreshes a lock or updates the editor
+// if the document release a lock
 function documentTimer(poURLParameter) {
-    if (goRefreshLock != null)
-        clearInterval(goRefreshLock);
+    if (goRuntime.refreshtimer != null)
+        clearInterval(goRuntime.refreshtimer);
     
-    goRefreshLock = setInterval( function()
+    goRuntime.refreshtimer = setInterval( function()
         { $.ajax( {
-              url     : "wl-lock.php?"+$.param(poURLParameter)
+              url     : "wl-lock.php?"+$.param(goRuntime.loadedurlparameter)
         } );
           
         $.ajax({ 
-              url     : "wl-haslock.php?"+$.param(poURLParameter),
+              url     : "wl-haslock.php?"+$.param(goRuntime.loadedurlparameter),
               success : function(pcResponse) {
                   var llReadOnly = $(pcResponse).find("user").size() != 0;
                   $("#weblatex-editor").ckeditorGet().setReadOnly( llReadOnly );
@@ -31,15 +44,17 @@ function documentTimer(poURLParameter) {
     );
 }
 
+// creates the CKEditor instance
+// @param poURLParameter url parameter for setting the autosave plugin
 function setEditorInstance(poURLParameter) {
   if ($("#weblatex-editor").size() == 0)
       return;
 
   documentTimer(poURLParameter);
-  
+
   $("#weblatex-editor").ckeditor({
       skin                : "office2003", 
-      readOnly            : glisLocked,
+      readOnly            : goRuntime.islocked,
       autoParagraph       : false,
       ignoreEmptyParagraph: true,
       extraPlugins        : "autosave",
@@ -62,6 +77,7 @@ function setEditorInstance(poURLParameter) {
 
 
 
+// document ready event handler
 $(document).ready( function() {
                   
   $("#weblatex-directory").fileTree(
@@ -83,7 +99,7 @@ $(document).ready( function() {
               lcURL = "wl-editdraft.php?"+$.param(loURLParameter);
           if (laItem[0] == "url")
               lcURL = laItem[1];
-
+                                                        
           if (lcURL != null)
               $.get(lcURL, function(pcData) {
                   $("#weblatex-content").fadeOut("slow", function() {
@@ -96,15 +112,14 @@ $(document).ready( function() {
 
                       $("#weblatex-content").html(pcData).fadeIn("slow");
                       setEditorInstance(loURLParameter)
-                      goLoadedURLParameter = loURLParameter;  
+                      goRuntime.loadedurlparameter = loURLParameter;  
                   });
               });
       }
   )
 });
 
-
-
+// create popup menu for directory and file objects in the directory tree object
 //                $('li.directory').contextPopup({
 //                                             title: 'My Popup Menu',
 //                                           items: [
