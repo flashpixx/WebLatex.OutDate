@@ -56,6 +56,7 @@ class draft implements basedocument {
      * @param $pcName name of the draft
      * @param $poUser user object for setting the owner
      * @return new draft object
+     * @todo check the Insert_ID() call for non-mysql databases
      **/
     static function create( $pcName, $poUser ) {
         if ( (!is_string($pcName)) || (!($poUser instanceof man\user)) )
@@ -67,7 +68,7 @@ class draft implements basedocument {
             throw new \Exception( "draft [".$pcName."] exists" );
         
         $loDB->Execute("INSERT IGNORE INTO draft (name,owner) VALUES (?,?)", array($pcName, $poUser->getID()));
-        return new draft($pcName);
+        return new draft($loDB->Insert_ID());
     }
     
     /** deletes a draft
@@ -290,6 +291,7 @@ class draft implements basedocument {
     /** tries to create a lock of the draft and remove old locks if needed
      * @param $poUser user object
      * @return null if the lock can be stored, the user object, which hold the lock
+     * @bug if the user has no write access a lock can be created
      **/
     function lock( $poUser ) {
         if (!($poUser instanceof man\user))
@@ -302,7 +304,7 @@ class draft implements basedocument {
         $loLockUser = $this->hasLock();
         if (!empty($loLockUser)) 
             return $loLockUser;
-            
+        
         // try to set the lock or refresh the lock if exists
         $this->moDB->Execute("INSERT INTO draft_lock (draft, user, session) VALUES (?,?,?) ON DUPLICATE KEY UPDATE user=?, session=?, lastactivity=NOW()", array($this->mnID, $poUser->getID(), session_id(), $poUser->getID(), session_id()));
         

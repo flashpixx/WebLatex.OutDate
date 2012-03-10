@@ -32,6 +32,10 @@ require_once( dirname(__DIR__)."/base.class.php" );
 /** interface for the documents (directory / draft /document) **/
 interface basedocument extends \weblatex\base {
     
+    /** database object **/
+    private $moDB;
+    
+    
     /** returns the owner user object of the document
      * @returns null or the owner user object
      **/

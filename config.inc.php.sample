@@ -69,6 +69,9 @@ class config {
     /** language code for setting translation **/
     const language          = "en_EN";
     
+    /** path for temporary files (eg PDF redering), set it to null, system default is used **/
+    const tempdir           = null;
+    
     /** array with numbers of the system rights (change only the numbers) **/
     static $system_rights   = array(
                                     "administrator" => 1,
@@ -98,20 +101,8 @@ class config {
 	
 	// === tex configuration =====================================================================================================
 	
-	/** path to latex-to-pdf interpreter **/
-	const pdf2latex			= "path to pdflatex -interaction=nonstopmode";
-	
-	/** path to makeindex **/
-	const makeindex			= "path to makeindex";
-	
-	/** path to metapost **/
-	const metapost			= "path to mpost --interaction nonstopmode";
-	
-	/** path to bibtex **/
-	const bibtex			= "path to bibtex8";
-	
-	/** path to asymptote **/
-	const asymptote			= "path to asy";
+	/** path to the latexmk.pl script for generating the PDF with al needed runs **/
+	const latexmk		= "path to pdflatex -interaction=nonstopmode";
 
 }
 

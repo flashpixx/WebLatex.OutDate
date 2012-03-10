@@ -78,16 +78,26 @@ class theme {
      **/
     function header( $poUser = null, $pcHeader = null ) {
         $this->moTheme->header( $poUser );
+        echo $pcHeader;
         
         if (!empty($poUser)) {
-     // $(".file").addcontextmenu("weblatex-filemenu");
             
-            // use the minified java- and css-script for a better performance
+            // use the minified javascript- and css-script for a better performance
             echo "<link type=\"text/css\" href=\"tools/minify/?g=basecss\" rel=\"stylesheet\" />\n";
             echo "<script type=\"text/javascript\" src=\"tools/minify/?g=basejs\"></script>\n";
             
-            // we set the configuration data for the session
+            // we set the configuration data for the session in the namespace "weblatex"
             echo "<script type=\"text/javascript\">";
+            /*
+            echo "weblatex.config = {";
+            echo "sessionname : \"".wm\session::$sessionname."\",";
+            echo "sessionid : \"".session_id()."\",";
+            echo "autosavetime : ".(wl\config::autosavetime*1000).",";
+            echo "dirloadmessage : \""._("loading")."\",";
+            echo "sessionparam : $.param({ ".wm\session::$sessionname." : \"".session_id()."\" })";
+            echo "};";
+            */
+            
             echo "var goConfig = {";
             echo "sessionname : \"".wm\session::$sessionname."\",";
             echo "sessionid : \"".session_id()."\",";
@@ -102,7 +112,6 @@ class theme {
             echo "<script type=\"text/javascript\" src=\"tools/ckeditor/adapters/jquery.js\"></script>\n";
         }
         
-        echo $pcHeader;
         $this->moTheme->body( $poUser );
     }
     

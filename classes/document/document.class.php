@@ -39,9 +39,13 @@ require_once( __DIR__."/baseedit.class.php" );
 class document implements baseedit {
     
     /* document id **/
-    private $mnID      = null;
+    private $mnID           = null;
     /** owner object **/
-    private $moOner    = null;
+    private $moOner         = null;
+    /** path for generating the document **/
+    private $mcGeneratePath = null;
+    /** database object **/
+    private $moDB      = null;
     
     
     
@@ -49,6 +53,7 @@ class document implements baseedit {
      * @param $pcName document name
      * @param $poUser user object of the owner
      * @return the new document object
+     * @todo check the Insert_ID() call for non-mysql databases
      **/
     static function create( $pcName, $poUser ) {
         if ( (!is_string($pcName)) || (!($poUser instanceof wm\user)) )
@@ -62,7 +67,7 @@ class document implements baseedit {
         
         $loDB->Execute( "INSERT IGNORE INTO document (name,owner) VALUES (?,?)", array($pcName, $poUser->getID()) );
         
-        return new document($pcName);
+        return new document($loDB->Insert_ID());
     }
     
     /** deletes a document
@@ -92,12 +97,13 @@ class document implements baseedit {
                 throw new \Exception( "document not found within the path" );
         }
         
+        $this->moDB = wl\main::getDatabase();
         if (is_numeric($px))
-            $loResult = wl\main::getDatabase()->Execute( "SELECT id, owner FROM document WHERE id=?", array($px) );
+            $loResult = $this->moDB->Execute( "SELECT id, owner FROM document WHERE id=?", array($px) );
         if ($px instanceof $this)
-            $loResult = wl\main::getDatabase()->Execute( "SELECT id, owner FROM document WHERE id=?", array($px->getID()) );
+            $loResult = $this->moDB->Execute( "SELECT id, owner FROM document WHERE id=?", array($px->getID()) );
         if (is_string($px))
-            $loResult = wl\main::getDatabase()->Execute( "SELECT id, owner FROM document WHERE id=?", array($loDoc->getID()) );
+            $loResult = $this->moDB->Execute( "SELECT id, owner FROM document WHERE id=?", array($loDoc->getID()) );
         
         if ($loResult->EOF)
             throw new \Exception( "document data not found" );
@@ -105,6 +111,9 @@ class document implements baseedit {
         $this->mnID   = intval($loResult->fields["id"]);
         if (!empty($loResult->fields["owner"]))
             $this->moOwner = new wm\user(intval($loResult->fields["owner"]));
+        
+        // set the generate path for the PDF
+        $this->mcGeneratePath = wl\main::getTempDir()."/".session_id()."/".$this->mnID;
     }
 
     /** returns the unique id
@@ -123,7 +132,7 @@ class document implements baseedit {
     
     /** get the document name **/
     function getName() {
-        $loResult = wl\main::getDatabase()->Execute( "SELECT name FROM document WHERE id=?", array($this->mnID) );
+        $loResult = $this->moDB->Execute( "SELECT name FROM document WHERE id=?", array($this->mnID) );
         return $loResult->fields["name"];
     }
     
@@ -131,7 +140,7 @@ class document implements baseedit {
      * @return draft object or draft content
      **/
     function getDraft() {
-        $loResult = wl\main::getDatabase()->Execute( "SELECT draft, draftid FROM document WHERE id=?", array($this->mnID) );
+        $loResult = $this->moDB->Execute( "SELECT draft, draftid FROM document WHERE id=?", array($this->mnID) );
         if (empty($loResult->fields["draftid"]))
             return $loResult->fields["draft"];
         else
@@ -142,7 +151,7 @@ class document implements baseedit {
      * @return boolean is the document is archivable
      **/
     function isArchivable() {
-        $loResult = wl\main::getDatabase()->Execute( "SELECT archivable FROM document WHERE id=?", array($this->mnID) );
+        $loResult = $this->moDB->Execute( "SELECT archivable FROM document WHERE id=?", array($this->mnID) );
         return $loResult->fields["archivable"] == true;
     }
     
@@ -157,7 +166,7 @@ class document implements baseedit {
      * @return boolean is the document modifiable
      **/
     function isModifiable() {
-        $loResult = wl\main::getDatabase()->Execute( "SELECT modifiable FROM document WHERE id=?", array($this->mnID) );
+        $loResult = $this->moDB->Execute( "SELECT modifiable FROM document WHERE id=?", array($this->mnID) );
         return $loResult->fields["modifiable"] == true;
     }
     
@@ -165,7 +174,7 @@ class document implements baseedit {
      * @param $plModifiable boolean
      **/
     function setModifiable( $plModifiable ) {
-        wl\main::getDatabase()->Execute( "UPDATE document SET modifiable=? WHERE id=?", array( ($plModifiable ? "true" : "false"), $this->mnID) );
+        $this->moDB->Execute( "UPDATE document SET modifiable=? WHERE id=?", array( ($plModifiable ? "true" : "false"), $this->mnID) );
     }
     
     /** returns the access of an user
@@ -244,6 +253,28 @@ class document implements baseedit {
      * @return assoc. array
      **/
     function getHistory() {
+        
+    }
+    
+    /** generates the PDF with the pdf2latex calls and returns the
+     * absolut path to the PDF. Errors will be thrown with an exception
+     * @return absolut path to the PDF
+     **/
+    function generatePDF() {
+        if (empty($this->mcGeneratePath))
+            wl\main::phperror( "temporary path is empty, so can not create any PDF", E_USER_ERROR );
+        
+        // extract draft, search within the draft the ###content### section for adding the content
+        // extract document parts and replace the ###content### with the include calls
+        // extract media data and bibtex data
+        
+        // convert HTML document code with XSLT into TeX code
+        
+        // run latexmk.pl (it seems it is a better choice for pdf2latex, changing configuration option)
+        // with options: -pdf -gg -f -silent
+        // pdf for generate PDF, gg rebuild aux-files, -f for running more than one times, -silent for
+        // run without stopping on errors
+        // There is no option to getting errors after the runs, take a look to the output of the script
         
     }
 }

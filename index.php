@@ -23,6 +23,57 @@
  @endcond
  **/
 
+/**
+ * @todo add working context menu for file and directory objects (create / deleting)
+ * with modal dialogs and jQuery calls
+ *
+ * @todo adding own exception for determin different errors
+ *
+ * @todo add a own session table in the database for storing the session id and refernce
+ * this id to the lock tables and chat table for removing data rows if the session is released
+ *
+ * @todo remove directory css & images to the theme directory, so that
+ * all can be setup with the theme (rename the css classes / ids maybe)
+ *
+ * @todo add document editing (the document class must be completed)
+ *
+ * @todo adding ckeditor plugin for managing the document history
+ *
+ * @todo adding media plugin for the chkeditor and also a own subpage
+ *
+ * @todo do PDF rendering and LaTeX calls (user & session depended)
+ *
+ * @todo check gettext calls, is seems to be broken
+ *
+ * @todo add media browser to the chkeditor with a plugin (images should
+ * be shown on fly
+ *
+ * @todo add plugin for math formula to the ckeditor, that creates
+ * the correct TeX code and shows the formula with an image on fly
+ *
+ * @todo create Ajax calls for passwort changing
+ *
+ * @todo adding some user informations like name, adress, other and add support
+ * to the lock and chat commuication
+ * 
+ * @todo add administrator interface (group / user / right interface)
+ *
+ * @todo add interface for creating substitues (TeX renewcommand)
+ *
+ * @todo adding biblatex support
+ *
+ * @todo add lco support for creating own lco files
+ *
+ * @todo create installation script like Wordpress installation
+ *
+ * @todo add an Ajax chat to chat with a user, that locked a document
+ *
+ * @todo adding a ckeditor plugin for full TikZ support (http://www.texample.net/tikz/)
+ *
+ * @todo create portet SQL statements for other database systems
+ **/
+    
+    
 /** @file index.php
  * @brief index file, that creates the login sreen or the main view
  *

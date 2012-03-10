@@ -126,6 +126,30 @@ class main {
         }
     }
     
+    /** returns the path to the temporary directory (we use the path to render
+     * the PDF with pdf2latex
+     * @return temporary path
+     **/
+    static function getTempDir() {
+        $lcConfigTemp = config::tempdir;
+        if (!empty($lcConfigTemp))
+            return realpath($lcConfigTemp);
+        
+        if ( function_exists("sys_get_temp_dir") )
+            return realpath(sys_get_temp_dir());
+        
+        if ( (isset($_ENV["TMP"])) && (!empty($_ENV["TMP"])) )
+            return realpath($_ENV["TMP"]);
+        
+        if ( (isset($_ENV["TEMP"])) && (!empty($_ENV["TEMP"])) )
+            return realpath($_ENV["TEMP"]);
+                            
+        if ( (isset($_ENV["TMEPDIR"])) && (!empty($_ENV["TMEPDIR"])) )
+            return realpath($_ENV["TMEPDIR"]);
+        
+        self::phperror( "temporary path not found", E_USER_ERROR );
+    }
+    
     /** returns true if all elements within the array are true
      * @param $pa boolean array
      * @return boolean if all is true

@@ -56,6 +56,7 @@ class directory implements basedocument {
      * @param $pcPath FQN path
      * @param $poUser owner user object
      * @return directory object
+     * @todo check the Insert_ID() call for non-mysql databases
      **/
     static function create( $pcPath, $poUser ) {
         if ( (!is_string($pcPath)) || (!($poUser instanceof man\user)) )
