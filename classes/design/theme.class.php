@@ -88,15 +88,13 @@ class theme {
             
             // we set the configuration data for the session in the namespace "weblatex"
             echo "<script type=\"text/javascript\">";
-            /*
-            echo "weblatex.config = {";
-            echo "sessionname : \"".wm\session::$sessionname."\",";
-            echo "sessionid : \"".session_id()."\",";
-            echo "autosavetime : ".(wl\config::autosavetime*1000).",";
-            echo "dirloadmessage : \""._("loading")."\",";
-            echo "sessionparam : $.param({ ".wm\session::$sessionname." : \"".session_id()."\" })";
-            echo "};";
-            */
+            echo "if (typeof webLaTeX != \"undefined\") {";
+            echo "webLaTeX.config.sessionname = \"".wm\session::$sessionname."\";";
+            echo "webLaTeX.config.sessionid = \"".session_id()."\";";
+            echo "webLaTeX.config.autosavetime = ".(wl\config::autosavetime*1000).";";
+            echo "webLaTeX.config.dirloadmessage = \""._("loading")."\";";
+            //echo "webLaTeX.config.sessionparam = $.param(webLaTeX.config.sessionname : webLaTeX.config.sessionid);";
+            echo "}";
             
             echo "var goConfig = {";
             echo "sessionname : \"".wm\session::$sessionname."\",";

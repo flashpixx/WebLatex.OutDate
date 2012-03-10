@@ -85,7 +85,7 @@ if ($loLockedUser instanceof wm\user) {
     // the configuration in the main file, used the glisLocked for setting the state. We set
     // set it here, because only this scripts knows the lock of the draft, otherwise
     // the lock will be refreshed after a while.
-    echo "<script type=\"text/javascript\">weblatex.goRuntime.islocked = true;</script>\n";
+    echo "<script type=\"text/javascript\">if (webLaTeX) webLaTeX.setEditorLock(true);</script>\n";
 }
     
 echo "<div id=\"weblatex-editor\">".$loDraft->getContent()."</div>";
