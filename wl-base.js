@@ -43,7 +43,7 @@ if (typeof webLaTeX == "undefined")
                      * refresh timer object and the editor instance
                      **/
                     releaseDocument : function() {
-                        clearInterval();
+                        clearInterval(_instance.refreshtimer);
 
                         var loEditor = CKEDITOR.instances["weblatex-editor"];
                         if (loEditor)
@@ -106,7 +106,7 @@ if (typeof webLaTeX == "undefined")
                 // if the document release a lock
                 function setDocumentTimer() {
                     if (_runtime.refreshtimer != null)
-                        clearInterval();
+                        clearInterval(_instance.refreshtimer);
                     
                     _runtime.refreshtimer = setInterval( function() {
                                 $.ajax({ url     : "wl-lock.php?"+getURLParameter() });
@@ -164,7 +164,7 @@ $(document).ready( function() {
           if (lcURL != null)
               $.get(lcURL, function(pcData) {
                   $("#weblatex-content").fadeOut("slow", function() {
-                    webLaTeX.releaseDocument();
+                     webLaTeX.releaseDocument();
                      $("#weblatex-content").html(pcData).fadeIn("slow");
                      webLaTeX.setEditorInstance(loURLParameter);                                                 
                   });
