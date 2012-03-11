@@ -24,6 +24,9 @@
  **/
 
 /**
+ * $LastChangedDate$
+ * $Author$
+ *
  * @file wl-lock.php
  * @brief file for locking / refreshing a document lock
  *

@@ -74,7 +74,11 @@
  **/
     
     
-/** @file index.php
+/**
+ * $LastChangedDate$
+ * $Author$
+ *
+ * @file index.php
  * @brief index file, that creates the login sreen or the main view
  *
  * This file creates the login screen, checks the login data and generates

@@ -24,6 +24,9 @@
  **/
     
 /**
+ * $LastChangedDate$
+ * $Author$
+ *
  * @file wl-unlock.php
  * @brief unlocks a document or draft
  *

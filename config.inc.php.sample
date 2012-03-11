@@ -23,7 +23,11 @@
  @endcond
 **/
 
-/** @file config.inc.php.sample
+/**
+ * $LastChangedDate$
+ * $Author$
+ *
+ * @file config.inc.php.sample
  * @brief configuration example class
  *
  * Example configuration class, which stores all individual parameters of the 

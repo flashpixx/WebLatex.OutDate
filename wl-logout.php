@@ -23,7 +23,11 @@
  @endcond
  **/
  
-/** @file wl-logout.php
+/**
+ * $LastChangedDate$
+ * $Author$
+ *
+ * @file wl-logout.php
  * @brief file for destroying the session and removing the document locks
  *
  * This file destroys the session and remove all locks of the documents

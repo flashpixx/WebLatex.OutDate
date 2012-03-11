@@ -1,4 +1,6 @@
 // === webLaTeX instance ==================================================================================================================================
+// $LastChangedDate$
+// $Author$
 if (typeof webLaTeX == "undefined")
     var webLaTeX = (function()
     {

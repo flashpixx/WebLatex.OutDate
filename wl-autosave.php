@@ -23,7 +23,11 @@
  @endcond
  **/
 
-/** @file wl-autosave.php
+/**
+ * $LastChangedDate$
+ * $Author$
+ *
+ * @file wl-autosave.php
  * @brief file that connects the autosave CKEditor plugin with the database
  *
  * The file is called by the autosave CKEditor autosave plugin and stores
