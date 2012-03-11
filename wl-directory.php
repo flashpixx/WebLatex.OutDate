@@ -123,7 +123,7 @@ if ( ($lnSystemItems > 0) && ($laSystemItems[0] == "WebLaTeX") ) {
 if ( ($lnSystemItems > 0) && ($laSystemItems[0] == "myDrafts") ) {
     
     foreach( doc\draft::getList($loUser) as $loItem )
-        echo "<li class=\"file ext_txt\"><a href=\"#\" rel=\"draft$".$loItem->getID()."\">".$loItem->getName()."</a></li>\n";
+        echo "<li class=\"file ext_txt draft\"><a href=\"#\" rel=\"draft$".$loItem->getID()."\">".$loItem->getName()."</a></li>\n";
     
     exit();
 }
@@ -153,7 +153,7 @@ foreach($loDirectory->getChildren() as $loItem) {
     
     if ($loItem instanceof doc\directory)
         // we need a slash at the end, otherwise a infinit loop is created
-        echo "<li class=\"directory collapsed\"><a href=\"#\" rel=\"".$loItem->getFQN()."/\">".$loItem->getName()."</a></li>\n";
+        echo "<li class=\"directory collapsed dircontext\"><a href=\"#\" rel=\"".$loItem->getFQN()."/\">".$loItem->getName()."</a></li>\n";
     
     if ($loItem instanceof doc\draft) {
         $lcName = "draft$".$loItem->getID();
@@ -178,12 +178,12 @@ if ($loDirectory->isRoot())
 
         if ($loItem instanceof doc\draft) {
             $lcName = "draft$".$loItem->getID();
-            echo "<li class=\"file ext_txt\"><a href=\"#\" rel=\"".$lcName."\">".$loItem->getName()."</a></li>\n";
+            echo "<li class=\"file ext_txt draft\"><a href=\"#\" rel=\"".$lcName."\">".$loItem->getName()."</a></li>\n";
         }
             
         if ($loItem instanceof doc\document) {
             $lcName = "document$".$loItem->getID();
-            echo "<li class=\"file ext_doc\"><a href=\"#\" rel=\"".$lcName."\">".$loItem->getName()."</a></li>\n";
+            echo "<li class=\"file ext_doc document\"><a href=\"#\" rel=\"".$lcName."\">".$loItem->getName()."</a></li>\n";
         }
             
     }

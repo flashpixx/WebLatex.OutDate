@@ -196,28 +196,91 @@ $(document).ready( function() {
                     });
             }
     );
+    
                   
+    // add a simple context menu to the div tag to add directories on the root node
+    $("#weblatex-menu").contextPopup({
+        title : "Root Directory",
+        items : [
+                 { label  : "create directory",
+                   action : function() { alert('clicked 3') }
+                 }
+                ]
+    });
                   
-    // create popup menu for directory and file objects in the directory tree object
-    /*
-    $("li.directory").contextPopup({
+    // add to all directory items the context menu
+    $("#weblatex-directory ul.jqueryFileTree li.dircontext").livequery(function(){ 
+                                                
+        $(this).contextPopup({
             title : "Directory",
             items : [
-                     { label  : "Some Item",
-                       action : function() { alert('clicked 1') }
-                     },
+                      { label  : "edit",
+                        action : function() { alert('clicked 1') }
+                      },
+                                                                                                    
+                      { label  : "delete",
+                        action : function() { alert('clicked 2') }
+                      },
+                                                                                                    
+                      null,
+                                                                                                    
+                      { label  : "create directory",
+                        action : function() { alert('clicked 3') }
+                      },
                      
-                     { label  : "Another Thing",
+                      { label  : "create draft",
+                        action : function() { alert('clicked 4') }
+                      },
+                     
+                      { label  : "create document",
+                        action : function() { alert('clicked 5') }
+                      }
+                    ]
+        });
+                                                
+    });
+    
+    // add the context menu to all draft objects
+    $("#weblatex-directory ul.jqueryFileTree li.draft").livequery(function(){ 
+                                                                                    
+        $(this).contextPopup({
+            title : "Draft",
+            items : [
+                     { label  : "delete",
                        action : function() { alert('clicked 2') }
                      },
                      
                      null,
                      
-                     { label  : "Blah Blah",
-                       action : function() { alert('clicked 3') }
-                     }
-                    ]})
-    */
+                     { label  : "is used by",
+                       action : function() { alert('clicked 2') }
+                     },                     
+                    ]
+                                                                                
+        });
+                                                                               
+    });
+                  
+    // add the context menu to all document objects
+    $("#weblatex-directory ul.jqueryFileTree li.document").livequery(function(){ 
+                                                                
+        $(this).contextPopup({
+            title : "Document",
+            items : [
+                     { label  : "delete",
+                       action : function() { alert('clicked 2') }
+                     },
+                                                                                              
+                     null,
+                                                                                              
+                     { label  : "generate PDF",
+                       action : function() { alert('clicked 2') }
+                     },                     
+                    ]
+                                                                                     
+        });
+                                                                
+    });
                   
 });
 
