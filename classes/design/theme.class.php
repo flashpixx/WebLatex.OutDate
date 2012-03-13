@@ -88,8 +88,33 @@ class theme {
             
             // we set the configuration data for the session in the namespace "weblatex"
             echo "<script type=\"text/javascript\">";
-            echo "if ( webLaTeX !== undefined)";
-            echo "webLaTeX.getInstance(\"".wm\session::$sessionname."\", \"".session_id()."\", ".(wl\config::autosavetime*1000).", \""._("loading")."\");";
+            echo "if (webLaTeX !== undefined)";
+            echo "webLaTeX.getInstance(\"".wm\session::$sessionname."\", \"".session_id()."\", ".(wl\config::autosavetime*1000).", ";
+            echo "{ ";
+            
+            echo "  create           : \""._("Create")."\",";
+            echo "  edit             : \""._("Edit")."\",";
+            echo "  del              : \""._("Delete")."\",";
+            
+            echo "  directory        : \""._("directory")."\",";
+            echo "  draft            : \""._("draft")."\",";
+            echo "  right            : \""._("right")."\",";
+            echo "  group            : \""._("group")."\",";
+            
+            echo "  directoryload    : \""._("loading")."\", ";
+            echo "  directoryadd     : \""._("set directory name")."\", ";
+            echo "  directorycreate  : \""._("directory creating")."\", ";
+            echo "  directoryerror   : \""._("directory error")."\",";
+
+            echo "  labelcreatedir   : \""._("create directory")."\",";
+            echo "  labelcreatedraft : \""._("create draft")."\",";
+            echo "  labelcreatedoc   : \""._("create document")."\",";
+            echo "  labelcreateright : \""._("create right")."\",";
+            echo "  labelcreategroup : \""._("create group")."\",";
+            echo "  labelisusedby    : \""._("is used by")."\",";
+            echo "  labelgeneratepdf : \""._("generate PDF")."\"";
+            
+            echo "});";
             echo "</script>";
             
             // CKEditor does not work with minify, so we set the references manually

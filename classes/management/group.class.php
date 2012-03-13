@@ -40,53 +40,59 @@ class group implements \weblatex\base {
     private $mcName    = null;
     /** group id **/
     private $mnID      = null;
-    /** system group **/
-    private $mlSystem  = false;
     /** database object **/
     private $moDB      = null;
+    /** owner **/
+    private $moOwner   = null;
     
     
     
     /** creates a new group account if not exists 
      * @param $pcName group name
-     * @param $plSystem boolean for system group
+     * @param $poUser user object for setting the right owner
      * @return the new group object
      **/
-    static function create( $pcName, $plSystem = false ) {
-        if ( (!is_string($pcName)) || (!is_boolean($plSystem)) )
-            wl\main::phperror( "first argument must be string value, second argument a boolean value", E_USER_ERROR );
+    static function create( $pcName, $poUser = null ) {
+        if (!is_string($pcName))
+            wl\main::phperror( "first argument must be string value", E_USER_ERROR );
+        if ( (!empty($poUser)) && (!($poUser instanceof user)) )
+            wl\main::phperror( "second argument must be empty or an user object", E_USER_ERROR );
         
         $loDB     = wl\main::getDatabase();
         $loResult = $loDB->Execute( "SELECT id FROM groups WHERE name=?", array($pcName) );
         if (!$loResult->EOF)
             throw new \Exception( "group [".$pcName."] exists" );
         
-        $loDB->Execute( "INSERT IGNORE INTO groups (name,system) VALUES (?,?)", array($pcName, ($plSystem ? "true" : "false")) );
+        $lxID = null;
+        if (!empty($poUser))
+            $lxID = $poUser->getID();
+        $loDB->Execute( "INSERT IGNORE INTO groups (name,owner) VALUES (?,?)", array($pcName, $lxID) );
         
         return new group($pcName);
     }
     
     /** deletes a group with the group id
      * @param $pnGID user id
-     * @param $plForce system groups can be deleted only by setting force to true
      **/
-    static function delete( $pnGID, $plForce = false ) {
+    static function delete( $pnGID ) {
         if (!is_numeric($pnGID))
             wl\main::phperror( "argument must be a numeric value", E_USER_ERROR );
 
-        if ($plForce)
-            wl\main::getDatabase()->Execute( "DELETE FROM groups WHERE id=?", array($pnGID) );
-        else
-            wl\main::getDatabase()->Execute( "DELETE FROM groups WHERE id=? AND system=?", array($pnGID, "false") );
+        wl\main::getDatabase()->Execute( "DELETE FROM groups WHERE id=?", array($pnGID) );
     }
     
     /** returns the grouplist
-     * @return assoc array with groupname (name), group id (id) and boolean (system) for system group
+     * @param $poUser user object or null
+     * @return array with group objects
      **/
-    static function getList() {
+    static function getList($poUser = null) {
         $la = array();
         
-        $loResult = wl\main::getDatabase()->Execute( "SELECT name, id, system FROM groups" );
+        if ($poUser instanceof user)
+            $loResult = wl\main::getDatabase()->Execute( "SELECT id FROM groups WHERE owner=?", array($poUser->getID()));
+        else
+            $loResult = wl\main::getDatabase()->Execute( "SELECT id FROM groups" );
+        
         if (!$loResult->EOF)
             foreach( $loResult as $laRow )
                 array_push( $la, new group(intval($laRow["id"])) );
@@ -106,18 +112,19 @@ class group implements \weblatex\base {
         $this->moDB = wl\main::getDatabase();
         
         if (is_numeric($px))
-            $loResult = $this->moDB->Execute( "SELECT name, id, system FROM groups WHERE id=?", array($px) );
+            $loResult = $this->moDB->Execute( "SELECT name, id, owner FROM groups WHERE id=?", array($px) );
         if ($px instanceof $this)
-            $loResult = $this->moDB->Execute( "SELECT name, id, system FROM groups WHERE id=?", array($px->getID()) );
+            $loResult = $this->moDB->Execute( "SELECT name, id, owner FROM groups WHERE id=?", array($px->getID()) );
         if (is_string($px))
-            $loResult = $this->moDB->Execute( "SELECT name, id, system FROM groups WHERE name=?", array($px) );
+            $loResult = $this->moDB->Execute( "SELECT name, id, owner FROM groups WHERE name=?", array($px) );
         
         if ($loResult->EOF)
             throw new \Exception( "group data not found" );
         
         $this->mcName   = $loResult->fields["name"];
         $this->mnID     = intval($loResult->fields["id"]);
-        $this->mlSystem = $loResult->fields["system"] === "true";
+        if (!empty($loResult->fields["owner"]))
+            $this->moOwner = new user(intval($loResult->fields["owner"]));
     }
     
     /** returns the groupname
@@ -134,11 +141,27 @@ class group implements \weblatex\base {
         return $this->mnID;
     }
     
-    /** returns if the group is a system group
-     * @return boolean for system group
+    /** returns the owner of the group
+     * @return null or user object
      **/
-    function isSystem() {
-        return $this->mlSystem;
+    function getOwner() {
+        return $this->moOwner;
+    }
+    
+    /** sets the owner
+     * @param null or user object
+     **/
+    /** sets the owner of this right 
+     * @param $px user object or null
+     **/
+    function setOwner($px) {
+        if ( (!empty($px)) && (!($px instanceof user)) )
+            wl\main::phperror( "argument must be empty or an user object", E_USER_ERROR );
+        
+        if (empty($px))
+            $this->moDB->Execute("UPDATE groups SET owner=? WHERE id=?", array(null, $this->mnID));
+        else
+            $this->moDB->Execute("UPDATE groups SET owner=? WHERE id=?", array($px->getID(), $this->mnID));
     }
     
     /** adds a user to the group
@@ -191,10 +214,7 @@ class group implements \weblatex\base {
      * @return string representation
      **/
     function __toString() {
-        $lc = $this->mcName." (".$this->mnID;
-        if ($this->mlSystem)
-            $lc .= " | System";
-        return $lc.")";
+        return $this->mcName." (".$this->mnID.")";
     }
     
     /** checks if another group object points to the same group id

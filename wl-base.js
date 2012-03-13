@@ -26,8 +26,8 @@ if (webLaTeX === undefined)
             sessionid       : null,
             // autosave time for refreshing the locks and save intervalle of the editor
             autosavetime    : null,
-            // loding message (multilanguage) of the directory calls
-            dirloadmessage  : null
+            // strings for getting the translation that is generate with PHP
+            translation     : {}
         };
         
                     
@@ -48,29 +48,44 @@ if (webLaTeX === undefined)
                         throw "path must be end with a slash";
                     
                     // create the input datatypes
-                    $("#weblatex-dialog").html("<p id=\"weblatex-dialog-message\">add a directory name</p><form><fieldset><label for=\"pathname\">directory name: "+pcParent+"</label> <input type=\"text\" name=\"pathname\" id=\"pathname\" class=\"text ui-widget-content ui-corner-all\" /></fieldset></form>");
+                    $("#weblatex-dialog").html("<p id=\"weblatex-dialog-message\">"+_config.translation.directoryadd+"</p><form><fieldset><label for=\"pathname\">directory name: "+pcParent+"</label> <input type=\"text\" name=\"pathname\" id=\"pathname\" class=\"text ui-widget-content ui-corner-all\" /></fieldset></form>");
+                    
+                    // build the buttons option first, because we will use translation names
+                    var loButtons                           = {  Cancel   : function() { $("#weblatex-dialog").dialog("close"); }  }
+                    loButtons[_config.translation.create]   = function() {
+                        $.ajax({ url     : "wl-directorycreate.php?"+_instance.getSessionURLParameter({path : pcParent+$("#pathname").val()}),
+                                 success : function(pcResponse) {	
+                                    lcMsg = $(pcResponse).find("error");
+                                    if (lcMsg.size() != 0)
+                                        $("#weblatex-dialog-message").text(lcMsg.text()).addClass( "ui-state-highlight" );
+                                    else {
+                                        $("#weblatex-dialog").dialog("close");
+                               
+                                        // we get the parent node, check if it is opend, and reopen the node, because the new directory is shown directly
+                                        // otherwise we do nothing. We read the a tag, because the rel attribute stores the parent, if it exists the node
+                                        // is opend
+                                        var loNode = $("a[rel='"+pcParent+"']");
+                                        if (loNode.size() != 0) {
+                                            if (loNode.parent().hasClass("expanded")) {
+                                                loNode.trigger("click");
+                                                loNode.trigger("click");
+                                            }
+                                         } else
+                                            $("#weblatex-directory").showTree();
+                                    }
+                                 }
+                        });
+                    };
+                    
                     
                     // create the dialog gui (the close call must be with the id name, because if the focuse is lost, the $(this) option can not close the dialog anymore)
                     $("#weblatex-dialog").dialog({
                         height     : 225,
                         width      : 400,
-                        title      : "directory creating",
+                        title      : _config.translation.directorycreate,
                         modal      : true,
                         resizable  : false,
-                        buttons    : {
-                            "create" : function() {
-                                $.ajax({ url     : "wl-directorycreate.php?"+_instance.getSessionURLParameter({path : pcParent+$("#pathname").val()}),
-                                         success : function(pcResponse) {	
-                                            lcMsg = $(pcResponse).find("error");
-                                            if (lcMsg.size() != 0)
-                                                $("#weblatex-dialog-message").text(lcMsg.text()).addClass( "ui-state-highlight" );
-                                            else
-                                                $("#weblatex-dialog").dialog("close");
-                                         }
-                                });
-                            },
-                            Cancel   : function() { $("#weblatex-dialog").dialog("close"); }
-                        },
+                        buttons    : loButtons,
                         close: function() { $("#weblatex-dialog").children().remove(); }
                     });
                 },
@@ -94,7 +109,7 @@ if (webLaTeX === undefined)
                                     $("#weblatex-dialog").dialog({
                                          height     : 150,
                                          width      : 400,
-                                         title      : "directory error",
+                                         title      : _config.translation.directoryerror,
                                          modal      : true,
                                          resizable  : false,
                                          close: function() { $("#weblatex-dialog").children().remove(); }
@@ -129,11 +144,11 @@ if (webLaTeX === undefined)
                 return $.param($.extend(lo, lo2));
             },
                 
-            /** returns the loading message
-             * @return string
+            /** returns the translation object
+             * @return object
              **/
-            getDirLoadMsg : function() {
-                return _config.dirloadmessage;
+            getTranslation : function() {
+                return _config.translation;
             },
                     
             /** calls the unlock PHP code for unlock the document and removes the
@@ -214,19 +229,24 @@ if (webLaTeX === undefined)
         }
 
                     
-        // create the static function getInstance()
+        /* create the static function getInstance()
+         * @param pcSessionName name of the session parameter
+         * @param pcSessionID session id
+         * @param pnAutosavetime refresh time for autosaving and refresh locking
+         * @param poTranslation object with translation strings
+         **/
         return {
-            getInstance: function(pcSessionName, pcSessionID, pnAutosavetime, pcDirloadMsg){
+            getInstance: function(pcSessionName, pcSessionID, pnAutosavetime, poTranslation){
                     if (_instance === undefined) {
-                        _instance = new webLaTeX();
-                    
-                        if ((pcSessionName === undefined) || (pcSessionID === undefined) || (pnAutosavetime === undefined) || (pcDirloadMsg === undefined))
+                        if ((pcSessionName === undefined) || (pcSessionID === undefined) || (pnAutosavetime === undefined) || (poTranslation === undefined))
                             throw "webLaTeX parameter undefined";
                     
+                        _instance               = new webLaTeX();
                         _config.sessionname     = pcSessionName;
                         _config.sessionid       = pcSessionID;
                         _config.autosavetime    = pnAutosavetime;
-                        _config.dirloadmessage  = pcDirloadMsg;
+                        _config.translation     = poTranslation;
+                    
                     }
                     return _instance;
             }
@@ -239,12 +259,12 @@ if (webLaTeX === undefined)
 
 // document ready event handler for creating directory and editor calls
 $(document).ready( function() {
-                  
+                 
       // create the call for the directory structure
       $("#weblatex-directory").fileTree(
             {
                 script      : "wl-directory.php?"+webLaTeX.getInstance().getSessionURLParameter(),
-                loadMessage : webLaTeX.getInstance().getDirLoadMsg()
+                loadMessage : webLaTeX.getInstance().getTranslation().directoryload
             },
                     
             function(pcItem) {
@@ -274,33 +294,45 @@ $(document).ready( function() {
                   
     // add a simple context menu to the div tag to add directories on the root node
     $("#weblatex-menu").contextPopup({
-        title : "Root Directory",
+        title : webLaTeX.getInstance().getTranslation().directory,
         items : [
-                 { label  : "create directory",
+                 { label  : webLaTeX.getInstance().getTranslation().labelcreatedir,
                    action : function() { webLaTeX.getInstance().dialogs.createDirectory("/"); }
                  },
                  
-                 { label  : "create draft",
+                 null,
+                 
+                 { label  : webLaTeX.getInstance().getTranslation().labelcreatedraft,
                    action : function() {}
                  },
                  
-                 { label  : "create document",
+                 { label  : webLaTeX.getInstance().getTranslation().labelcreatedoc,
                    action : function() {}
-                 }
+                 },
+                 
+                 null,
+                 
+                 { label  : webLaTeX.getInstance().getTranslation().labelcreateright,
+                   action : function() {}
+                 },
+                 
+                 { label  : webLaTeX.getInstance().getTranslation().labelcreategroup,
+                   action : function() {}
+                 },
                 ]
     });
                   
     // add to all directory items the context menu
-    $("#weblatex-directory ul.jqueryFileTree li.dircontext").livequery(function(){ 
+    $("#weblatex-directory ul.jqueryFileTree li.dircontextmenu").livequery(function(){ 
                                                 
         $(this).contextPopup({
-            title : "Directory",
+            title : webLaTeX.getInstance().getTranslation().directory,
             items : [
-                      { label  : "edit",
+                      { label  : webLaTeX.getInstance().getTranslation().edit,
                         action : function() {}
                       },
                                                                                                     
-                      { label  : "delete",
+                      { label  : webLaTeX.getInstance().getTranslation().del,
                         action : function(po) {
                             var lo = po.srcElement.childNodes;
                             if (lo.length != 1)
@@ -316,7 +348,7 @@ $(document).ready( function() {
                                                                                                     
                       null,
                                                                                                     
-                      { label  : "create directory",
+                      { label  : webLaTeX.getInstance().getTranslation().labelcreatedir,
                         action : function(po) {
                             var lo = po.srcElement.childNodes;
                             if (lo.length != 1)
@@ -331,11 +363,11 @@ $(document).ready( function() {
                         }
                       },
                      
-                      { label  : "create draft",
+                      { label  : webLaTeX.getInstance().getTranslation().labelcreatedraft,
                         action : function() {}
                       },
                      
-                      { label  : "create document",
+                      { label  : webLaTeX.getInstance().getTranslation().labelcreatedoc,
                         action : function() {}
                       }
                     ]
@@ -347,15 +379,15 @@ $(document).ready( function() {
     $("#weblatex-directory ul.jqueryFileTree li.draft").livequery(function(){ 
                                                                                     
         $(this).contextPopup({
-            title : "Draft",
+            title : webLaTeX.getInstance().getTranslation().draft,
             items : [
-                     { label  : "delete",
+                     { label  : webLaTeX.getInstance().getTranslation().del,
                        action : function() {}
                      },
                      
                      null,
                      
-                     { label  : "is used by",
+                     { label  : webLaTeX.getInstance().getTranslation().labelisusedby,
                        action : function() {}
                      },                     
                     ]
@@ -368,15 +400,15 @@ $(document).ready( function() {
     $("#weblatex-directory ul.jqueryFileTree li.document").livequery(function(){ 
                                                                 
         $(this).contextPopup({
-            title : "Document",
+            title : webLaTeX.getInstance().getTranslation().document,
             items : [
-                     { label  : "delete",
+                     { label  : webLaTeX.getInstance().getTranslation().del,
                        action : function() {}
                      },
                                                                                               
                      null,
                                                                                               
-                     { label  : "generate PDF",
+                     { label  : webLaTeX.getInstance().getTranslation().labelgeneratepdf,
                        action : function() {}
                      },                     
                     ]

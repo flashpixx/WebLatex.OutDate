@@ -87,57 +87,75 @@ echo "<ul class=\"jqueryFileTree\" style=\"display: none;\">\n";
 // we check the $lcPath, if we found the system node (prefix /WebLaTeX/), than we creates manually the correct subtree
 $laSystemItems = array_values(array_filter(explode("/", $lcPath), function ($el) { return !empty($el); } )); 
 $lnSystemItems = count($laSystemItems);
-if ( ($lnSystemItems > 0) && ($laSystemItems[0] == "WebLaTeX") ) {
-   
-    switch ($lnSystemItems) {
+if ($lnSystemItems > 0) {
+    $llClose = false;
+    
+    switch ($laSystemItems[0]) {
             
-        case 1 :
-            echo "<li class=\"directory collapsed\"><a href=\"#\" rel=\"/WebLaTeX/Settings/\">"._("settings")."</a></li>\n";
-            echo "<li class=\"directory collapsed\"><a href=\"#\" rel=\"/WebLaTeX/Help/\">"._("help")."</a></li>\n";
-            echo "<li class=\"file ext_exe\"><a href=\"wl-logout.php?".wm\session::buildURLParameter()."\">"._("logout")." (".$loUser->getName().")</a></li>\n";
+        // we check if the "mydrafts" folder used
+        case "myDrafts" :
+            $llClose = true;
+            foreach( doc\draft::getList($loUser) as $loItem )
+                echo "<li class=\"file ext_txt draft\"><a href=\"#\" rel=\"draft$".$loItem->getID()."\">".$loItem->getName()."</a></li>\n";
             break;
             
-        case 2 :
+        // we check if the "mydocuments" folder used
+        case "myDocuments" :
+            $llClose = true;
+            foreach( doc\document::getList($loUser) as $loItem )
+                echo "<li class=\"file ext_doc document\"><a href=\"#\" rel=\"document$".$loItem->getID()."\">".$loItem->getName()."</a></li>\n";
+            break;
             
-            switch ($laSystemItems[1]) {
+        case "myGroups" : 
+            $llClose = true;
+            foreach( wm\group::getList($loUser) as $loItem )
+                echo "<li class=\"file ext_cpp group\"><a href=\"#\" rel=\"group$".$loItem->getID()."\">".$loItem->getName()."</a></li>\n";
+            break;
             
-                case "Settings" :
-                    echo "<li class=\"file ext_exe\"><a href=\"#\" rel=\"url\$wl-password.php?".wm\session::buildURLParameter()."\">"._("change password")."</a></li>\n";
-                    break;
             
-                case "Help" :
-                    echo "<li class=\"file ext_html\">"._("GUI")."</li>\n";
-                    echo "<li class=\"file ext_html\">"._("Editor")."</li>\n";
-                    echo "<li class=\"file ext_html\">"._("LaTeX")."</li>\n";
+        // we check if "myrights" folder is used
+        case "myRights" :
+            $llClose = true;
+            foreach( wm\right::getList($loUser) as $loItem )
+                echo "<li class=\"file ext_rb right\"><a href=\"#\" rel=\"right$".$loItem->getID()."\">".$loItem->getName()."</a></li>\n";
+            break;
+            
+        // we check if the "WebLaTeX" folder is used
+        case "WebLaTeX" :
+            $llClose = true;
+            switch ($lnSystemItems) {
+            
+                case 1 :
+                    echo "<li class=\"directory collapsed\"><a href=\"#\" rel=\"/WebLaTeX/Settings/\">"._("settings")."</a></li>\n";
+                    echo "<li class=\"directory collapsed\"><a href=\"#\" rel=\"/WebLaTeX/Help/\">"._("help")."</a></li>\n";
+                    echo "<li class=\"file ext_exe\"><a href=\"wl-logout.php?".wm\session::buildURLParameter()."\">"._("logout")." (".$loUser->getName().")</a></li>\n";
                     break;
                     
+                case 2 :
+                    
+                    switch ($laSystemItems[1]) {
+                    
+                        case "Settings" :
+                            echo "<li class=\"file ext_exe\"><a href=\"#\" rel=\"url\$wl-password.php?".wm\session::buildURLParameter()."\">"._("change password")."</a></li>\n";
+                            break;
+                    
+                        case "Help" :
+                            echo "<li class=\"file ext_html\">"._("GUI")."</li>\n";
+                            echo "<li class=\"file ext_html\">"._("Editor")."</li>\n";
+                            echo "<li class=\"file ext_html\">"._("LaTeX")."</li>\n";
+                            break;
+                            
+                    }
             }
+            break;
     }
 
-
-    echo "</ul>\n";
-    exit();
+    if ($llClose) {
+        echo "</ul>\n";
+        exit();
+    }
 }
-    
-// we check if the "mydrafts" folder used
-if ( ($lnSystemItems > 0) && ($laSystemItems[0] == "myDrafts") ) {
-    
-    foreach( doc\draft::getList($loUser) as $loItem )
-        echo "<li class=\"file ext_txt draft\"><a href=\"#\" rel=\"draft$".$loItem->getID()."\">".$loItem->getName()."</a></li>\n";
-    
-    exit();
-}
-    
-// we check if the "mydrafts" folder used
-if ( ($lnSystemItems > 0) && ($laSystemItems[0] == "myDocuments") ) {
-    
-    foreach( doc\document::getList($loUser) as $loItem )
-        echo "<li class=\"file ext_doc document\"><a href=\"#\" rel=\"document$".$loItem->getID()."\">".$loItem->getName()."</a></li>\n";
-    
-    exit();
-}
-    
-    
+  
     
 // add database content (and check access to the directory first)
 $loDirectory = new doc\directory($lcPath);
@@ -148,8 +166,10 @@ if (empty($lcAccess))
 // if we within the root node, add the system menu nodes
 if ($loDirectory->isRoot()) {
     echo "<li class=\"directory collapsed\"><a href=\"#\" rel=\"/WebLaTeX/\">WebLaTeX</a></li>\n";
-    echo "<li class=\"directory collapsed\"><a href=\"#\" rel=\"/myDrafts/\">"._("my drafts")."</a></li>\n";
     echo "<li class=\"directory collapsed\"><a href=\"#\" rel=\"/myDocuments/\">"._("my documents")."</a></li>\n";
+    echo "<li class=\"directory collapsed\"><a href=\"#\" rel=\"/myDrafts/\">"._("my drafts")."</a></li>\n";
+    echo "<li class=\"directory collapsed\"><a href=\"#\" rel=\"/myGroups/\">"._("my groups")."</a></li>\n";
+    echo "<li class=\"directory collapsed\"><a href=\"#\" rel=\"/myRights/\">"._("my rights")."</a></li>\n";
 }
 
    
@@ -163,7 +183,7 @@ foreach($loDirectory->getChildren() as $loItem) {
     
     if ($loItem instanceof doc\directory)
         // we need a slash at the end, otherwise a infinit loop is created
-        echo "<li class=\"directory collapsed dircontext\"><a href=\"#\" rel=\"".$loItem->getFQN()."/\">".$loItem->getName()."</a></li>\n";
+        echo "<li class=\"directory collapsed dircontextmenu\"><a href=\"#\" rel=\"".$loItem->getFQN()."/\">".$loItem->getName()."</a></li>\n";
     
     if ($loItem instanceof doc\draft) {
         $lcName = "draft$".$loItem->getID();

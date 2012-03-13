@@ -274,9 +274,9 @@ class draft implements basedocument {
         
         // check the other rights of the user
         if (man\right::hasOne($poUser, $laReadRight))
-            return "w";
-        if (man\right::hasOne($poUser, $laWriteRight))
             return "r";
+        if (man\right::hasOne($poUser, $laWriteRight))
+            return "w";
         
         // check groups of the user and their rights of this draft
         if (wl\main::any( man\right::hasOne($laGroups, $laReadRight)))

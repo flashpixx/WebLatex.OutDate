@@ -76,13 +76,18 @@ if (isset($_GET["id"]))
     
 if ( (empty($loDraft)) || (empty($loUser)) )
     exit();
+   
+$lxAccess = $loDraft->getAccess($loUser);
+if (empty($lxAccess))
+    exit();
     
-$loLockedUser = $loDraft->lock($loUser, true);
-    
+$loLockedUser = null;
+if ($lxAccess == "w")
+    $loLockedUser = $loDraft->lock($loUser, true);
     
 // create content
 echo "<h1>"._("draft")." [".$loDraft->getName()."]</h1>\n";
-if ($loLockedUser instanceof wm\user) {
+if (($loLockedUser instanceof wm\user) || ($lxAccess == "r")) {
     echo "<p id=\"weblatex-message\">"._("is locked by")." [".$loLockedUser->GetName()."]</p>\n";
     // set the global lock state, because if this is set, the ckeditor ist not instantiate, so
     // the configuration in the main file, used the glisLocked for setting the state. We set
@@ -90,7 +95,6 @@ if ($loLockedUser instanceof wm\user) {
     // the lock will be refreshed after a while.
     echo "<script type=\"text/javascript\">if (webLaTeX !== undefined) webLaTeX.getInstance().setEditorLock(true);</script>\n";
 }
-    
 echo "<div id=\"weblatex-editor\">".$loDraft->getContent()."</div>";
 
 

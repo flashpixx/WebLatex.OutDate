@@ -39,21 +39,23 @@ class right implements \weblatex\base {
     private $mcName    = null;
     /** right id **/
     private $mnID      = null;
-    /** system right **/
-    private $mlSystem  = false;
     /** database object **/
     private $moDB      = null;
+    /** owner **/
+    private $moOwner   = null;
     
     
     
     /** creates a new right if not exists 
      * @param $pcName group name
-     * @param $plSystem boolean for system right
+     * @param $poUser user object for setting the right owner
      * @return new right object
      **/
-    static function create( $pcName, $plSystem = false ) {
-        if ( (!is_string($pcName)) || (!is_boolean($plSystem)) )
-            wl\main::phperror( "first argument must be string value, second argument a boolean value", E_USER_ERROR );
+    static function create( $pcName, $poUser = null ) {
+        if (!is_string($pcName))
+            wl\main::phperror( "first argument must be string value", E_USER_ERROR );
+        if ( (!empty($poUser)) && (!($poUser instanceof user)) )
+            wl\main::phperror( "second argument must be empty or an user object", E_USER_ERROR );
         
         $loDB     = wl\main::getDatabase();
         $loResult = $loDB->Execute( "SELECT id FROM rights WHERE name=?", array($pcName) );
@@ -61,16 +63,18 @@ class right implements \weblatex\base {
         if (!$loResult->EOF)
             throw new \Exception( "right [".$pcName."] exists" );
         
-        $loDB->Execute( "INSERT IGNORE INTO rights (name,system) VALUES (?,?)", array($pcName, ($plSystem ? "true" : "false")) );
+        $lxID = null;
+        if (!empty($poUser))
+            $lxID = $poUser-getID();
+        $loDB->Execute( "INSERT IGNORE INTO rights (name,owner) VALUES (?,?)", array($pcName, $lxID) );
         
         return new right($pcName);
     }
     
     /** deletes a right with the right id
      * @param $pnRID right id
-     * @param $plForce system rights can be deleted only by setting force to true
      **/
-    static function delete( $pnRID, $plForce = false ) {
+    static function delete( $pnRID ) {
         if (!is_numeric($pnRID))
             wl\main::phperror( "argument must be a numeric value", E_USER_ERROR );
         
@@ -80,19 +84,21 @@ class right implements \weblatex\base {
             throw new \Exception( "system right [".$pnRID."] cannot be deleted" );
         }
         
-        if ($plForce)
-            wl\main::getDatabase()->Execute( "DELETE FROM rights WHERE id=?", array($pnRID) );
-        else
-            wl\main::getDatabase()->Execute( "DELETE FROM rights WHERE id=? AND system=?", array($pnRID, "false") );
+        wl\main::getDatabase()->Execute( "DELETE FROM rights WHERE id=?", array($pnRID) );
     }
     
     /** returns the rightlist
-     * @return assoc array with rightname (name), right id (id) and boolean (system) for system right
+     * @param $poUser user object or null
+     * @return array with right objects
      **/
-    static function getList() {
+    static function getList($poUser = null) {
         $la = array();
         
-        $loResult = wl\main::getDatabase()->Execute( "SELECT name, id, system FROM rights" );
+        if ($poUser instanceof user)
+            $loResult = wl\main::getDatabase()->Execute( "SELECT id FROM rights WHERE owner=?", array($poUser->getID()) );
+        else
+            $loResult = wl\main::getDatabase()->Execute( "SELECT id FROM rights" );
+        
         if (!$loResult->EOF)
             foreach( $loResult as $laRow )
                 array_push( $la, new right(intval($laRow["id"])) );
@@ -166,18 +172,19 @@ class right implements \weblatex\base {
         $this->moDB = wl\main::getDatabase();
         
         if (is_numeric($px))
-            $loResult = $this->moDB->Execute( "SELECT name, id, system FROM rights WHERE id=?", array($px) );
+            $loResult = $this->moDB->Execute( "SELECT name, owner, id FROM rights WHERE id=?", array($px) );
         if ($px instanceof $this)
-            $loResult = $this->moDB->Execute( "SELECT name, id, system FROM rights WHERE id=?", array($px->getID()) );
+            $loResult = $this->moDB->Execute( "SELECT name, owner, id FROM rights WHERE id=?", array($px->getID()) );
         if (is_string($px))
-            $loResult = $this->moDB->Execute( "SELECT name, id, system FROM rights WHERE name=?", array($px) );
+            $loResult = $this->moDB->Execute( "SELECT name, owner, id FROM rights WHERE name=?", array($px) );
         
         if ($loResult->EOF) 
             throw new \Exception( "right data not found" );
         
         $this->mcName   = $loResult->fields["name"];
         $this->mnID     = intval($loResult->fields["id"]);
-        $this->mlSystem = $loResult->fields["system"] === "true";
+        if (!empty($loResult->fields["owner"]))
+            $this->moOwner = new user(intval($loResult->fields["owner"]));
     }
     
     /** returns the rightname
@@ -194,11 +201,24 @@ class right implements \weblatex\base {
         return $this->mnID;
     }
     
-    /** returns if the right is a system right
-     * @return boolean for system right
+    /** returns the owner of the right
+     * @return user object or null
      **/
-    function isSystem() {
-        return $this->mlSystem;
+    function getOwner() {
+        return $this->moOwner;
+    }
+    
+    /** sets the owner of this right 
+     * @param $px user object or null
+     **/
+    function setOwner($px) {
+        if ( (!empty($px)) && (!($px instanceof user)) )
+            wl\main::phperror( "argument must be empty or an user object", E_USER_ERROR );
+        
+        if (empty($px))
+            $this->moDB->Execute("UPDATE rights SET owner=? WHERE id=?", array(null, $this->mnID));
+        else
+            $this->moDB->Execute("UPDATE rights SET owner=? WHERE id=?", array($px->getID(), $this->mnID));
     }
     
     /** returns an array with group objects which 
@@ -284,10 +304,7 @@ class right implements \weblatex\base {
      * @return string representation
      **/
     function __toString() {
-        $lc = $this->mcName." (".$this->mnID;
-        if ($this->mlSystem)
-            $lc .= " | System";
-        return $lc.")";
+        return $this->mcName." (".$this->mnID.")";
     }
     
     /** checks if another right object points to the same right id

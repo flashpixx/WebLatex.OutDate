@@ -137,9 +137,10 @@ DROP TABLE IF EXISTS `groups`;
 CREATE TABLE IF NOT EXISTS `groups` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(32) COLLATE utf8_bin NOT NULL,
-  `system` enum('true','false') COLLATE utf8_bin NOT NULL DEFAULT 'false',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='table for storing the user groups';
+  `owner` bigint(20) unsigned DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `owner` (`owner`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='table for storing the user groups';
 
 DROP TABLE IF EXISTS `group_rights`;
 CREATE TABLE IF NOT EXISTS `group_rights` (
@@ -181,9 +182,10 @@ DROP TABLE IF EXISTS `rights`;
 CREATE TABLE IF NOT EXISTS `rights` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(32) COLLATE utf8_bin NOT NULL,
-  `system` enum('true','false') COLLATE utf8_bin NOT NULL,
+  `owner` bigint(20) unsigned DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `name` (`name`)
+  UNIQUE KEY `name` (`name`),
+  KEY `owner` (`owner`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='table for storing user / group rights';
 
 DROP TABLE IF EXISTS `substitution`;
@@ -267,6 +269,9 @@ ALTER TABLE `draft_rights`
   ADD CONSTRAINT `draft_rights_ibfk_1` FOREIGN KEY (`draft`) REFERENCES `draft` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `draft_rights_ibfk_2` FOREIGN KEY (`rights`) REFERENCES `rights` (`id`);
 
+ALTER TABLE `groups`
+  ADD CONSTRAINT `groups_ibfk_1` FOREIGN KEY (`owner`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
 ALTER TABLE `group_rights`
   ADD CONSTRAINT `group_rights_ibfk_1` FOREIGN KEY (`group`) REFERENCES `groups` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `group_rights_ibfk_2` FOREIGN KEY (`rights`) REFERENCES `rights` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
@@ -281,6 +286,9 @@ ALTER TABLE `media_documentpart`
 ALTER TABLE `media_rights`
   ADD CONSTRAINT `media_rights_ibfk_1` FOREIGN KEY (`media`) REFERENCES `media` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `media_rights_ibfk_2` FOREIGN KEY (`rights`) REFERENCES `rights` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE `rights`
+  ADD CONSTRAINT `rights_ibfk_1` FOREIGN KEY (`owner`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 ALTER TABLE `substitution`
   ADD CONSTRAINT `substitution_ibfk_1` FOREIGN KEY (`owner`) REFERENCES `user` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;

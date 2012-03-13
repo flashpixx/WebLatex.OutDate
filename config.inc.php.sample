@@ -79,7 +79,11 @@ class config {
     /** array with numbers of the system rights (change only the numbers) **/
     static $system_rights   = array(
                                     "administrator" => 1,
-                                    "draft"         => 2
+                                    "draft"         => 2,
+                                    "directory"     => 3,
+                                    "rights"        => 4,
+                                    "groups"        => 5
+
     );
 
 
