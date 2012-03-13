@@ -80,6 +80,26 @@ class document implements baseedit {
         wl\main::getDatabase()->Execute( "DELETE FROM document WHERE id=?", array($pnDID) );
     }
     
+    /** returns an array with drafts
+     * @param $poUser user object, for getting drafts of this user
+     * @return array with draft object
+     **/
+    static function getList( $poUser =  null) {
+        $la = array();
+        
+        if ($poUser instanceof man\user)
+            $loResult = wl\main::getDatabase()->Execute("SELECT id FROM document WHERE owner=?", array($poUser->getID()));
+        else    
+            $loResult = wl\main::getDatabase()->Execute("SELECT id FROM document");
+        
+        
+        if (!$loResult->EOF)
+            foreach($loResult as $laRow)
+                array_push( $la, new document(intval($laRow["id"])) );
+        
+        return $la;
+    }
+    
     
     
     /** constructor

@@ -49,7 +49,9 @@
  * be shown on fly
  *
  * @todo add plugin for math formula to the ckeditor, that creates
- * the correct TeX code and shows the formula with an image on fly
+ * the correct TeX code and shows the formula with an image on fly (enable / disable rendering with the config)
+ *
+ * @todo add export / import function via XML for drafts and documents (descripte XML with XSD schema)
  *
  * @todo create Ajax calls for passwort changing
  *
@@ -146,7 +148,7 @@ if (!empty($loUser)) {
     echo "</div>";
     
     echo "<div id=\"weblatex-content\"></div>\n";
-    
+    echo "<div id=\"weblatex-dialog\"></div>\n";
     
 } else {
     

@@ -128,6 +128,15 @@ if ( ($lnSystemItems > 0) && ($laSystemItems[0] == "myDrafts") ) {
     exit();
 }
     
+// we check if the "mydrafts" folder used
+if ( ($lnSystemItems > 0) && ($laSystemItems[0] == "myDocuments") ) {
+    
+    foreach( doc\document::getList($loUser) as $loItem )
+        echo "<li class=\"file ext_doc document\"><a href=\"#\" rel=\"document$".$loItem->getID()."\">".$loItem->getName()."</a></li>\n";
+    
+    exit();
+}
+    
     
     
 // add database content (and check access to the directory first)
@@ -140,6 +149,7 @@ if (empty($lcAccess))
 if ($loDirectory->isRoot()) {
     echo "<li class=\"directory collapsed\"><a href=\"#\" rel=\"/WebLaTeX/\">WebLaTeX</a></li>\n";
     echo "<li class=\"directory collapsed\"><a href=\"#\" rel=\"/myDrafts/\">"._("my drafts")."</a></li>\n";
+    echo "<li class=\"directory collapsed\"><a href=\"#\" rel=\"/myDocuments/\">"._("my documents")."</a></li>\n";
 }
 
    

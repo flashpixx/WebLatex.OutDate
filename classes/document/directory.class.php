@@ -164,6 +164,8 @@ class directory implements basedocument {
     function __construct( $px ) {
         if ( (!is_numeric($px)) && (!is_string($px)) && (!($px instanceof $this)) )
             wl\main::phperror( "argument must be a numeric, string or draft object value", E_USER_ERROR );
+        if ( is_string($px) && empty($px) )
+            wl\main::phperror( "argument is an empty string", E_USER_ERROR );
         
         $this->moDB = wl\main::getDatabase();
         

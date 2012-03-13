@@ -35,6 +35,10 @@ body {
     height: 100%;
 }
 
+fieldset {
+    border-style: none;
+}
+
 input {
     background: #EDEDED;
     text-decoration: none;

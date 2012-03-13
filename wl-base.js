@@ -34,7 +34,51 @@ if (webLaTeX === undefined)
                     
         // internal function for the object representation
         function webLaTeX() { return {
-         
+                    
+            // create an own object for dialog function
+            dialogs : {
+                
+                /** function for creating the directory create dialog
+                 * @param pcParent parent directory
+                 **/
+                createDirectory : function(pcParent) {
+                    if (!pcParent || 0 === pcParent.length)
+                        throw "parent directory is empty or not set";
+                    if (pcParent[pcParent.length-1] != "/")
+                        throw "path must be end with a slash";
+                    
+                    // create the input datatypes
+                    $("#weblatex-dialog").html("<p id=\"weblatex-dialog-message\">add a directory name</p><form><fieldset><label for=\"pathname\">directory name: "+pcParent+"</label> <input type=\"text\" name=\"pathname\" id=\"pathname\" class=\"text ui-widget-content ui-corner-all\" /></fieldset></form>");
+                    
+                    // create the dialog gui (the close call must be with the id name, because if the focuse is lost, the $(this) option can not close the dialog anymore)
+                    $("#weblatex-dialog").dialog({
+                        height     : 225,
+                        width      : 400,
+                        title      : "directory creating",
+                        modal      : true,
+                        resizable  : false,
+                        buttons    : {
+                            "create" : function() {
+                                $.ajax({ url     : "wl-directorycreate.php?"+_instance.getSessionURLParameter({path : pcParent+$("#pathname").val()}),
+                                         success : function(pcResponse) {	
+                                            lcMsg = $(pcResponse).find("error");
+                                            if (lcMsg.size() != 0)
+                                                $("#weblatex-dialog-message").text(lcMsg.text()).addClass( "ui-state-highlight" );
+                                            else
+                                                $("#weblatex-dialog").dialog("close");
+                                         }
+                                });
+                            },
+                            Cancel   : function() { $("#weblatex-dialog").dialog("close"); }
+                        },
+                        close: function() { $("#weblatex-dialog").children().remove(); }
+                    });
+                }
+
+                    
+            },
+                    
+                    
             /** sets the lock state for the editor
              * @param pl boolean for set lock
              **/
@@ -75,6 +119,7 @@ if (webLaTeX === undefined)
                 $.ajax({ url : "wl-unlock.php?"+getURLParameter() }); 
             },
                     
+
             /** creates the CKEditor instance
              * @param po object with parameters
              **/
@@ -165,7 +210,7 @@ if (webLaTeX === undefined)
 
 // document ready event handler for creating directory and editor calls
 $(document).ready( function() {
-
+                  
       // create the call for the directory structure
       $("#weblatex-directory").fileTree(
             {
@@ -203,7 +248,15 @@ $(document).ready( function() {
         title : "Root Directory",
         items : [
                  { label  : "create directory",
-                   action : function() { alert('clicked 3') }
+                   action : function() { webLaTeX.getInstance().dialogs.createDirectory("/"); }
+                 },
+                 
+                 { label  : "create draft",
+                   action : function() {}
+                 },
+                 
+                 { label  : "create document",
+                   action : function() {}
                  }
                 ]
     });
@@ -215,25 +268,35 @@ $(document).ready( function() {
             title : "Directory",
             items : [
                       { label  : "edit",
-                        action : function() { alert('clicked 1') }
+                        action : function() {}
                       },
                                                                                                     
                       { label  : "delete",
-                        action : function() { alert('clicked 2') }
+                        action : function() {}
                       },
                                                                                                     
                       null,
                                                                                                     
-                      { label  : "create directory",
-                        action : function() { alert('clicked 3') }
+                      { label  : "create subdirectory",
+                        action : function(po) {
+                            var lo = po.srcElement.childNodes;
+                            if (lo.length != 1)
+                                throw "node elements must be equal to one";
+                     
+                            lo = lo[0].parentNode.attributes;
+                            if (lo.length != 2)
+                                throw "attribute elements must be equal to two";
+
+                            webLaTeX.getInstance().dialogs.createDirectory(lo[1].value);
+                        }
                       },
                      
                       { label  : "create draft",
-                        action : function() { alert('clicked 4') }
+                        action : function() {}
                       },
                      
                       { label  : "create document",
-                        action : function() { alert('clicked 5') }
+                        action : function() {}
                       }
                     ]
         });
@@ -247,13 +310,13 @@ $(document).ready( function() {
             title : "Draft",
             items : [
                      { label  : "delete",
-                       action : function() { alert('clicked 2') }
+                       action : function() {}
                      },
                      
                      null,
                      
                      { label  : "is used by",
-                       action : function() { alert('clicked 2') }
+                       action : function() {}
                      },                     
                     ]
                                                                                 
@@ -268,13 +331,13 @@ $(document).ready( function() {
             title : "Document",
             items : [
                      { label  : "delete",
-                       action : function() { alert('clicked 2') }
+                       action : function() {}
                      },
                                                                                               
                      null,
                                                                                               
                      { label  : "generate PDF",
-                       action : function() { alert('clicked 2') }
+                       action : function() {}
                      },                     
                     ]
                                                                                      
