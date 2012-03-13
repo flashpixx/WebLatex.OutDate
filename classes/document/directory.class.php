@@ -474,24 +474,16 @@ class directory implements basedocument {
         if (!($poUser instanceof man\user))
             wl\main::phperror( "argument must be a user object", E_USER_ERROR );
         
+        // we can not get information if the directory is the root node (because the node is not stored)
+        // so we return on the root node all users write access, because the right creates the visibility
+        // to the node
+        if ($this->mnID == 0)
+            return "w";
+        
+        
         // administrator and directory right
         $loAdminRight = new man\right( wl\config::$system_rights["administrator"] );
-        $loDirRight   = new man\right( wl\config::$system_rights["directory"] );
-        
-        // we can not get information if the directory is the root node (because the node is not stored)
-        // so we return on the root node only read access and with administrator right write access
-        if ($this->mnID == 0) {
-            if ( ($loAdminRight->hasRight($poUser)) || ($loDirRight->hasRight($poUser)) )
-                return "w";
-            
-            $laGroups = $poUser->getGroups();
-            if ( (wl\main::any( man\right::hasOne($laGroups, array($loAdminRight)))) || (wl\main::any( man\right::hasOne($laGroups, array($loDirRight)))) )
-                return "w";
-            
-            return "r";
-        }
-        
-        
+        $loDirRight   = new man\right( wl\config::$system_rights["directory"] );        
         
         // check if the user is the owner or has administrator or draft right
         if ( ($poUser->isEqual($this->getOwner())) || ($loAdminRight->hasRight($poUser)) || ($loDirRight->hasRight($poUser)) )

@@ -1,5 +1,5 @@
 <?php
-    
+
 /** 
  @cond
  ############################################################################
@@ -26,7 +26,7 @@
 /**
  * $LastChangedDate$
  * $Author$
-**/
+ **/
 
 
 
@@ -45,13 +45,13 @@ require_once(__DIR__."/classes/document/directory.class.php");
 wl\main::initLanguage();
 wm\session::init();
 $loUser = wm\session::getLoggedInUser();
-    
+
 // generate return XML
 header("Content-type: text/xml");
 $loXML = new DOMDocument("1.0", "UTF-8");
 $loRoot = $loXML->createElement( "message" );
 $loXML->appendChild($loRoot);
-    
+
 // check user session
 if ( empty($loUser) ) {
     $loRoot->appendChild($loXML->createElement("error", _("no active user session found")));
@@ -64,20 +64,12 @@ if ( (!isset($_GET["path"])) || (empty($_GET["path"])) ) {
     echo $loXML->saveXML();
     exit();
 }
-    
-if ( strlen( basename(urldecode($_GET["path"])) ) > 128 ) {
-    $loRoot->appendChild($loXML->createElement("error", _("path name must be less equal than 128 characters")));
-    echo $loXML->saveXML();
-    exit();
-}    
-    
-    
-    
-$loDir = new doc\directory( dirname(urldecode($_GET["path"])) );
+
+$loDir = new doc\directory( urldecode($_GET["path"]) );
 if ($loDir->getAccess($loUser) == "w")
-    doc\directory::create(urldecode($_GET["path"]), $loUser);
+    doc\directory::delete($loDir);
 else
     $loRoot->appendChild($loXML->createElement("error", _("write access denied")));
-    
+
 echo $loXML->saveXML();
 ?>

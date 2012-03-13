@@ -27,6 +27,8 @@
  * @todo add working context menu for file and directory objects (create / deleting)
  * with modal dialogs and jQuery calls
  *
+ * @todo adding globaly latexmk.pl configuration within the main configuration (expessially for glossaries)
+ *
  * @todo adding own exception for determin different errors
  *
  * @todo add a own session table in the database for storing the session id and refernce

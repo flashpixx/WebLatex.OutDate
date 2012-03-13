@@ -73,6 +73,35 @@ if (webLaTeX === undefined)
                         },
                         close: function() { $("#weblatex-dialog").children().remove(); }
                     });
+                },
+                    
+                
+                /** deletes a directory
+                 * @param pcDirectory FQN path
+                 **/
+                deleteDirectory : function(pcDirectory) {
+                    if (!pcDirectory || 0 === pcDirectory.length)
+                        throw "parent directory is empty or not set";
+                    if (pcDirectory[pcDirectory.length-1] != "/")
+                        throw "path must be end with a slash";
+                    
+                    $.ajax({ url     : "wl-directorydelete.php?"+_instance.getSessionURLParameter({path : pcDirectory}),
+                             success : function(pcResponse) {	
+                                lcMsg = $(pcResponse).find("error");
+                                if (lcMsg.size() != 0) {
+                          
+                                    $("#weblatex-dialog").html("<p class=\"ui-state-highlight\">"+lcMsg.text()+"</p>");
+                                    $("#weblatex-dialog").dialog({
+                                         height     : 150,
+                                         width      : 400,
+                                         title      : "directory error",
+                                         modal      : true,
+                                         resizable  : false,
+                                         close: function() { $("#weblatex-dialog").children().remove(); }
+                                    });  
+                                }
+                             }
+                    });
                 }
 
                     
@@ -272,12 +301,22 @@ $(document).ready( function() {
                       },
                                                                                                     
                       { label  : "delete",
-                        action : function() {}
+                        action : function(po) {
+                            var lo = po.srcElement.childNodes;
+                            if (lo.length != 1)
+                                throw "node elements must be equal to one";
+                     
+                            lo = lo[0].parentNode.attributes;
+                            if (lo.length != 2)
+                                throw "attribute elements must be equal to two";
+                     
+                            webLaTeX.getInstance().dialogs.deleteDirectory(lo[1].value);
+                        }
                       },
                                                                                                     
                       null,
                                                                                                     
-                      { label  : "create subdirectory",
+                      { label  : "create directory",
                         action : function(po) {
                             var lo = po.srcElement.childNodes;
                             if (lo.length != 1)
@@ -288,6 +327,7 @@ $(document).ready( function() {
                                 throw "attribute elements must be equal to two";
 
                             webLaTeX.getInstance().dialogs.createDirectory(lo[1].value);
+                     
                         }
                       },
                      
