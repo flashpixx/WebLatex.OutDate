@@ -105,6 +105,11 @@ class theme {
             echo "  directoryadd     : \""._("set directory name")."\", ";
             echo "  directorycreate  : \""._("directory creating")."\", ";
             echo "  directoryerror   : \""._("directory error")."\",";
+            
+            echo "  draftadd         : \""._("set draft name")."\", ";
+            echo "  draftcreate      : \""._("draft creating")."\",";
+            
+            echo "  drafterror       : \""._("draft error")."\",";
 
             echo "  labelcreatedir   : \""._("create directory")."\",";
             echo "  labelcreatedraft : \""._("create draft")."\",";

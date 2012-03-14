@@ -62,23 +62,22 @@ class draft implements basedocument {
         if ( (!is_string($pcName)) || (!($poUser instanceof man\user)) )
             wl\main::phperror( "first argument must be string value, second argument a user object", E_USER_ERROR );
         
-        $loDB     = wl\main::getDatabase();
-        $loResult = $loDB->Execute( "SELECT id FROM draft WHERE name=?", array($pcName) );
-        if (!$loResult->EOF)
-            throw new \Exception( "draft [".$pcName."] exists" );
-        
+        $loDB = wl\main::getDatabase();
         $loDB->Execute("INSERT IGNORE INTO draft (name,owner) VALUES (?,?)", array($pcName, $poUser->getID()));
-        return new draft($loDB->Insert_ID());
+        return new draft(intval($loDB->Insert_ID()));
     }
     
     /** deletes a draft
-     * @param $pnDID draft id
+     * @param $px draft id
      **/
-    static function delete( $pnDID ) {
-        if (!is_numeric($pnDID))
-            wl\main::phperror( "argument must be a numeric value", E_USER_ERROR );
+    static function delete( $px ) {
+        if ( (!is_numeric($px)) && (!($px instanceof draft)) )
+            wl\main::phperror( "argument must be a numeric value or a draft object", E_USER_ERROR );
         
-        wl\main::getDatabase()->Execute( "DELETE FROM draft WHERE id=?", array($pnDID) );
+        if (is_numeric($px))
+            wl\main::getDatabase()->Execute( "DELETE FROM draft WHERE id=?", array($px) );
+        else
+            wl\main::getDatabase()->Execute( "DELETE FROM draft WHERE id=?", array($px->getID()) );
     }
     
     /** returns an array with drafts

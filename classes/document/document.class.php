@@ -59,15 +59,9 @@ class document implements baseedit {
         if ( (!is_string($pcName)) || (!($poUser instanceof wm\user)) )
             wl\main::phperror( "arguments must be string value and a user object", E_USER_ERROR );
         
-        $loDB     = wl\main::getDatabase();
-        $loResult = $loDB->Execute( "SELECT id FROM document WHERE name=?", array($pcName) );
-        
-        if (!$loResult->EOF)
-            throw new \Exception( "document [".$pcName."] exists" );
-        
+        $loDB = wl\main::getDatabase();
         $loDB->Execute( "INSERT IGNORE INTO document (name,owner) VALUES (?,?)", array($pcName, $poUser->getID()) );
-        
-        return new document($loDB->Insert_ID());
+        return new document(intval($loDB->Insert_ID()));
     }
     
     /** deletes a document

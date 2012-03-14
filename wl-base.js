@@ -71,7 +71,7 @@ if (webLaTeX === undefined)
                                                 loNode.trigger("click");
                                             }
                                          } else
-                                            $("#weblatex-directory").showTree();
+                                            console.log("refresh on root does not work");
                                     }
                                  }
                         });
@@ -116,6 +116,58 @@ if (webLaTeX === undefined)
                                     });  
                                 }
                              }
+                    });
+                },
+                    
+                /** creates a new draft
+                 * @param path
+                 **/
+                createDraft : function(pcPath) {
+                    if (!pcPath || 0 === pcPath.length)
+                        throw "parent directory is empty or not set";
+                    if (pcPath[pcPath.length-1] != "/")
+                        throw "path must be end with a slash";
+                    
+                    // create the input datatypes
+                    $("#weblatex-dialog").html("<p id=\"weblatex-dialog-message\">"+_config.translation.draftadd+"</p><form><fieldset><label for=\"draftname\">draft name: "+pcPath+"</label> <input type=\"text\" name=\"draftname\" id=\"draftname\" class=\"text ui-widget-content ui-corner-all\" /></fieldset></form>");
+                    
+                    // build the buttons option first, because we will use translation names
+                    var loButtons                           = {  Cancel   : function() { $("#weblatex-dialog").dialog("close"); }  }
+                    loButtons[_config.translation.create]   = function() {
+                        $.ajax({ url     : "wl-draftcreate.php?"+_instance.getSessionURLParameter({path : pcPath, name : $("#draftname").val()}),
+                                 success : function(pcResponse) {	
+                                    lcMsg = $(pcResponse).find("error");
+                                    if (lcMsg.size() != 0)
+                                        $("#weblatex-dialog-message").text(lcMsg.text()).addClass( "ui-state-highlight" );
+                                    else {
+                                        $("#weblatex-dialog").dialog("close");
+                               
+                                        // we get the parent node, check if it is opend, and reopen the node, because the new directory is shown directly
+                                        // otherwise we do nothing. We read the a tag, because the rel attribute stores the parent, if it exists the node
+                                        // is opend
+                                        var loNode = $("a[rel='"+pcPath+"']");
+                                        if (loNode.size() != 0) {
+                                            if (loNode.parent().hasClass("expanded")) {
+                                                loNode.trigger("click");
+                                                loNode.trigger("click");
+                                            }
+                                        } else
+                                            console.log("refresh on root does not work");
+                                    }
+                                 }
+                        });
+                    };
+                    
+                    
+                    // create the dialog gui (the close call must be with the id name, because if the focuse is lost, the $(this) option can not close the dialog anymore)
+                    $("#weblatex-dialog").dialog({
+                        height     : 225,
+                        width      : 400,
+                        title      : _config.translation.draftcreate,
+                        modal      : true,
+                        resizable  : false,
+                        buttons    : loButtons,
+                        close      : function() { $("#weblatex-dialog").children().remove(); }
                     });
                 }
 
@@ -270,13 +322,13 @@ $(document).ready( function() {
             function(pcItem) {
                 var laItem           = pcItem.split("$");
                 if (laItem.length != 2)
-                    return;
+                    throw "seperater can not be found correctly"
                     
                 var lcURL            = null;
                 var loURLParameter   = { id : laItem[1], type : laItem[0] };
                     
                 if (laItem[0] == "draft")
-                    lcURL = "wl-editdraft.php?"+webLaTeX.getInstance().getSessionURLParameter(loURLParameter);
+                    lcURL = "wl-draftedit.php?"+webLaTeX.getInstance().getSessionURLParameter(loURLParameter);
                 if (laItem[0] == "url")
                     lcURL = laItem[1];
                     
@@ -303,7 +355,7 @@ $(document).ready( function() {
                  null,
                  
                  { label  : webLaTeX.getInstance().getTranslation().labelcreatedraft,
-                   action : function() {}
+                    action : function() { webLaTeX.getInstance().dialogs.createDraft("/"); }
                  },
                  
                  { label  : webLaTeX.getInstance().getTranslation().labelcreatedoc,
@@ -364,7 +416,18 @@ $(document).ready( function() {
                       },
                      
                       { label  : webLaTeX.getInstance().getTranslation().labelcreatedraft,
-                        action : function() {}
+                        action : function(po) {
+                            var lo = po.srcElement.childNodes;
+                            if (lo.length != 1)
+                                throw "node elements must be equal to one";
+                     
+                            lo = lo[0].parentNode.attributes;
+                            if (lo.length != 2)
+                                throw "attribute elements must be equal to two";
+                     
+                            webLaTeX.getInstance().dialogs.createDraft(lo[1].value);
+                     
+                        }
                       },
                      
                       { label  : webLaTeX.getInstance().getTranslation().labelcreatedoc,
@@ -382,7 +445,40 @@ $(document).ready( function() {
             title : webLaTeX.getInstance().getTranslation().draft,
             items : [
                      { label  : webLaTeX.getInstance().getTranslation().del,
-                       action : function() {}
+                       action : function(po) {
+                     
+                            var lo = po.srcElement.childNodes;
+                            if (lo.length != 1)
+                                throw "node elements must be equal to one";
+                     
+                            lo = lo[0].parentNode.attributes;
+                            if (lo.length != 2)
+                                throw "attribute elements must be equal to two";
+                     
+                            var laItem           = lo[1].value.split("$");
+                            if (laItem.length != 2)
+                                throw "seperater can not be found correctly"
+                     
+                            $.ajax({ url     : "wl-draftdelete.php?"+webLaTeX.getInstance().getSessionURLParameter({ id : laItem[1] }),
+                                     success : function(pcResponse) {	
+                     
+                                        lcMsg = $(pcResponse).find("error");
+                                        if (lcMsg.size() != 0) {
+                            
+                                            $("#weblatex-dialog").html("<p class=\"ui-state-highlight\">"+lcMsg.text()+"</p>");
+                                            $("#weblatex-dialog").dialog({
+                                                height     : 150,
+                                                width      : 400,
+                                                title      : _config.translation.drafterror,
+                                                modal      : true,
+                                                resizable  : false,
+                                                close      : function() { $("#weblatex-dialog").children().remove(); }
+                                            });  
+                                        }
+                                     }
+                            });
+                     
+                       }
                      },
                      
                      null,

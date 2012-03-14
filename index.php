@@ -29,6 +29,8 @@
  *
  * @todo adding globaly latexmk.pl configuration within the main configuration (expessially for glossaries)
  *
+ * @todo with the PHP option "session.auto_start = 0" there are session problems (session ist not be recovered correctly)
+ *
  * @todo adding own exception for determin different errors
  *
  * @todo add a own session table in the database for storing the session id and refernce
