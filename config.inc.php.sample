@@ -109,9 +109,15 @@ class config {
 	
 	// === tex configuration =====================================================================================================
 	
-	/** path to the latexmk.pl script for generating the PDF with al needed runs **/
-	const latexmk		= "path to pdflatex -interaction=nonstopmode";
+    /** latexmk needs the perl interpreter **/
+    const perl          = "path to perl interpreter";
 
+    /** path to all TeX commands **/
+    const texbin        = "path to all TeX commands like latex2pdf, bibtex, etc";
+
+	/** path to the latexmk.pl script for generating the PDF with al needed runs **/
+	const latexmk		= "path to latexmk.pl script";
+    
 }
 
 ?>

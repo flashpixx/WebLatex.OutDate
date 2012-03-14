@@ -54,6 +54,7 @@ CREATE TABLE IF NOT EXISTS `document` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(128) COLLATE utf8_bin NOT NULL,
   `owner` bigint(20) unsigned DEFAULT NULL,
+  `latexmk` longtext COLLATE utf8_bin,
   `draft` longtext COLLATE utf8_bin,
   `draftid` bigint(20) unsigned DEFAULT NULL,
   `modifiable` enum('true','false') COLLATE utf8_bin NOT NULL DEFAULT 'true',
@@ -61,7 +62,7 @@ CREATE TABLE IF NOT EXISTS `document` (
   PRIMARY KEY (`id`),
   KEY `uid` (`owner`),
   KEY `draftid` (`draftid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='table for storing document header information';
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='table for storing document header information';
 
 DROP TABLE IF EXISTS `documentpart`;
 CREATE TABLE IF NOT EXISTS `documentpart` (

@@ -376,7 +376,7 @@ $(document).ready( function() {
                   
     // add to all directory items the context menu
     $("#weblatex-directory ul.jqueryFileTree li.dircontextmenu").livequery(function(){ 
-                                                
+        //$(this).draggable({ opacity : 0.7, helper : "clone" });                                        
         $(this).contextPopup({
             title : webLaTeX.getInstance().getTranslation().directory,
             items : [
@@ -440,7 +440,7 @@ $(document).ready( function() {
     
     // add the context menu to all draft objects
     $("#weblatex-directory ul.jqueryFileTree li.draft").livequery(function(){ 
-                                                                                    
+        //$(this).draggable({ opacity : 0.7, helper : "clone" });
         $(this).contextPopup({
             title : webLaTeX.getInstance().getTranslation().draft,
             items : [
@@ -494,7 +494,7 @@ $(document).ready( function() {
                   
     // add the context menu to all document objects
     $("#weblatex-directory ul.jqueryFileTree li.document").livequery(function(){ 
-                                                                
+        //$(this).draggable({ opacity : 0.7, helper : "clone" });                                                        
         $(this).contextPopup({
             title : webLaTeX.getInstance().getTranslation().document,
             items : [
@@ -505,7 +505,42 @@ $(document).ready( function() {
                      null,
                                                                                               
                      { label  : webLaTeX.getInstance().getTranslation().labelgeneratepdf,
-                       action : function() {}
+                       action : function(po) {
+                     
+                            var lo = po.srcElement.childNodes;
+                            if (lo.length != 1)
+                                throw "node elements must be equal to one";
+                     
+                            lo = lo[0].parentNode.attributes;
+                            if (lo.length != 2)
+                                throw "attribute elements must be equal to two";
+                     
+                            var laItem           = lo[1].value.split("$");
+                            if (laItem.length != 2)
+                                throw "seperater can not be found correctly"
+                     
+                     
+                            $.ajax({ url     : "wl-documentpdf.php?"+webLaTeX.getInstance().getSessionURLParameter({ id : laItem[1] }),
+                                     success : function(pcResponse) { console.log(pcResponse);	
+                            /*         
+                                        lcMsg = $(pcResponse).find("error");
+                                        if (lcMsg.size() != 0) {
+                            
+                                            $("#weblatex-dialog").html("<p class=\"ui-state-highlight\">"+lcMsg.text()+"</p>");
+                                            $("#weblatex-dialog").dialog({
+                                                height     : 150,
+                                                width      : 400,
+                                                title      : _config.translation.drafterror,
+                                                modal      : true,
+                                                resizable  : false,
+                                                close      : function() { $("#weblatex-dialog").children().remove(); }
+                                            });  
+                                        }*/
+                                     }
+                            });
+                     
+                     
+                       }
                      },                     
                     ]
                                                                                      

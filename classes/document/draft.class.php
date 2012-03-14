@@ -167,9 +167,12 @@ class draft implements basedocument {
     
     /** sets the content data
      * @param $pc data
+     * @todo check the quotes, because the,
+     * CKEditor creates slashes take a look to the magic quote option
+     * 
      **/
     function setContent( $pc ) {
-        $this->mcData = $pc;
+        $this->mcData = stripslashes($pc);
     }
     
     /** saves draft data to database **/
@@ -365,6 +368,20 @@ class draft implements basedocument {
             foreach($loResult as $laRow)
                 array_push($la, new man\right(intval($laRow["rights"])));
         
+        return $la;
+    }
+    
+    /** returns a list of documents which are based on this draft
+     * @return array with documents
+     **/
+    function isusedby() {
+        $loResult = $this->moDB->Execute("SELECT id FROM document WHERE draftid=?", array($this->mnID));
+        
+        $la = array();
+        if (!$loResult->EOF)
+            foreach($loResult as $laRow)
+                array_push($la, new document(intval($laRow["id"])));
+            
         return $la;
     }
 

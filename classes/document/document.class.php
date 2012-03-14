@@ -46,6 +46,7 @@ class document implements baseedit {
     private $mcGeneratePath = null;
     /** database object **/
     private $moDB      = null;
+
     
     
     
@@ -270,13 +271,64 @@ class document implements baseedit {
         
     }
     
+    /** converts the HTML code to TeX code
+     * @param $pc input HTML code
+     * @return TeX code
+     **/
+    private static function convert2TeX($pc) {
+        return mb_convert_encoding(strip_tags(html_entity_decode($pc)), "UTF-8", "auto");
+    }
+    
+    /** converts the HTML code to the LaTeXMK command code
+     * @param $pc input text
+     * @return LaTeX MK code
+     **/
+    private static function convert2MK($pc)  {
+        return mb_convert_encoding(strip_tags(html_entity_decode($pc)), "UTF-8", "auto");
+    }
+    
     /** generates the PDF with the pdf2latex calls and returns the
      * absolut path to the PDF. Errors will be thrown with an exception
      * @return absolut path to the PDF
      **/
     function generatePDF() {
         if (empty($this->mcGeneratePath))
-            wl\main::phperror( "temporary path is empty, so can not create any PDF", E_USER_ERROR );
+            throw new \Exception( "temporary path is empty, so can not create any PDF" );
+        
+        if ( (!is_dir($this->mcGeneratePath)) && (!@mkdir($this->mcGeneratePath, 0700, true)) )
+            throw new \Exception( "temporary path can not be created" );
+        
+        
+        // get the draft
+        $loResult = $this->moDB->Execute( "SELECT draft.content AS draft, MD5(draft.content) AS hash_draft, document.draft AS localdraft, MD5(document.draft) AS hash_localdraft, latexmk, MD5(latexmk) AS hash_latexmk FROM document LEFT JOIN draft ON draft.id=document.draftid WHERE document.id=?", array($this->mnID) );
+        if ($loResult->EOF)
+            throw new \Exception( "document data not found" );
+        
+        // write the LatexMK file
+        $lcFilename = $this->mcGeneratePath."/makefile";
+        if ( (!empty($loResult->fields["latexmk"])) && ((!file_exists($lcFilename)) || ($loResult->fields["hash_latexmk"] != @md5_file($lcFilename))) ) 
+            @file_put_contents($lcFilename, self::convert2MK($loResult->fields["latexmk"]));
+        
+        
+        // write the main document
+        $lcFilename = $this->mcGeneratePath."/document.tex";
+        $lcHash     = null;
+        if (file_exists($lcFilename))
+            $lcHash = @md5_file($lcFilename);
+            
+        // extract the draft content of the draft table data 
+        if (!empty($loResult->fields["draft"])) {
+            // check if the ###content### string found in the draft
+            if ($loResult->fields["hash_draft"] != $lcHash)
+                @file_put_contents($lcFilename, self::convert2TeX($loResult->fields["draft"]));
+                    
+        } else {
+                
+            // check if the ###content### string found in the draft
+            if ($loResult->fields["hash_localdraft"] != $lcHash)
+                @file_put_contents($lcFilename, self::convert2TeX($loResult->fields["localdraft"]));
+        }
+        
         
         // extract draft, search within the draft the ###content### section for adding the content
         // extract document parts and replace the ###content### with the include calls
@@ -285,10 +337,32 @@ class document implements baseedit {
         // convert HTML document code with XSLT into TeX code
         
         // run latexmk.pl (it seems it is a better choice for pdf2latex, changing configuration option)
-        // with options: -pdf -gg -f -silent
+        // with options: -cd -pdf -gg -f -silent
         // pdf for generate PDF, gg rebuild aux-files, -f for running more than one times, -silent for
         // run without stopping on errors
         // There is no option to getting errors after the runs, take a look to the output of the script
+        
+
+        // set the environment variable, so latexmk find all command, call perl interpreter with latexmk command and parameter,
+        // and store the result into a log file
+        $lcCMD = wl\config::perl." ".wl\config::latexmk." -cd -pdf -f ".$this->mcGeneratePath."/document.tex";
+        
+        ob_start();
+        putenv("PATH=".wl\config::texbin);
+        system($lcCMD, $lnError);
+        $lcReturn = ob_get_contents();
+        ob_end_clean();
+        
+        file_put_contents($this->mcGeneratePath."/weblatex.log", $lcCMD."\n\n".$lcReturn."\n");
+        if ($lnError)
+            throw new \Exception( "LaTeXMK call creates an error" );
+                
+        // try to find the PDF file
+        $lcPDF = null;
+        if (file_exists($this->mcGeneratePath."/document.pdf"))
+            $lcPDF = $this->mcGeneratePath."/document.pdf";
+        
+        return $lcPDF;
         
     }
 }
