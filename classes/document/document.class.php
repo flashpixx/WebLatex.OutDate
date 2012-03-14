@@ -305,9 +305,11 @@ class document implements baseedit {
             throw new \Exception( "document data not found" );
         
         // write the LatexMK file
-        $lcFilename = $this->mcGeneratePath."/makefile";
-        if ( (!empty($loResult->fields["latexmk"])) && ((!file_exists($lcFilename)) || ($loResult->fields["hash_latexmk"] != @md5_file($lcFilename))) ) 
-            @file_put_contents($lcFilename, self::convert2MK($loResult->fields["latexmk"]));
+        $lcLatexMKrc = $this->mcGeneratePath."/latexmkrc";
+        if ( (!empty($loResult->fields["latexmk"])) && ((!file_exists($lcLatexMKrc)) || ($loResult->fields["hash_latexmk"] != @md5_file($lcLatexMKrc))) ) 
+            @file_put_contents($lcLatexMKrc, self::convert2MK($loResult->fields["latexmk"]));
+        else
+            $lcLatexMKrc = null;
         
         
         // write the main document
@@ -345,7 +347,7 @@ class document implements baseedit {
 
         // set the environment variable, so latexmk find all command, call perl interpreter with latexmk command and parameter,
         // and store the result into a log file
-        $lcCMD = wl\config::perl." ".wl\config::latexmk." -cd -pdf -f ".$this->mcGeneratePath."/document.tex";
+        $lcCMD = wl\config::perl." ".wl\config::latexmk." -cd -pdf -f ".(empty($lcLatexMKrc) ? null : "-r ".$lcLatexMKrc)." ".$this->mcGeneratePath."/document.tex";
         
         ob_start();
         putenv("PATH=".wl\config::texbin);
