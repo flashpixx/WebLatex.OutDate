@@ -46,10 +46,51 @@ require_once(__DIR__."/classes/document/document.class.php");
 wl\main::initLanguage();
 wm\session::init();
 $loUser = wm\session::getLoggedInUser();
+   
+if ( empty($loUser) ) {
+    header("Content-type: text/xml");
+    $loXML = new DOMDocument("1.0", "UTF-8");
+    $loRoot = $loXML->createElement( "message" );
+    $loRoot->appendChild($loXML->createElement("error", _("no active user session found")));
+    $loXML->appendChild($loRoot);
+    echo $loXML->saveXML();
+    exit();
+}
+    
+if ( (!isset($_GET["id"])) || (empty($_GET["id"])) ) {
+    header("Content-type: text/xml");
+    $loXML = new DOMDocument("1.0", "UTF-8");
+    $loRoot = $loXML->createElement( "message" );
+    $loRoot->appendChild($loXML->createElement("error", _("document id not set")));
+    $loXML->appendChild($loRoot);
+    echo $loXML->saveXML();
+    exit();
+}
 
-
-$lo = new doc\document(intval($_GET["id"]));
-echo $lo->generatePDF();
-
+    
+$loDoc     = new doc\document(intval($_GET["id"]));
+if (isset($_GET["build"])) {
+    header("Content-type: text/xml");
+    $loXML = new DOMDocument("1.0", "UTF-8");
+    $loRoot = $loXML->createElement( "message" );
+    
+    try {
+        $loDoc->generatePDF();
+    } catch (Exception $e) {
+        $loRoot->appendChild($loXML->createElement("error", _("PDF build error: ").$e->getMessage()));
+    }
+    
+    $loXML->appendChild($loRoot);
+    echo $loXML->saveXML();
+    
+} else {
+    
+    $lcFile = $loDoc->getPDF();
+    if (!empty($lcFile)) {
+        header("Content-type: ".mime_content_type($lcFile));
+        header("Content-Transfer-Encoding: binary");
+        readfile($lcFile);
+    }
+}
 
 ?>

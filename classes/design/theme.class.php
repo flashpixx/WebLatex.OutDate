@@ -110,6 +110,8 @@ class theme {
             echo "  draftcreate      : \""._("draft creating")."\",";
             
             echo "  drafterror       : \""._("draft error")."\",";
+            
+            echo "  pdfbuilderror    : \""._("PDF build error")."\",";
 
             echo "  labelcreatedir   : \""._("create directory")."\",";
             echo "  labelcreatedraft : \""._("create draft")."\",";

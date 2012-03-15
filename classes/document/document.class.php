@@ -289,7 +289,6 @@ class document implements baseedit {
     
     /** generates the PDF with the pdf2latex calls and returns the
      * absolut path to the PDF. Errors will be thrown with an exception
-     * @return absolut path to the PDF
      **/
     function generatePDF() {
         if (empty($this->mcGeneratePath))
@@ -297,6 +296,10 @@ class document implements baseedit {
         
         if ( (!is_dir($this->mcGeneratePath)) && (!@mkdir($this->mcGeneratePath, 0700, true)) )
             throw new \Exception( "temporary path can not be created" );
+        
+        // clear first the PDF is exists
+        if (file_exists($this->mcGeneratePath."/document.pdf"))
+            @unlink($this->mcGeneratePath."/document.pdf");
         
         
         // get the draft
@@ -353,19 +356,22 @@ class document implements baseedit {
         putenv("PATH=".wl\config::texbin);
         system($lcCMD, $lnError);
         $lcReturn = ob_get_contents();
-        ob_end_clean();
+        @ob_end_clean();
         
         file_put_contents($this->mcGeneratePath."/weblatex.log", $lcCMD."\n\n".$lcReturn."\n");
         if ($lnError)
             throw new \Exception( "LaTeXMK call creates an error" );
-                
-        // try to find the PDF file
+    }
+
+    /** gets the path to the PDF if exists
+     * @return null or absolut path
+     **/
+    function getPDF() {
         $lcPDF = null;
         if (file_exists($this->mcGeneratePath."/document.pdf"))
             $lcPDF = $this->mcGeneratePath."/document.pdf";
         
         return $lcPDF;
-        
     }
 }
 

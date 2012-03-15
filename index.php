@@ -29,6 +29,8 @@
  *
  * @todo adding globaly latexmk.pl configuration within the main configuration (expessially for glossaries)
  *
+ * @todo adding HTTP authentification for using NTLM login on the browser (insert it in the global config)
+ *
  * @todo with the PHP option "session.auto_start = 0" there are session problems (session ist not be recovered correctly)
  *
  * @todo adding own exception for determin different errors

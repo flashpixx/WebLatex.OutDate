@@ -518,28 +518,25 @@ $(document).ready( function() {
                             var laItem           = lo[1].value.split("$");
                             if (laItem.length != 2)
                                 throw "seperater can not be found correctly"
-                     
-                     
-                            $.ajax({ url     : "wl-documentpdf.php?"+webLaTeX.getInstance().getSessionURLParameter({ id : laItem[1] }),
-                                     success : function(pcResponse) { console.log(pcResponse);	
-                            /*         
+                            
+                     $.ajax({ url     : "wl-documentpdf.php?"+webLaTeX.getInstance().getSessionURLParameter({ id : laItem[1], build : null }), async : false,
+                                     success : function(pcResponse) {	
+                                   
                                         lcMsg = $(pcResponse).find("error");
                                         if (lcMsg.size() != 0) {
-                            
                                             $("#weblatex-dialog").html("<p class=\"ui-state-highlight\">"+lcMsg.text()+"</p>");
                                             $("#weblatex-dialog").dialog({
                                                 height     : 150,
                                                 width      : 400,
-                                                title      : _config.translation.drafterror,
+                                                title      : webLaTeX.getInstance().getTranslation().pdfbuilderror,
                                                 modal      : true,
                                                 resizable  : false,
                                                 close      : function() { $("#weblatex-dialog").children().remove(); }
                                             });  
-                                        }*/
-                                     }
-                            });
-                     
-                     
+                                        } else
+                                            window.open("wl-documentpdf.php?"+webLaTeX.getInstance().getSessionURLParameter({ id : laItem[1] }), "_blank");
+                                   }
+                            });  
                        }
                      },                     
                     ]
