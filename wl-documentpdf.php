@@ -87,6 +87,7 @@ if (isset($_GET["build"])) {
     
     $lcFile = $loDoc->getPDF();
     if (!empty($lcFile)) {
+        header("X-Frame-Options: DENY");
         header("Content-type: ".mime_content_type($lcFile));
         header("Content-Transfer-Encoding: binary");
         readfile($lcFile);

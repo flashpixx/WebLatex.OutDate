@@ -47,25 +47,29 @@ use weblatex\document as doc;
 require_once(__DIR__."/classes/management/user.class.php");
 require_once(__DIR__."/classes/management/session.class.php");
 require_once(__DIR__."/classes/document/draft.class.php");
-
+require_once(__DIR__."/classes/document/document.class.php");
+    
 
 // get session data
 wm\session::init();
 $loUser = wm\session::getLoggedInUser();
     
-if ( (!empty($loUser)) && (isset($_GET["id"])) && (isset($_GET["type"])) )
+if ( (!empty($loUser)) && (isset($_GET["id"])) && (isset($_GET["type"])) ) {
     
     // check which document should be unlocked
     switch ($_GET["type"]) {
     
         case "draft" :
-            $loDraft    = new doc\draft( intval($_GET["id"]) );
-            $loDraft->unlock(); 
+            $loDoc    = new doc\draft( intval($_GET["id"]) );
+            break;
             
-        break;
+        case "document" :
+            $loDoc    = new doc\document( intval($_GET["id"]) );
+            break;
     
     }
 
-
+    $loDoc->unlock(); 
+}
 
 ?>

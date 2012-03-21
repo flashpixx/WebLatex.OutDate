@@ -86,7 +86,7 @@ if (webLaTeX === undefined)
                         modal      : true,
                         resizable  : false,
                         buttons    : loButtons,
-                        close: function() { $("#weblatex-dialog").children().remove(); }
+                        close      : function() { $("#weblatex-dialog").children().remove(); }
                     });
                 },
                     
@@ -164,6 +164,33 @@ if (webLaTeX === undefined)
                         height     : 225,
                         width      : 400,
                         title      : _config.translation.draftcreate,
+                        modal      : true,
+                        resizable  : false,
+                        buttons    : loButtons,
+                        close      : function() { $("#weblatex-dialog").children().remove(); }
+                    });
+                },
+                    
+                /** create a new document 
+                 * @param pcPath path
+                 **/
+                createDocument : function(pcPath) {
+                    if (!pcPath || 0 === pcPath.length)
+                        throw "parent directory is empty or not set";
+                    if (pcPath[pcPath.length-1] != "/")
+                        throw "path must be end with a slash";
+                    
+                    // create the input datatypes
+                    $("#weblatex-dialog").html("<p id=\"weblatex-dialog-message\">"+_config.translation.documentadd+"</p><form><fieldset><label for=\"documentname\">document name: "+pcPath+"</label> <input type=\"text\" name=\"documentname\" id=\"documentname\" class=\"text ui-widget-content ui-corner-all\" /></fieldset></form>");
+                    
+                    var loButtons                           = {  Cancel   : function() { $("#weblatex-dialog").dialog("close"); }  }
+                    loButtons[_config.translation.create]   = function() {};
+                    
+                    // create the dialog gui (the close call must be with the id name, because if the focuse is lost, the $(this) option can not close the dialog anymore)
+                    $("#weblatex-dialog").dialog({
+                        height     : 225,
+                        width      : 400,
+                        title      : _config.translation.documentcreate,
                         modal      : true,
                         resizable  : false,
                         buttons    : loButtons,
@@ -359,7 +386,7 @@ $(document).ready( function() {
                  },
                  
                  { label  : webLaTeX.getInstance().getTranslation().labelcreatedoc,
-                   action : function() {}
+                   action : function() { webLaTeX.getInstance().dialogs.createDocument("/"); }
                  },
                  
                  null,
@@ -386,6 +413,8 @@ $(document).ready( function() {
                                                                                                     
                       { label  : webLaTeX.getInstance().getTranslation().del,
                         action : function(po) {
+                     
+                            //@bug srcElement does not exists in Firefox
                             var lo = po.srcElement.childNodes;
                             if (lo.length != 1)
                                 throw "node elements must be equal to one";
@@ -402,6 +431,8 @@ $(document).ready( function() {
                                                                                                     
                       { label  : webLaTeX.getInstance().getTranslation().labelcreatedir,
                         action : function(po) {
+                     
+                            //@bug srcElement does not exists in Firefox
                             var lo = po.srcElement.childNodes;
                             if (lo.length != 1)
                                 throw "node elements must be equal to one";
@@ -417,6 +448,8 @@ $(document).ready( function() {
                      
                       { label  : webLaTeX.getInstance().getTranslation().labelcreatedraft,
                         action : function(po) {
+                     
+                            //@bug srcElement does not exists in Firefox
                             var lo = po.srcElement.childNodes;
                             if (lo.length != 1)
                                 throw "node elements must be equal to one";
@@ -431,7 +464,20 @@ $(document).ready( function() {
                       },
                      
                       { label  : webLaTeX.getInstance().getTranslation().labelcreatedoc,
-                        action : function() {}
+                        action : function(po) {
+                            
+                            //@bug srcElement does not exists in Firefox
+                            var lo = po.srcElement.childNodes;
+                            if (lo.length != 1)
+                                throw "node elements must be equal to one";
+                             
+                             lo = lo[0].parentNode.attributes;
+                             if (lo.length != 2)
+                                throw "attribute elements must be equal to two";
+                             
+                             webLaTeX.getInstance().dialogs.createDocument(lo[1].value);
+                      
+                        }
                       }
                     ]
         });
@@ -447,6 +493,7 @@ $(document).ready( function() {
                      { label  : webLaTeX.getInstance().getTranslation().del,
                        action : function(po) {
                      
+                            //@bug srcElement does not exists in Firefox
                             var lo = po.srcElement.childNodes;
                             if (lo.length != 1)
                                 throw "node elements must be equal to one";
@@ -507,6 +554,7 @@ $(document).ready( function() {
                      { label  : webLaTeX.getInstance().getTranslation().labelgeneratepdf,
                        action : function(po) {
                      
+                            //@bug srcElement does not exists in Firefox
                             var lo = po.srcElement.childNodes;
                             if (lo.length != 1)
                                 throw "node elements must be equal to one";
@@ -519,7 +567,7 @@ $(document).ready( function() {
                             if (laItem.length != 2)
                                 throw "seperater can not be found correctly"
                             
-                     $.ajax({ url     : "wl-documentpdf.php?"+webLaTeX.getInstance().getSessionURLParameter({ id : laItem[1], build : null }), async : false,
+                            $.ajax({ url     : "wl-documentpdf.php?"+webLaTeX.getInstance().getSessionURLParameter({ id : laItem[1], build : null }), async : false,
                                      success : function(pcResponse) {	
                                    
                                         lcMsg = $(pcResponse).find("error");
@@ -534,7 +582,7 @@ $(document).ready( function() {
                                                 close      : function() { $("#weblatex-dialog").children().remove(); }
                                             });  
                                         } else
-                                            window.open("wl-documentpdf.php?"+webLaTeX.getInstance().getSessionURLParameter({ id : laItem[1] }), "_blank");
+                                            window.open("wl-documentpdf.php?"+webLaTeX.getInstance().getSessionURLParameter({ id : laItem[1] }), "weblatex"+laItem[1]);
                                    }
                             });  
                        }

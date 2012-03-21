@@ -55,13 +55,15 @@ CREATE TABLE IF NOT EXISTS `document` (
   `name` varchar(128) COLLATE utf8_bin NOT NULL,
   `owner` bigint(20) unsigned DEFAULT NULL,
   `latexmk` longtext COLLATE utf8_bin,
+  `latexmkid` bigint(20) unsigned DEFAULT NULL,
   `draft` longtext COLLATE utf8_bin,
   `draftid` bigint(20) unsigned DEFAULT NULL,
   `modifiable` enum('true','false') COLLATE utf8_bin NOT NULL DEFAULT 'true',
   `archivable` enum('true','false') COLLATE utf8_bin NOT NULL DEFAULT 'false',
   PRIMARY KEY (`id`),
   KEY `uid` (`owner`),
-  KEY `draftid` (`draftid`)
+  KEY `draftid` (`draftid`),
+  KEY `latexmkid` (`latexmkid`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='table for storing document header information';
 
 DROP TABLE IF EXISTS `documentpart`;
@@ -150,6 +152,26 @@ CREATE TABLE IF NOT EXISTS `group_rights` (
   PRIMARY KEY (`group`,`rights`),
   KEY `right` (`rights`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='tablefor storing group rights';
+
+DROP TABLE IF EXISTS `latexmk`;
+CREATE TABLE IF NOT EXISTS `latexmk` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(250) COLLATE utf8_bin NOT NULL,
+  `owner` bigint(20) unsigned DEFAULT NULL,
+  `content` longtext COLLATE utf8_bin NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `name` (`name`),
+  KEY `owner` (`owner`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='latexmk build scripts';
+
+DROP TABLE IF EXISTS `latexmk_rights`;
+CREATE TABLE IF NOT EXISTS `latexmk_rights` (
+  `latexmk` bigint(20) unsigned NOT NULL,
+  `rights` bigint(20) unsigned NOT NULL,
+  `access` enum('read','write') COLLATE utf8_bin NOT NULL DEFAULT 'read',
+  PRIMARY KEY (`latexmk`,`rights`),
+  KEY `rights` (`rights`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='table for storing latexmk-right information';
 
 DROP TABLE IF EXISTS `media`;
 CREATE TABLE IF NOT EXISTS `media` (
@@ -245,6 +267,9 @@ ALTER TABLE `directory_rights`
   ADD CONSTRAINT `directory_rights_ibfk_1` FOREIGN KEY (`directory`) REFERENCES `directory` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `directory_rights_ibfk_2` FOREIGN KEY (`rights`) REFERENCES `rights` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
+ALTER TABLE `document`
+  ADD CONSTRAINT `document_ibfk_1` FOREIGN KEY (`latexmkid`) REFERENCES `latexmk` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
 ALTER TABLE `documentpart`
   ADD CONSTRAINT `documentpart_ibfk_1` FOREIGN KEY (`document`) REFERENCES `document` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
@@ -276,6 +301,13 @@ ALTER TABLE `groups`
 ALTER TABLE `group_rights`
   ADD CONSTRAINT `group_rights_ibfk_1` FOREIGN KEY (`group`) REFERENCES `groups` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `group_rights_ibfk_2` FOREIGN KEY (`rights`) REFERENCES `rights` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE `latexmk`
+  ADD CONSTRAINT `latexmk_ibfk_1` FOREIGN KEY (`owner`) REFERENCES `user` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+ALTER TABLE `latexmk_rights`
+  ADD CONSTRAINT `latexmk_rights_ibfk_2` FOREIGN KEY (`rights`) REFERENCES `rights` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `latexmk_rights_ibfk_1` FOREIGN KEY (`latexmk`) REFERENCES `latexmk` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 ALTER TABLE `media`
   ADD CONSTRAINT `media_ibfk_1` FOREIGN KEY (`user`) REFERENCES `user` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;

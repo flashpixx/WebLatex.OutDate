@@ -23,59 +23,21 @@
  @endcond
  **/
 
-/**
- * $LastChangedDate$
- * $Author$
- *
- * @file wl-lock.php
- * @brief file for locking / refreshing a document lock
- *
- * The file creates with the session parameters a lock on
- * a draft or refresh a existing lock for the user
- *
- *
- * @var object $loUser
- * logged-in user object
- *
- * @var object $loDoc
- * document / draft object, on which the lock should be
- * created or refreshed
- **/
-    
-use weblatex\management as wm;
-use weblatex\document as doc;
+namespace weblatex\document;
+use weblatex as wl;
+use weblatex\management as man;
 
-require_once(__DIR__."/classes/management/session.class.php");
-require_once(__DIR__."/classes/management/user.class.php");
-require_once(__DIR__."/classes/document/draft.class.php");
-require_once(__DIR__."/classes/document/document.class.php");
+require_once( dirname(dirname(__DIR__))."/config.inc.php" );
+require_once( dirname(__DIR__)."/main.class.php" );
+require_once( dirname(__DIR__)."/management/user.class.php" );
+require_once( dirname(__DIR__)."/management/group.class.php" );
+require_once( dirname(__DIR__)."/management/right.class.php" );
+require_once( __DIR__."/baseedit.class.php" );
 
-    
 
-// get session data
-wm\session::init();
-$loUser = wm\session::getLoggedInUser();
 
-if ( (!empty($loUser)) && (isset($_GET["id"])) && (isset($_GET["type"])) ) {
-    
-    // check which document should be refreshed
-    $loDoc = null;
-    switch (strtolower($_GET["type"])) {
-            
-        case "draft" :
-            $loDoc    = new doc\draft( intval($_GET["id"]) );
-            break;
-            
-        case "document" :
-            $loDoc    = new doc\document( intval($_GET["id"]) );
-            break;
-            
-    }
-    
-    if (!empty($loDoc))
-        $loDoc->lock($loUser);
+/** class of representation a LaTeXMK element **/
+class draft implements basedocument {
 }
-    
-
 
 ?>

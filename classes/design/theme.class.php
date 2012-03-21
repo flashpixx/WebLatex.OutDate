@@ -77,6 +77,7 @@ class theme {
      * @param $pcHeader additional header information
      **/
     function header( $poUser = null, $pcHeader = null ) {
+        @header("X-Frame-Options: DENY");
         $this->moTheme->header( $poUser );
         echo $pcHeader;
         
@@ -108,8 +109,11 @@ class theme {
             
             echo "  draftadd         : \""._("set draft name")."\", ";
             echo "  draftcreate      : \""._("draft creating")."\",";
-            
             echo "  drafterror       : \""._("draft error")."\",";
+            
+            echo "  documentadd      : \""._("set document name")."\", ";
+            echo "  documentcreate   : \""._("document creating")."\",";
+            echo "  documenterror    : \""._("document error")."\",";
             
             echo "  pdfbuilderror    : \""._("PDF build error")."\",";
 
