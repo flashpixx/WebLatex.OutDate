@@ -90,7 +90,7 @@ echo "<h1>"._("draft")." [".$loDraft->getName()."]</h1>\n";
 if (($loLockedUser instanceof wm\user) || ($lxAccess == "r")) {
     echo "<p id=\"weblatex-message\">"._("is locked by")." [".$loLockedUser->GetName()."]</p>\n";
     // set the global lock state, because if this is set, the ckeditor ist not instantiate, so
-    // the configuration in the main file, used the glisLocked for setting the state. We set
+    // the configuration in the main file, used the method for setting the state. We set
     // set it here, because only this scripts knows the lock of the draft, otherwise
     // the lock will be refreshed after a while.
     echo "<script type=\"text/javascript\">if (webLaTeX !== undefined) webLaTeX.getInstance().setEditorLock(true);</script>\n";

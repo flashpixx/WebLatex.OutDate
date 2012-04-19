@@ -27,8 +27,8 @@
  * $LastChangedDate$
  * $Author$
  *
- * @file wl-documentpdf.php
- * creates the PDF of a document
+ * @file wl-documentedit.php
+ * file for creating the edit window of a document
  **/
 
 
@@ -49,52 +49,49 @@ require_once(__DIR__."/classes/document/document.class.php");
 wl\main::initLanguage();
 wm\session::init();
 $loUser = wm\session::getLoggedInUser();
-   
-if ( empty($loUser) ) {
-    header("Content-type: text/xml");
-    $loXML = new DOMDocument("1.0", "UTF-8");
-    $loRoot = $loXML->createElement( "message" );
-    $loRoot->appendChild($loXML->createElement("error", _("no active user session found")));
-    $loXML->appendChild($loRoot);
-    echo $loXML->saveXML();
-    exit();
-}
     
-if ( (!isset($_GET["id"])) || (empty($_GET["id"])) ) {
-    header("Content-type: text/xml");
-    $loXML = new DOMDocument("1.0", "UTF-8");
-    $loRoot = $loXML->createElement( "message" );
-    $loRoot->appendChild($loXML->createElement("error", _("document id not set")));
-    $loXML->appendChild($loRoot);
-    echo $loXML->saveXML();
+
+$loDocument = null;
+if (isset($_GET["id"]))
+    $loDocument = new doc\document(intval($_GET["id"]));
+
+if ( (empty($loDocument)) || (empty($loUser)) )
     exit();
+    
+$lxAccess = $loDocument->getAccess($loUser);
+//if (empty($lxAccess))
+//    exit();
+
+$loLockedUser = null;
+if ($lxAccess == "w")
+    $loLockedUser = $loDocument->lock($loUser, true);
+    
+// create content
+echo "<h1>"._("document")." [".$loDocument->getName()."]</h1>\n";
+if (($loLockedUser instanceof wm\user) || ($lxAccess == "r")) {
+    echo "<p id=\"weblatex-message\">"._("is locked by")." [".$loLockedUser->GetName()."]</p>\n";
+    // set the global lock state, because if this is set, the ckeditor ist not instantiate, so
+    // the configuration in the main file, used the method for setting the state. We set
+    // set it here, because only this scripts knows the lock of the document, otherwise
+    // the lock will be refreshed after a while.
+    echo "<script type=\"text/javascript\">if (webLaTeX !== undefined) webLaTeX.getInstance().setEditorLock(true);</script>\n";
 }
 
+
+echo "<script type=\"text/javascript\">$( \"#weblatex-documenttabs\" ).tabs();</script>\n";
     
-$loDoc     = new doc\document(intval($_GET["id"]));
-if (isset($_GET["build"])) {
-    header("Content-type: text/xml");
-    $loXML = new DOMDocument("1.0", "UTF-8");
-    $loRoot = $loXML->createElement( "message" );
-    
-    try {
-        $loDoc->generatePDF();
-    } catch (Exception $e) {
-        $loRoot->appendChild($loXML->createElement("error", _("PDF build error: ").$e->getMessage()));
-    }
-    
-    $loXML->appendChild($loRoot);
-    echo $loXML->saveXML();
-    
-} else {
-    
-    $lcFile = $loDoc->getPDF();
-    if (!empty($lcFile)) {
-        header("X-Frame-Options: DENY");
-        header("Content-type: ".mime_content_type($lcFile));
-        header("Content-Transfer-Encoding: binary");
-        readfile($lcFile);
-    }
-}
+echo "<div id=\"weblatex-documenttabs\">\n";
+echo "<ul>";
+echo "<li><a href=\"#configuration\">"._("configuration")."</a></li>";
+echo "<li><a href=\"#rights\">"._("rights")."</a></li>";
+echo "</ul>\n";
+
+echo "<div id=\"configuration\">configuration</div>\n";
+echo "<div id=\"rights\">rights</div>\n";
+echo "</div>";
+
+    #echo "<div id=\"weblatex-editor\">".$loDocument->getContent()."</div>";
+
+
 
 ?>

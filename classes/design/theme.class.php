@@ -65,6 +65,9 @@ class theme {
         $this->moTheme->init();
         $loUser = wm\session::getLoggedInUser();
         
+        // send the header, so the browser need not use any frame option
+        @header("X-Frame-Options: DENY");
+        
         // check logged in user and create a redirect
         if ( (empty($loUser)) && ($plLocation) )
             @header("Location: index.php");

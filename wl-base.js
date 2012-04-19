@@ -71,6 +71,7 @@ if (webLaTeX === undefined)
                                                 loNode.trigger("click");
                                             }
                                          } else
+                                            // @bug
                                             console.log("refresh on root does not work");
                                     }
                                  }
@@ -152,6 +153,7 @@ if (webLaTeX === undefined)
                                                 loNode.trigger("click");
                                             }
                                         } else
+                                            // @bug
                                             console.log("refresh on root does not work");
                                     }
                                  }
@@ -356,9 +358,11 @@ $(document).ready( function() {
                     
                 if (laItem[0] == "draft")
                     lcURL = "wl-draftedit.php?"+webLaTeX.getInstance().getSessionURLParameter(loURLParameter);
+                if (laItem[0] == "document")
+                    lcURL = "wl-documentedit.php?"+webLaTeX.getInstance().getSessionURLParameter(loURLParameter);
                 if (laItem[0] == "url")
                     lcURL = laItem[1];
-                    
+                
                 if (lcURL != null)
                     $.get(lcURL, function(pcData) {
                           $("#weblatex-content").fadeOut("slow", function() {
