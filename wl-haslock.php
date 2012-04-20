@@ -87,6 +87,7 @@ $loDocument = null;
 switch ($_GET["type"]) {
     case "draft"        : $loDocument = new doc\draft(intval($_GET["id"]));     break;
     case "document"     : $loDocument = new doc\document(intval($_GET["id"]));  break;
+    case "documentpart" : $loDoc = new doc\document(intval($_GET["id"]));       $loDocument = $loDoc->getPart( intval($_GET["pid"]) );  break;
 }
 
 $loLockedUser = null;

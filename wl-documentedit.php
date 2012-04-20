@@ -49,8 +49,7 @@ require_once(__DIR__."/classes/document/document.class.php");
 wl\main::initLanguage();
 wm\session::init();
 $loUser = wm\session::getLoggedInUser();
-    
-
+   
 $loDocument = null;
 if (isset($_GET["id"]))
     $loDocument = new doc\document(intval($_GET["id"]));
@@ -59,8 +58,8 @@ if ( (empty($loDocument)) || (empty($loUser)) )
     exit();
     
 $lxAccess = $loDocument->getAccess($loUser);
-//if (empty($lxAccess))
-//    exit();
+if (empty($lxAccess))
+    exit();
 
 $loLockedUser = null;
 if ($lxAccess == "w")
@@ -77,17 +76,20 @@ if (($loLockedUser instanceof wm\user) || ($lxAccess == "r")) {
     echo "<script type=\"text/javascript\">if (webLaTeX !== undefined) webLaTeX.getInstance().setEditorLock(true);</script>\n";
 }
 
-
 echo "<script type=\"text/javascript\">$( \"#weblatex-documenttabs\" ).tabs();</script>\n";
     
 echo "<div id=\"weblatex-documenttabs\">\n";
 echo "<ul>";
 echo "<li><a href=\"#configuration\">"._("configuration")."</a></li>";
 echo "<li><a href=\"#rights\">"._("rights")."</a></li>";
+echo "<li><a href=\"#draft\">"._("draft")."</a></li>";
+echo "<li><a href=\"#latexmk\">"._("latexmk")."</a></li>";
 echo "</ul>\n";
 
 echo "<div id=\"configuration\">configuration</div>\n";
 echo "<div id=\"rights\">rights</div>\n";
+echo "<div id=\"draft\">draft</div>\n";
+echo "<div id=\"latexmk\">latexmk</div>\n";
 echo "</div>";
 
     #echo "<div id=\"weblatex-editor\">".$loDocument->getContent()."</div>";

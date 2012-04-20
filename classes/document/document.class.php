@@ -25,7 +25,7 @@
 
 namespace weblatex\document;
 use weblatex as wl;
-use weblatex\management as wm;
+use weblatex\management as man;
 
 require_once( dirname(dirname(__DIR__))."/config.inc.php" );
 require_once( dirname(__DIR__)."/main.class.php" );
@@ -57,7 +57,7 @@ class document implements baseedit {
      * @todo check the Insert_ID() call for non-mysql databases
      **/
     static function create( $pcName, $poUser ) {
-        if ( (!is_string($pcName)) || (!($poUser instanceof wm\user)) )
+        if ( (!is_string($pcName)) || (!($poUser instanceof mam\user)) )
             wl\main::phperror( "arguments must be string value and a user object", E_USER_ERROR );
         
         $loDB = wl\main::getDatabase();
@@ -125,7 +125,7 @@ class document implements baseedit {
         
         $this->mnID   = intval($loResult->fields["id"]);
         if (!empty($loResult->fields["owner"]))
-            $this->moOwner = new wm\user(intval($loResult->fields["owner"]));
+            $this->moOwner = new man\user(intval($loResult->fields["owner"]));
         
         // set the generate path for the PDF
         $this->mcGeneratePath = wl\main::getTempDir()."/".session_id()."/".$this->mnID;
@@ -197,7 +197,45 @@ class document implements baseedit {
      * @return null for no access, "r" read access and "w" for read-write access
      **/
     function getAccess($poUser) {
+        if (!($poUser instanceof man\user))
+            wl\main::phperror( "argument must be a user object", E_USER_ERROR );
         
+        // draft & administrator right
+        $loDocumentRight = new man\right( wl\config::$system_rights["document"] );
+        $loAdminRight    = new man\right( wl\config::$system_rights["administrator"] );
+        
+        // check if the user is the owner or has administrator or document right
+        if ( ($poUser->isEqual($this->getOwner())) || ($loDocumentRight->hasRight($poUser)) || ($loAdminRight->hasRight($poUser)) )
+            return "w";
+        
+        
+        // get user groups
+        $laGroups = $poUser->getGroups();
+        
+        // check if a user group has admin or draft right
+        if ( (wl\main::any( man\right::hasOne($laGroups, array($loDocumentRight)))) || (wl\main::any( man\right::hasOne($laGroups, array($loAdminRight)))) )
+            return "w";
+        
+        
+        //get read and write rights of this draft
+        $laReadRight  = $this->getRights("read");
+        $laWriteRight = $this->getRights("write");
+        
+        
+        // check the other rights of the user
+        if (man\right::hasOne($poUser, $laReadRight))
+            return "r";
+        if (man\right::hasOne($poUser, $laWriteRight))
+            return "w";
+        
+        // check groups of the user and their rights of this draft
+        if (wl\main::any( man\right::hasOne($laGroups, $laReadRight)))
+            return "r";
+        if (wl\main::any( man\right::hasOne($laGroups, $laWriteRight)))
+            return "w";
+        
+        
+        return null;
     }
     
     /** returns an array with right objects
