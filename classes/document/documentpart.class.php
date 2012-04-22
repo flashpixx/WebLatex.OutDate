@@ -46,7 +46,7 @@ class documentpart implements baseedit {
     
     
     /** constructor
-     * @param $px document id or document object
+     * @param $px document id
      **/
     function __construct( $px ) {
         if (!is_numeric($px)) 
@@ -62,16 +62,56 @@ class documentpart implements baseedit {
         $this->mnDocument   = intval($loResult->fields["document"]);
     }
     
+    /** returns the document part id
+     * @return id
+     **/
     function getID() {
         return $this->mnID;
     }
     
+    /** returns the document part name / description
+     * @return name or null
+     **/
     function getName() {
         $loResult = $this->moDB->Execute( "SELECT description FROM documentpart WHERE id=?", array($this->mnID) );
         if (!$loResult->EOF)
             return $loResult->fields["description"];
         return null;        
     }
+    
+    /** sets the document part name
+     * @param $pc description
+     **/
+    function setName($pc) {
+        $this->moDB->Execute( "UPDATE documentpart SET description=? WHERE id=?", array($pc, $this->mnID) );
+    }
+    
+    /** returns the position value
+     * @return value
+     **/
+    function getPosition() {
+        $loResult = $this->moDB->Execute( "SELECT position FROM documentpart WHERE id=?", array($this->mnID) );
+        if (!$loResult->EOF)
+            return intval($loResult->fields["position"]);
+        return null; 
+    }
+    
+    /** sets the position value
+     * @param $pn null or uint position
+     **/
+    function setPosition($pn) {
+        if (empty($pn))
+            $this->moDB->Execute( "UPDATE documentpart SET position=? WHERE id=?", array(null, $this->mnID) );
+        else {
+            
+            $loResult = $this->moDB->Execute( "SELECT id FROM documentpart WHERE id != ? AND position=?", array($this->mnID, $pn) );
+            if (!$loResult->EOF)
+                throw new \Exception( "position value is not unique" );
+            
+            $this->moDB->Execute( "UPDATE documentpart SET position=? WHERE id=?", array($pn, $this->mnID) );
+        }
+    }
+    
     
     /** sets the part content
      * @param $pcContent text information
@@ -104,20 +144,92 @@ class documentpart implements baseedit {
         return null;
     }
     
+    /** returns the access of an user
+     * @param $poUser user object
+     * @return null for no access, "r" read access and "w" for read-write access
+     **/
     function getAccess($poUser) {
+        if (!($poUser instanceof man\user))
+            wl\main::phperror( "argument must be a user object", E_USER_ERROR );
         
+        // document & administrator right
+        $loDocumentRight = new man\right( wl\config::$system_rights["document"] );
+        $loAdminRight    = new man\right( wl\config::$system_rights["administrator"] );
+        
+        // check if the user is the owner or has administrator or document right
+        if ( ($poUser->isEqual($this->getOwner())) || ($loDocumentRight->hasRight($poUser)) || ($loAdminRight->hasRight($poUser)) )
+            return "w";
+        
+        
+        // get user groups
+        $laGroups = $poUser->getGroups();
+        
+        // check if a user group has admin or document right
+        if ( (wl\main::any( man\right::hasOne($laGroups, array($loDocumentRight)))) || (wl\main::any( man\right::hasOne($laGroups, array($loAdminRight)))) )
+            return "w";
+        
+        
+        //get read and write rights of this document
+        $laReadRight  = $this->getRights("read");
+        $laWriteRight = $this->getRights("write");
+        
+        
+        // check the other rights of the user
+        if (man\right::hasOne($poUser, $laReadRight))
+            return "r";
+        if (man\right::hasOne($poUser, $laWriteRight))
+            return "w";
+        
+        // check groups of the user and their rights of this document
+        if (wl\main::any( man\right::hasOne($laGroups, $laReadRight)))
+            return "r";
+        if (wl\main::any( man\right::hasOne($laGroups, $laWriteRight)))
+            return "w";
+        
+        
+        return null;
     }
     
+    /** adds a right or changes the access of the right
+     * @param $poRight right object
+     * @param $plWrite write access
+     **/
     function addRight( $poRight, $plWrite = false ) {
+        if (!($poRight instanceof man\right))
+            wl\main::phperror( "first argument must be a right object", E_USER_ERROR );
+        if (!is_bool($plWrite))
+            wl\main::phperror( "second argument must be a boolean value", E_USER_ERROR );
         
+        $access = $plWrite ? "write" : "read";
+        $this->moDB->Execute("INSERT INTO documentpart_rights VALUES (?,?,?) ON DUPLICATE KEY UPDATE access=?", array($this->mnID, $poRight->getID(), $access, $access));
     }
     
+    /** returns an array with right objects
+     * @param $pcType type of the right, empty all rights, "write" only write access, "read" only read access
+     * @return array with rights
+     **/
     function getRights($pcType = null) {
+        if (empty($pcType))
+            $loResult = $this->moDB->Execute("SELECT rights FROM documentpart_rights WHERE documentpart=?", array($this->mnID));
+        else
+            $loResult = $this->moDB->Execute("SELECT rights FROM documentpart_rights WHERE documentpartt=? AND access=?", array($this->mnID, $pcType));
         
+        $la = array();
+        if (!$loResult->EOF)
+            foreach($loResult as $laRow)
+                array_push($la, new man\right(intval($laRow["rights"])));
+        
+        return $la;
     }
     
+    /** deletes the right 
+     * @param $poRight right object
+     **/
     function deleteRight( $poRight ) {
+        if (!($poRight instanceof man\right))
+            wl\main::phperror( "argument must be a right object", E_USER_ERROR );
         
+        $this->moDB->Execute("DELETE FROM documentpart_rights WHERE documentpart=? AND rights=?", array($this->mnID, $poRight->getID()));
     }
     
     function lock( $poUser ) {

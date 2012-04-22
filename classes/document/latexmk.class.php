@@ -37,7 +37,7 @@ require_once( __DIR__."/baseedit.class.php" );
 
 
 /** class of representation a LaTeXMK element **/
-class draft implements basedocument {
+class latexmk implements basedocument {
 }
 
 ?>

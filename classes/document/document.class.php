@@ -201,7 +201,7 @@ class document implements baseedit {
         if (!($poUser instanceof man\user))
             wl\main::phperror( "argument must be a user object", E_USER_ERROR );
         
-        // draft & administrator right
+        // document & administrator right
         $loDocumentRight = new man\right( wl\config::$system_rights["document"] );
         $loAdminRight    = new man\right( wl\config::$system_rights["administrator"] );
         
@@ -213,12 +213,12 @@ class document implements baseedit {
         // get user groups
         $laGroups = $poUser->getGroups();
         
-        // check if a user group has admin or draft right
+        // check if a user group has admin or document right
         if ( (wl\main::any( man\right::hasOne($laGroups, array($loDocumentRight)))) || (wl\main::any( man\right::hasOne($laGroups, array($loAdminRight)))) )
             return "w";
         
         
-        //get read and write rights of this draft
+        //get read and write rights of this document
         $laReadRight  = $this->getRights("read");
         $laWriteRight = $this->getRights("write");
         
@@ -229,7 +229,7 @@ class document implements baseedit {
         if (man\right::hasOne($poUser, $laWriteRight))
             return "w";
         
-        // check groups of the user and their rights of this draft
+        // check groups of the user and their rights of this document
         if (wl\main::any( man\right::hasOne($laGroups, $laReadRight)))
             return "r";
         if (wl\main::any( man\right::hasOne($laGroups, $laWriteRight)))
@@ -253,12 +253,13 @@ class document implements baseedit {
         return $la;
     }
     
-    /** returns an array with right objects
-     * @param $pcType type of the right, empty all rights, "write" only write access, "read" only read access
-     * @return array with rights
+    /** adds a new document part to the document
+     * @param $pcName description
+     * @return the new document part object
      **/
-    function getRights($pcType = null) {
-        
+    function addPart( $pcName = null ) {
+        $this->moDB->Execute( "INSERT INTO documentpart (document, description) VALUES (?, ?)", array($this->mnID, $pcName) );
+        return new documentpart( $this->moDB->Insert_ID() );
     }
     
     /** adds a right or changes the access of the right
@@ -266,15 +267,42 @@ class document implements baseedit {
      * @param $plWrite write access
      **/
     function addRight( $poRight, $plWrite = false ) {
+        if (!($poRight instanceof man\right))
+            wl\main::phperror( "first argument must be a right object", E_USER_ERROR );
+        if (!is_bool($plWrite))
+            wl\main::phperror( "second argument must be a boolean value", E_USER_ERROR );
         
+        $access = $plWrite ? "write" : "read";
+        $this->moDB->Execute("INSERT INTO document_rights VALUES (?,?,?) ON DUPLICATE KEY UPDATE access=?", array($this->mnID, $poRight->getID(), $access, $access));
     }
     
-    /** deletes a right 
+    /** deletes the right 
      * @param $poRight right object
      **/
     function deleteRight( $poRight ) {
+        if (!($poRight instanceof man\right))
+            wl\main::phperror( "argument must be a right object", E_USER_ERROR );
         
+        $this->moDB->Execute("DELETE FROM document_rights WHERE document=? AND rights=?", array($this->mnID, $poRight->getID()));
     }
+    
+    /** returns an array with right objects
+     * @param $pcType type of the right, empty all rights, "write" only write access, "read" only read access
+     * @return array with rights
+     **/
+    function getRights($pcType = null) {
+        if (empty($pcType))
+            $loResult = $this->moDB->Execute("SELECT rights FROM document_rights WHERE document=?", array($this->mnID));
+        else
+            $loResult = $this->moDB->Execute("SELECT rights FROM document_rights WHERE document=? AND access=?", array($this->mnID, $pcType));
+        
+        $la = array();
+        if (!$loResult->EOF)
+            foreach($loResult as $laRow)
+                array_push($la, new man\right(intval($laRow["rights"])));
+        
+        return $la;
+    }   
     
     /** creates the lock of the document
      * @param $poUser user object
