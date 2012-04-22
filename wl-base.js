@@ -365,9 +365,9 @@ $(document).ready( function() {
                 
                 if (lcURL != null)
                     $.get(lcURL, function(pcData) {
-                          $("#weblatex-content").fadeOut("slow", function() {
+                          $("#weblatex-content").fadeOut("fast", function() {
                                 webLaTeX.getInstance().releaseDocument();
-                                $("#weblatex-content").html(pcData).fadeIn("slow");
+                                $("#weblatex-content").html(pcData).fadeIn("fast");
                                 webLaTeX.getInstance().setEditorInstance(loURLParameter);                                                 
                           });
                     });

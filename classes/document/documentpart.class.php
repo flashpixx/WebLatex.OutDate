@@ -30,68 +30,136 @@ use weblatex\management as man;
 require_once( dirname(dirname(__DIR__))."/config.inc.php" );
 require_once( dirname(__DIR__)."/main.class.php" );
 require_once( dirname(__DIR__)."/management/user.class.php" );
-
+require_once( __DIR__."/baseedit.class.php" );
 
 
 /** class of representation a document part like chapter or subsection **/
-class documentpart {
+class documentpart implements baseedit {
     
     /* document id **/
     private $mnID           = null;
+    /** document id **/
+    private $mnDocument     = null;
     /** database object **/
     private $moDB           = null;
-    /** document object **/
-    private $moDocument     = null;
+    
     
     
     /** constructor
      * @param $px document id or document object
      **/
     function __construct( $px ) {
-        if ( (!is_numeric($px)) && (!($poDoc instanceof document)) )
-            wl\main::phperror( "argument must be a numeric or document object value", E_USER_ERROR );
+        if (!is_numeric($px)) 
+            wl\main::phperror( "argument must be a numeric value", E_USER_ERROR );
         
         $this->moDB = wl\main::getDatabase();
-        if (is_numeric()) {
-            $loResult = $this->moDB->Execute( "SELECT document FROM documentpart WHERE id=?", array($px) );
-            if ($loResult->EOF)
-                throw new \Exception( "documentpart data not found" );
+        
+        $loResult = $this->moDB->Execute( "SELECT document FROM documentpart WHERE id=?", array($px) );
+        if ($loResult->EOF)
+            throw new \Exception( "documentpart data not found" );
             
-            $this->mnID         = $px;
-            $this->moDocument   = new document( intval($loResult->fields["document"]) );
-        } else
-            $this->moDocument = $poDoc;
+        $this->mnID         = $px;
+        $this->mnDocument   = intval($loResult->fields["document"]);
     }
     
-    /** returns a list of all document part objects of the document
-     * @param $poUser user object, that have access to the parts
-     * @return array with part objects
-     **/
-    function getAll( $poUser = null ) {
-        $la = array();
-        
-        $loResult = $this->moDB->Execute( "SELECT id FROM documentpart WHERE document=?", array($this->moDocument->getID()) );
+    function getID() {
+        return $this->mnID;
+    }
+    
+    function getName() {
+        $loResult = $this->moDB->Execute( "SELECT description FROM documentpart WHERE id=?", array($this->mnID) );
         if (!$loResult->EOF)
-            foreach($loResult as $laRow) {
-                $loPart = new documentpart(intval($laRow["id"]));
-                
-                if ($poUser instanceof man\user) {
-                    $lxAccess = $loPart->getAccess($poUser);
-                    if (!empty($lxAccess))
-                        array_push( $la, $loPart );
-                } else
-                    array_push( $la, $loPart );
-            }
+            return $loResult->fields["description"];
+        return null;        
+    }
+    
+    /** sets the part content
+     * @param $pcContent text information
+     **/
+    function setContent( $pc ) {
+        //check first the archivable flag and stores the old data
+        if ($this->isArchivable())
+            $this->moDB->Execute("INSERT IGNORE INTO documentpart_history (documentpartid, content) SELECT id, content FROM documentpart WHERE id=?", array($this->mnID));
         
-        return $la;
+        $this->moDB->Execute("UPDATE documentpart SET content=? WHERE id=?", array($pc, $this->mnID));
+    }
+    
+    /** gets the content of the part
+     * @return data
+     **/
+    function getContent() {
+        $loResult = $this->moDB->Execute( "SELECT content FROM documentpart WHERE id=?", array($this->mnID) );
+        if (!$loResult->EOF)
+            return $loResult->fields["content"];
+        return null;
+    }
+    
+    /** gets the owner of the document part (equal to the owner of the document)
+     * @return owner id
+     **/
+    function getOwner() {
+        $loResult = $this->moDB->Execute( "SELECT owner FROM document WHERE id=?", array($this->mnDocument) );
+        if ($loResult->EOF)
+            return man\user( intval($loResult->fields["owner"]) );
+        return null;
+    }
+    
+    function getAccess($poUser) {
         
     }
     
-    function setContent( $pcContent ) {
+    function addRight( $poRight, $plWrite = false ) {
         
     }
     
+    function getRights($pcType = null) {
+        
+    }
     
+    function deleteRight( $poRight ) {
+        
+    }
+    
+    function lock( $poUser ) {
+    }
+    
+    function unlock() {
+        
+    }
+    
+    function hasLock() {
+        
+    }
+    
+    /** gets the archive flag (we use the archiv flag of the document)
+     * @return boolean of the archive flag
+     **/
+    function isArchivable() {
+        $loResult = $this->moDB->Execute( "SELECT archivable FROM document WHERE id=?", array($this->mnDocument) );
+        return $loResult->fields["archivable"] == true;
+    }
+    
+    /** implements interface method, but the method does nothing
+     * because the document sets the archive flag only
+     * @param boolean
+     **/
+    function setArchivable( $plArchiveable ) {}
+    
+    function restoreHistory($pnID) {
+        
+    }
+    
+    function deleteHistory($pxID = null) {
+        
+    }
+    
+    function getHistoryContent($pnID) {
+        
+    }
+    
+    function getHistory() {
+        
+    }
 }
 
 

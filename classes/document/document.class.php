@@ -239,11 +239,18 @@ class document implements baseedit {
         return null;
     }
     
-    /** returns a document part accessing object
-     * @return document part object
+    /** returns a list of document parts or a part
+     * @return list of document part object
      **/
     function getParts() {
-        return new documentpart($this);
+        $la = array();
+        
+        $loResult = $this->moDB->Execute( "SELECT id FROM documentpart WHERE document=?", array($this->mnID) );
+        if (!$loResult->EOF)
+            foreach($loResult as $laRow)
+                array_push( $la, new documentpart(intval($laRow["id"])) );
+        
+        return $la;
     }
     
     /** returns an array with right objects

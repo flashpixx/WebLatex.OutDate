@@ -78,6 +78,16 @@ CREATE TABLE IF NOT EXISTS `documentpart` (
   KEY `document` (`document`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='table for storing document parts / chapter';
 
+DROP TABLE IF EXISTS `documentpart_history`;
+CREATE TABLE IF NOT EXISTS `documentpart_history` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `documentpartid` bigint(20) unsigned NOT NULL,
+  `backuptime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `content` longtext COLLATE utf8_bin,
+  PRIMARY KEY (`id`),
+  KEY `documentpartid` (`documentpartid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='table for storing documentpart history';
+
 DROP TABLE IF EXISTS `documentpart_rights`;
 CREATE TABLE IF NOT EXISTS `documentpart_rights` (
   `documentpart` bigint(20) unsigned NOT NULL,
@@ -283,13 +293,16 @@ ALTER TABLE `document`
 ALTER TABLE `documentpart`
   ADD CONSTRAINT `documentpart_ibfk_1` FOREIGN KEY (`document`) REFERENCES `document` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
+ALTER TABLE `documentpart_history`
+  ADD CONSTRAINT `documentpart_history_ibfk_1` FOREIGN KEY (`documentpartid`) REFERENCES `documentpart` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
 ALTER TABLE `documentpart_rights`
   ADD CONSTRAINT `documentpart_rights_ibfk_1` FOREIGN KEY (`documentpart`) REFERENCES `documentpart` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `documentpart_rights_ibfk_2` FOREIGN KEY (`rights`) REFERENCES `rights` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 ALTER TABLE `document_lock`
-  ADD CONSTRAINT `document_lock_ibfk_2` FOREIGN KEY (`user`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `document_lock_ibfk_1` FOREIGN KEY (`document`) REFERENCES `document` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+  ADD CONSTRAINT `document_lock_ibfk_1` FOREIGN KEY (`document`) REFERENCES `document` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `document_lock_ibfk_2` FOREIGN KEY (`user`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 ALTER TABLE `document_rights`
   ADD CONSTRAINT `document_rights_ibfk_1` FOREIGN KEY (`document`) REFERENCES `document` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
