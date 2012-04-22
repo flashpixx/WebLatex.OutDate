@@ -44,8 +44,6 @@ class draft implements basedocument {
     private $mcName    = null;
     /** draft id **/
     private $mnID      = null;
-    /** draft data **/
-    private $mcData    = null;
     /** owner **/
     private $moOwner   = null;
     /** database object **/
@@ -120,18 +118,17 @@ class draft implements basedocument {
         
         $this->moDB = wl\main::getDatabase();
         if (is_numeric($px))
-            $loResult = $this->moDB->Execute( "SELECT name, id, owner, content FROM draft WHERE id=?", array($px) );
+            $loResult = $this->moDB->Execute( "SELECT name, id, owner FROM draft WHERE id=?", array($px) );
         if ($px instanceof $this)
-            $loResult = $this->moDB->Execute( "SELECT name, id, owner, content FROM draft WHERE id=?", array($px->getID()) );        
+            $loResult = $this->moDB->Execute( "SELECT name, id, owner FROM draft WHERE id=?", array($px->getID()) );        
         if (is_string($px))
-            $loResult = $this->moDB->Execute( "SELECT name, id, owner, content FROM draft WHERE id=?", array($loDraft->getID()) );
+            $loResult = $this->moDB->Execute( "SELECT name, id, owner FROM draft WHERE id=?", array($loDraft->getID()) );
         
         if ($loResult->EOF)
             throw new \Exception( "draft data not found" );
         
         $this->mcName  = $loResult->fields["name"];
         $this->mnID    = intval($loResult->fields["id"]);
-        $this->mcData  = $loResult->fields["content"];
         if (!empty($loResult->fields["owner"]))
             $this->moOwner = new man\user(intval($loResult->fields["owner"]));
     
@@ -162,26 +159,24 @@ class draft implements basedocument {
      * @return content data
      **/
     function getContent() {
-        return $this->mcData;
+        $loResult = $this->moDB->Execute( "SELECT content FROM draft WHERE id=?", array($this->mnID) );
+        if (!$loResult->EOF)
+            return $loResult->fields["content"];
+        return null;
     }
     
-    /** sets the content data
+    /** save the content data
      * @param $pc data
      * @todo check the quotes, because the,
      * CKEditor creates slashes take a look to the magic quote option
      * 
      **/
     function setContent( $pc ) {
-        $this->mcData = stripslashes($pc);
-    }
-    
-    /** saves draft data to database **/
-    function save() {
         //check first the archivable flag and stores the old data
         if ($this->isArchivable())
             $this->moDB->Execute("INSERT IGNORE INTO draft_history (draftid, content) SELECT id, content FROM draft WHERE id=?", array($this->mnID));
-            
-        $this->moDB->Execute("UPDATE draft SET content=? WHERE id=?", array($this->mcData, $this->mnID));
+        
+        $this->moDB->Execute("UPDATE draft SET content=? WHERE id=?", array($pc, $this->mnID));
     }
     
     /** returns an array with the draft history

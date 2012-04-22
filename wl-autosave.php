@@ -142,7 +142,6 @@ if ($loLockedUser instanceof wm\user) {
     
 // write data
 $loDocument->setContent($_POST["content"]);
-$loDocument->save();
 
     
 // we can exit normally

@@ -31,6 +31,7 @@ require_once( dirname(dirname(__DIR__))."/config.inc.php" );
 require_once( dirname(__DIR__)."/main.class.php" );
 require_once( dirname(__DIR__)."/management/user.class.php" );
 require_once( __DIR__."/draft.class.php" );
+require_once( __DIR__."/documentpart.class.php" );
 require_once( __DIR__."/baseedit.class.php" );
 
     
@@ -236,6 +237,13 @@ class document implements baseedit {
         
         
         return null;
+    }
+    
+    /** returns a document part accessing object
+     * @return document part object
+     **/
+    function getParts() {
+        return new documentpart($this);
     }
     
     /** returns an array with right objects
