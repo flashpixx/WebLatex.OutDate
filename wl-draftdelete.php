@@ -34,7 +34,7 @@ use weblatex as wl;
 use weblatex\management as wm;
 use weblatex\document as doc;
 
-require_once(__DIR__."/config.inc.php");
+require_once(__DIR__."/wl-config.inc.php");
 require_once(__DIR__."/classes/main.class.php");
 require_once(__DIR__."/classes/management/session.class.php");
 require_once(__DIR__."/classes/management/right.class.php");

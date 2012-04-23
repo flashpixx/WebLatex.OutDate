@@ -54,7 +54,7 @@ use weblatex\design as wd;
 use weblatex\management as wm;
 use weblatex\document as doc;
 
-require_once(__DIR__."/config.inc.php");
+require_once(__DIR__."/wl-config.inc.php");
 require_once(__DIR__."/classes/main.class.php");
 require_once(__DIR__."/classes/design/theme.class.php");
 require_once(__DIR__."/classes/management/right.class.php");
