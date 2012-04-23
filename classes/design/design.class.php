@@ -25,7 +25,7 @@
 
 namespace weblatex\design;
     
-require_once( dirname(dirname(__DIR__))."/config.inc.php" );
+require_once( dirname(dirname(__DIR__))."/wl-config.inc.php" );
     
     
 

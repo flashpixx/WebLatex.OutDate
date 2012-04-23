@@ -25,7 +25,7 @@
     
 namespace weblatex;
     
-require_once( dirname(__DIR__)."/config.inc.php" );
+require_once( dirname(__DIR__)."/wl-config.inc.php" );
 require_once( dirname(__DIR__)."/tools/phppass/PasswordHash.php" );
 require_once( dirname(__DIR__)."/tools/adodb5/adodb.inc.php" );
     

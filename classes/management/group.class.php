@@ -26,7 +26,7 @@
 namespace weblatex\management;
 use weblatex as wl;
     
-require_once( dirname(dirname(__DIR__))."/config.inc.php" );
+require_once( dirname(dirname(__DIR__))."/wl-config.inc.php" );
 require_once( dirname(__DIR__)."/base.class.php" );
 require_once( dirname(__DIR__)."/main.class.php" );
 require_once( __DIR__."/user.class.php" );
