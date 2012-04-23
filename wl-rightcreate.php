@@ -24,8 +24,8 @@
  **/
 
 /**
- * $LastChangedDate: 2012-04-23 18:59:32 +0200 (Mo, 23 Apr 2012) $
- * $Author: philipp.kraus@flashpixx.de $
+ * $LastChangedDate$
+ * $Author$
  **/
 
 
