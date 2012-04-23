@@ -37,6 +37,48 @@ if (webLaTeX === undefined)
                     
             // create an own object for dialog function
             dialogs : {
+                    
+                /** function for creating a new right **/
+                createRight : function() {
+                    $("#weblatex-dialog").html("<p id=\"weblatex-dialog-message\">"+_config.translation.rightadd+"</p><form><fieldset><label for=\"rightname\">right name: </label> <input type=\"text\" name=\"rightname\" id=\"rightname\" class=\"text ui-widget-content ui-corner-all\" /></fieldset></form>");
+                    
+                    // build the buttons option first, because we will use translation names
+                    var loButtons                           = {  Cancel   : function() { $("#weblatex-dialog").dialog("close"); }  }
+                    loButtons[_config.translation.create]   = function() {
+                        $.ajax({ url     : "wl-rightcreate.php?"+_instance.getSessionURLParameter({name : $("#rightname").val()}),
+                                 success : function(pcResponse) {	
+                                    lcMsg = $(pcResponse).find("error");
+                                    if (lcMsg.size() != 0)
+                                        $("#weblatex-dialog-message").text(lcMsg.text()).addClass( "ui-state-highlight" );
+                                    else {
+                                        $("#weblatex-dialog").dialog("close");
+                               
+                                        // we get the parent node (right node), check if it is opend, and reopen the node, because rights are only
+                                        // shown in the right node
+                                        var loNode = $("a[rel='/myRights/']");
+                                        if (loNode.size() != 0) {
+                                            if (loNode.parent().hasClass("expanded")) {
+                                                loNode.trigger("click");
+                                                loNode.trigger("click");
+                                            }
+                                         }
+                                    }
+                                 }
+                        });
+                    };
+                    
+                    
+                    // create the dialog gui (the close call must be with the id name, because if the focuse is lost, the $(this) option can not close the dialog anymore)
+                    $("#weblatex-dialog").dialog({
+                        height     : 225,
+                        width      : 400,
+                        title      : _config.translation.rightcreate,
+                        modal      : true,
+                        resizable  : false,
+                        buttons    : loButtons,
+                        close      : function() { $("#weblatex-dialog").children().remove(); }
+                    });
+                },
                 
                 /** function for creating the directory create dialog
                  * @param pcParent parent directory
@@ -396,7 +438,7 @@ $(document).ready( function() {
                  null,
                  
                  { label  : webLaTeX.getInstance().getTranslation().labelcreateright,
-                   action : function() {}
+                   action : function() { webLaTeX.getInstance().dialogs.createRight(); }
                  },
                  
                  { label  : webLaTeX.getInstance().getTranslation().labelcreategroup,

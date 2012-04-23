@@ -114,6 +114,10 @@ class theme {
             echo "  draftcreate      : \""._("draft creating")."\",";
             echo "  drafterror       : \""._("draft error")."\",";
             
+            echo "  rightadd         : \""._("set right name")."\", ";
+            echo "  rightcreate      : \""._("right creating")."\",";
+            echo "  righterror       : \""._("right error")."\",";
+            
             echo "  documentadd      : \""._("set document name")."\", ";
             echo "  documentcreate   : \""._("document creating")."\",";
             echo "  documenterror    : \""._("document error")."\",";

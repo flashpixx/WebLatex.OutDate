@@ -58,14 +58,17 @@ class right implements \weblatex\base {
             wl\main::phperror( "second argument must be empty or an user object", E_USER_ERROR );
         
         $loDB     = wl\main::getDatabase();
-        $loResult = $loDB->Execute( "SELECT id FROM rights WHERE name=?", array($pcName) );
+        if (empty($poUser))
+            $loResult = $loDB->Execute( "SELECT id FROM rights WHERE name=? AND owner is null", array($pcName) );
+        else
+            $loResult = $loDB->Execute( "(SELECT id FROM rights WHERE name=? AND owner is null) UNION (SELECT id FROM rights WHERE name=? AND owner=?)", array($pcName, $pcName, $poUser->getID()) );
         
         if (!$loResult->EOF)
             throw new \Exception( "right [".$pcName."] exists" );
         
         $lxID = null;
         if (!empty($poUser))
-            $lxID = $poUser-getID();
+            $lxID = $poUser->getID();
         $loDB->Execute( "INSERT IGNORE INTO rights (name,owner) VALUES (?,?)", array($pcName, $lxID) );
         
         return new right($pcName);
