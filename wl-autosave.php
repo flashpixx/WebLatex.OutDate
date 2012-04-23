@@ -82,9 +82,11 @@ function createErrorMsg($poXML, $pcMsg) {
     
     
     
-// read session manually    
+// read session manually and set language
+wl\main::initLanguage();
 wm\session::init();
 $loUser = wm\session::getLoggedInUser();
+    
     
 // generate return XML
 header("Content-type: text/xml");
@@ -96,28 +98,20 @@ if ( empty($loUser) ) {
     exit();
 }
 
-// read user data
-$loUser = $_SESSION["weblatex::loginuser"];
-
-
 // try to read the id
 if (!isset($_GET["id"])) {
     echo createErrorMsg($loXML, _("document id not found"));
     exit();
 }
 
-// try to determine the document type
-if ( (!isset($_GET["type"])) || ($_GET["type"] != "draft") && ($_GET["type"] != "dcoument") ) {
-    echo createErrorMsg($loXML, _("document type can not be detected"));
-    exit();
-}
-    
 // create the document object
 $loDocument = null;
-switch ($_GET["type"]) {
-    case "draft"        : $loDocument = new doc\draft(intval($_GET["id"]));     break;
-    case "document"     : $loDocument = new doc\document(intval($_GET["id"]));  break;
-}
+if (isset($_GET["type"]))
+    switch ($_GET["type"]) {
+        case "draft"        : $loDocument = new doc\draft(intval($_GET["id"]));         break;
+        case "document"     : $loDocument = new doc\document(intval($_GET["id"]));      break;
+        case "documentpart" : $loDocument = new doc\documentpart(intval($_GET["id"]));  break;
+    }
   
     
 // check content and document data

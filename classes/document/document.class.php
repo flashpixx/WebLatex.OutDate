@@ -262,6 +262,17 @@ class document implements baseedit {
         return new documentpart( $this->moDB->Insert_ID() );
     }
     
+    /** implementated method of the base class
+     * is empty, because the document does not have any content
+     * @param $pc content
+     **/
+    function setContent( $pc ) {}
+    
+    /** implementated method of the base class
+     * is empty, because the document does not have any content
+     **/
+    function getContent() {}
+    
     /** adds a right or changes the access of the right
      * @param $poRight right object
      * @param $plWrite write access
@@ -304,23 +315,43 @@ class document implements baseedit {
         return $la;
     }   
     
-    /** creates the lock of the document
+    /** tries to create a lock of the document and remove old locks if needed
      * @param $poUser user object
+     * @return null if the lock can be stored, the user object, which hold the lock
+     * @bug if the user has no write access a lock can be created
      **/
     function lock( $poUser ) {
+        if (!($poUser instanceof man\user))
+            wl\main::phperror( "argument must be a user object", E_USER_ERROR );
         
-    }
-    
-    /** unlocks the document **/
-    function unlock() {
+        // remove old locks
+        $this->moDB->Execute("DELETE FROM document_lock WHERE lastactivity < DATE_SUB(NOW(), INTERVAL ? SECOND)", array(wl\config::locktime));
         
+        // check if a lock exists
+        $loLockUser = $this->hasLock();
+        if (!empty($loLockUser)) 
+            return $loLockUser;
+        
+        // try to set the lock or refresh the lock if exists
+        $this->moDB->Execute("INSERT INTO document_lock (document, user, session) VALUES (?,?,?) ON DUPLICATE KEY UPDATE user=?, session=?, lastactivity=NOW()", array($this->mnID, $poUser->getID(), session_id(), $poUser->getID(), session_id()));
+        
+        return null;
     }
     
     /** returns the user object if a lock exists
      * @return user object or null
      **/
     function hasLock() {
+        $loResult = $this->moDB->Execute("SELECT user FROM document_lock WHERE document=? AND session <> ?", array($this->mnID, session_id()));
+        if (!$loResult->EOF)
+            return new man\user( intval($loResult->fields["user"]) );
         
+        return null;
+    }
+    
+    /** unlocks the document **/
+    function unlock() {
+        $this->moDB->Execute("DELETE FROM document_lock WHERE document=? AND session=?", array($this->mnID, session_id()));
     }
     
     /** restore a history entry

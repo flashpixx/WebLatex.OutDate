@@ -61,22 +61,19 @@ if ( (!empty($loUser)) && (isset($_GET["id"])) && (isset($_GET["type"])) ) {
     
         case "draft" :
             $loDoc    = new doc\draft( intval($_GET["id"]) );
-            $loDoc->unlock();
             break;
             
         case "document" :
             $loDoc    = new doc\document( intval($_GET["id"]) );
-            $loDoc->unlock();
             break;
             
         case "documentpart" :
-            $loDoc    = new doc\document( intval($_GET["id"]) );
-            $loPart   = $loDoc->getPart( intval($_GET["pid"]) );
-            $loPart->lock();
+            $loDoc    = new doc\documentpart( intval($_GET["id"]) );
             break;
-    
     }
-     
+
+    if (!empty($loDoc))
+        $loDoc->unlock();
 }
 
 ?>

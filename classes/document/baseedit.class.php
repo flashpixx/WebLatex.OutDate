@@ -31,6 +31,16 @@ require_once( __DIR__."/basedocument.class.php" );
 
 /** interface for the editable documents (draft / document) **/
 interface baseedit extends basedocument {
+    
+    /** sets the content of the document 
+     * @param $pc content
+     **/
+    function setContent( $pc );
+    
+    /** returns the content of the document
+     * @return content
+     **/
+    function getContent();
 
     /** creates the lock of the document or refresh the lock
      * @param $poUser user object
