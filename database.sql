@@ -188,11 +188,22 @@ CREATE TABLE IF NOT EXISTS `latexmk` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(250) COLLATE utf8_bin NOT NULL,
   `owner` bigint(20) unsigned DEFAULT NULL,
+  `archivable` enum('true','false') COLLATE utf8_bin NOT NULL DEFAULT 'false',
   `content` longtext COLLATE utf8_bin,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `name` (`name`),
+  UNIQUE KEY `name` (`name`,`owner`),
   KEY `owner` (`owner`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='latexmk build scripts';
+
+DROP TABLE IF EXISTS `latexmk_lock`;
+CREATE TABLE IF NOT EXISTS `latexmk_lock` (
+  `latexmk` bigint(20) unsigned NOT NULL,
+  `user` bigint(20) unsigned NOT NULL,
+  `session` varchar(255) COLLATE utf8_bin NOT NULL,
+  `lastactivity` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`latexmk`),
+  KEY `user` (`user`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin COMMENT='table for storing the latexmk locks';
 
 DROP TABLE IF EXISTS `latexmk_rights`;
 CREATE TABLE IF NOT EXISTS `latexmk_rights` (
@@ -307,8 +318,8 @@ ALTER TABLE `documentpart_history`
   ADD CONSTRAINT `documentpart_history_ibfk_1` FOREIGN KEY (`documentpartid`) REFERENCES `documentpart` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 ALTER TABLE `documentpart_lock`
-  ADD CONSTRAINT `documentpart_lock_ibfk_2` FOREIGN KEY (`user`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `documentpart_lock_ibfk_1` FOREIGN KEY (`documentpart`) REFERENCES `documentpart` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+  ADD CONSTRAINT `documentpart_lock_ibfk_1` FOREIGN KEY (`documentpart`) REFERENCES `documentpart` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `documentpart_lock_ibfk_2` FOREIGN KEY (`user`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 ALTER TABLE `documentpart_rights`
   ADD CONSTRAINT `documentpart_rights_ibfk_1` FOREIGN KEY (`documentpart`) REFERENCES `documentpart` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
@@ -345,6 +356,10 @@ ALTER TABLE `group_rights`
 
 ALTER TABLE `latexmk`
   ADD CONSTRAINT `latexmk_ibfk_1` FOREIGN KEY (`owner`) REFERENCES `user` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+ALTER TABLE `latexmk_lock`
+  ADD CONSTRAINT `latexmk_lock_ibfk_2` FOREIGN KEY (`user`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `latexmk_lock_ibfk_1` FOREIGN KEY (`latexmk`) REFERENCES `latexmk` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 ALTER TABLE `latexmk_rights`
   ADD CONSTRAINT `latexmk_rights_ibfk_1` FOREIGN KEY (`latexmk`) REFERENCES `latexmk` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,

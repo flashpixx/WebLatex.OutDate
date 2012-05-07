@@ -38,7 +38,7 @@ require_once( __DIR__."/directory.class.php" );
 
     
 /** class of representation a draft **/
-class draft implements basedocument {
+class draft implements baseedit {
     
     /** draft name **/
     private $mcName    = null;

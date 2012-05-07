@@ -66,6 +66,7 @@ require_once(__DIR__."/classes/management/group.class.php");
 require_once(__DIR__."/classes/document/draft.class.php");
 require_once(__DIR__."/classes/document/document.class.php");
 require_once(__DIR__."/classes/document/directory.class.php");
+require_once(__DIR__."/classes/document/latexmk.class.php");
 
     
 // read session manually and set language
@@ -120,6 +121,13 @@ if ($lnSystemItems > 0) {
                 echo "<li class=\"file ext_rb right\"><a href=\"#\" rel=\"right$".$loItem->getID()."\">".$loItem->getName()."</a></li>\n";
             break;
             
+        // we check if "mylatexmk" folder is used
+        case "myLatexmk" :
+            $llClose = true;
+            foreach( doc\latexmk::getList($loUser) as $loItem )
+                echo "<li class=\"file ext_rb latexmk\"><a href=\"#\" rel=\"latexmk$".$loItem->getID()."\">".$loItem->getName()."</a></li>\n";
+            break;
+            
         // we check if the "WebLaTeX" folder is used
         case "WebLaTeX" :
             $llClose = true;
@@ -170,6 +178,7 @@ if ($loDirectory->isRoot()) {
     echo "<li class=\"directory collapsed\"><a href=\"#\" rel=\"/myDrafts/\">"._("my drafts")."</a></li>\n";
     echo "<li class=\"directory collapsed\"><a href=\"#\" rel=\"/myGroups/\">"._("my groups")."</a></li>\n";
     echo "<li class=\"directory collapsed\"><a href=\"#\" rel=\"/myRights/\">"._("my rights")."</a></li>\n";
+    echo "<li class=\"directory collapsed\"><a href=\"#\" rel=\"/myLatexmk/\">"._("my latexmk")."</a></li>\n";
 }
 
    

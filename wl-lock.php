@@ -49,6 +49,8 @@ require_once(__DIR__."/classes/management/session.class.php");
 require_once(__DIR__."/classes/management/user.class.php");
 require_once(__DIR__."/classes/document/draft.class.php");
 require_once(__DIR__."/classes/document/document.class.php");
+require_once(__DIR__."/classes/document/documentpart.class.php");
+require_once(__DIR__."/classes/document/latexmk.class.php");
 
     
 
@@ -61,18 +63,10 @@ if ( (!empty($loUser)) && (isset($_GET["id"])) && (isset($_GET["type"])) ) {
     // check which document should be refreshed
     $loDoc = null;
     switch (strtolower($_GET["type"])) {
-            
-        case "draft" :
-            $loDoc    = new doc\draft( intval($_GET["id"]) );
-            break;
-            
-        case "document" :
-            $loDoc    = new doc\document( intval($_GET["id"]) );
-            break;
-        
-        case "documentpart" :
-            $loDoc    = new doc\documentpart( intval($_GET["id"]) );
-            break;
+        case "draft"        :  $loDoc    = new doc\draft( intval($_GET["id"]) );        break;
+        case "document"     :  $loDoc    = new doc\document( intval($_GET["id"]) );     break;
+        case "documentpart" :  $loDoc    = new doc\documentpart( intval($_GET["id"]) ); break;
+        case "latexmk"      :  $loDoc    = new doc\latexmk( intval($_GET["id"]) );      break;
     }
     
     if (!empty($loDoc))
