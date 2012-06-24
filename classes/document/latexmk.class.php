@@ -186,44 +186,74 @@ class latexmk implements baseedit {
     function getRights($pcType = null) {
     }
     
-    /** sets the content of the document 
-     * @param $pc content
-     **/
-    function setContent( $pc ) {
-        
-    }
-    
-    /** returns the content of the document
-     * @return content
+    /** returns the latexmk content data
+     * @return content data
      **/
     function getContent() {
-        
+        $loResult = $this->moDB->Execute( "SELECT content FROM latexmk WHERE id=?", array($this->mnID) );
+        if (!$loResult->EOF)
+            return $loResult->fields["content"];
+        return null;
     }
     
-    /** creates the lock of the document or refresh the lock
+    /** save the content data
+     * @param $pc data
+     * @todo check the quotes, because the,
+     * CKEditor creates slashes take a look to the magic quote option
+     * 
+     **/
+    function setContent( $pc ) {
+        //check first the archivable flag and stores the old data
+        if ($this->isArchivable())
+            $this->moDB->Execute("INSERT IGNORE INTO latexmk_history (latexmkid, content) SELECT id, content FROM latexmk WHERE id=?", array($this->mnID));
+        
+        $this->moDB->Execute("UPDATE latexmk SET content=? WHERE id=?", array($pc, $this->mnID));
+    }
+    
+    /** tries to create a lock of the latexmk and remove old locks if needed
      * @param $poUser user object
+     * @return null if the lock can be stored, the user object, which hold the lock
+     * @bug if the user has no write access a lock can be created
      **/
     function lock( $poUser ) {
+        if (!($poUser instanceof man\user))
+            wl\main::phperror( "argument must be a user object", E_USER_ERROR );
         
-    }
-    
-    /** unlocks the document **/
-    function unlock() {
+        // remove old locks
+        $this->moDB->Execute("DELETE FROM latexmk_lock WHERE lastactivity < DATE_SUB(NOW(), INTERVAL ? SECOND)", array(wl\config::locktime));
         
+        // check if a lock exists
+        $loLockUser = $this->hasLock();
+        if (!empty($loLockUser)) 
+            return $loLockUser;
+        
+        // try to set the lock or refresh the lock if exists
+        $this->moDB->Execute("INSERT INTO latexmk_lock (latexmk, user, session) VALUES (?,?,?) ON DUPLICATE KEY UPDATE user=?, session=?, lastactivity=NOW()", array($this->mnID, $poUser->getID(), session_id(), $poUser->getID(), session_id()));
+        
+        return null;
     }
     
     /** returns the user object if a lock exists
-     * @return user object or null
+     * @return null (for no lock) or use object
      **/
     function hasLock() {
+        $loResult = $this->moDB->Execute("SELECT user FROM latexmk_lock WHERE latexmk=? AND session <> ?", array($this->mnID, session_id()));
+        if (!$loResult->EOF)
+            return new man\user( intval($loResult->fields["user"]) );
         
+        return null;
+    }
+    
+    /** remove the lock of the draft **/
+    function unlock() {
+        $this->moDB->Execute("DELETE FROM latexmk_lock WHERE latexmk=? AND session=?", array($this->mnID, session_id()));
     }
     
     /** checks if the document can be archiveable
      * @return boolean of the flag
      **/
     function isArchivable() {
-        
+
     }
     
     /** sets the archivable flag

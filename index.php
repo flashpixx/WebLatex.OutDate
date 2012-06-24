@@ -27,8 +27,6 @@
  * @todo add working context menu for file and directory objects (create / deleting)
  * with modal dialogs and jQuery calls
  *
- * @todo adding globaly latexmk.pl configuration within the main configuration (expessially for glossaries)
- *
  * @todo srcElement in the JavaScript creates problems on Firefox (is undefined)
  *
  * @todo adding HTTP authentification for using NTLM login on the browser (insert it in the global config)
@@ -48,8 +46,6 @@
  * @todo adding ckeditor plugin for managing the document history
  *
  * @todo adding media plugin for the chkeditor and also a own subpage
- *
- * @todo do PDF rendering and LaTeX calls (user & session depended)
  *
  * @todo check gettext calls, is seems to be broken
  *
