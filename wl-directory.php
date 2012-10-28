@@ -24,9 +24,6 @@
  **/
     
 /**
- * $LastChangedDate$
- * $Author$
- *
  * @file wl-directory.php
  * @brief file for creating the directory structure
  * @see http://www.abeautifulsite.net/blog/2008/03/jquery-file-tree

@@ -24,9 +24,6 @@
  **/
 
 /**
- * $LastChangedDate$
- * $Author$
- *
  * @file wl-documentedit.php
  * file for creating the edit window of a document
  **/

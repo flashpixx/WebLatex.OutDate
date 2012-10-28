@@ -24,9 +24,6 @@
  **/
     
 /**
- * $LastChangedDate$
- * $Author$
- *
  * @file wl-haslock.php
  * @brief file for checking if a lock exists on a document or draft
  *

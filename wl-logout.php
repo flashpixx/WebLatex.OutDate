@@ -24,9 +24,6 @@
  **/
  
 /**
- * $LastChangedDate$
- * $Author$
- *
  * @file wl-logout.php
  * @brief file for destroying the session and removing the document locks
  *

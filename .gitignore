@@ -1,0 +1,7 @@
+*.bak
+*.xcodeproj
+__*
+wl-config.inc.php
+build
+buildlang
+doc

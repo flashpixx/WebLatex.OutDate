@@ -23,10 +23,6 @@
  @endcond
  **/
 
-/**
- * $LastChangedDate$
- * $Author$
- **/
 
 
 

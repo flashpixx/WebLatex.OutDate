@@ -24,9 +24,6 @@
  **/
     
 /**
- * $LastChangedDate$
- * $Author$
- *
  * @file wl-editdraft.php
  * @brief file for creating the HTML code of the editing draft data
  *

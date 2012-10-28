@@ -24,9 +24,6 @@
  **/
 
 /**
- * $LastChangedDate$
- * $Author$
- *
  * @file wl-documentpdf.php
  * creates the PDF of a document
  **/

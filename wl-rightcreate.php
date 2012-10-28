@@ -23,11 +23,6 @@
  @endcond
  **/
 
-/**
- * $LastChangedDate$
- * $Author$
- **/
-
 
 
 use weblatex as wl;

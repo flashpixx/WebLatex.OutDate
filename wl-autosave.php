@@ -24,9 +24,6 @@
  **/
 
 /**
- * $LastChangedDate$
- * $Author$
- *
  * @file wl-autosave.php
  * @brief file that connects the autosave CKEditor plugin with the database
  *

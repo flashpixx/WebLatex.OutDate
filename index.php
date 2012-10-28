@@ -49,6 +49,8 @@
  *
  * @todo check gettext calls, is seems to be broken
  *
+ * @todo thinkig about another editor https://github.com/adobe/brackets
+ *
  * @todo add media browser to the chkeditor with a plugin (images should
  * be shown on fly
  *
@@ -81,9 +83,6 @@
     
     
 /**
- * $LastChangedDate$
- * $Author$
- *
  * @file index.php
  * @brief index file, that creates the login sreen or the main view
  *

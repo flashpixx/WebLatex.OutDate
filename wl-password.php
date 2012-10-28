@@ -24,9 +24,6 @@
  **/
 
 /**
- * $LastChangedDate$
- * $Author$
- *
  * @file wl-password.php
  * @brief file for changing the user password
  *
