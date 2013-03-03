@@ -24,6 +24,8 @@
  **/
 
 /**
+ * @todo change base structure to Etherpad (Piraten) / Collaborative Working
+ *
  * @todo add working context menu for file and directory objects (create / deleting)
  * with modal dialogs and jQuery calls
  *
