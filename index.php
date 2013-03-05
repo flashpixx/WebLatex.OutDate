@@ -24,7 +24,7 @@
  **/
 
 /**
- * @todo change base structure to Etherpad (Piraten) / Collaborative Working
+ * @todo change base structure to Etherpad (http://etherpad.org/) / Collaborative Working - additional plugins https://github.com/ether/etherpad-lite/wiki/HTTP-API
  *
  * @todo add working context menu for file and directory objects (create / deleting)
  * with modal dialogs and jQuery calls
