@@ -24,7 +24,7 @@
  **/
 
 /**
- * @todo change base structure to Etherpad (http://etherpad.org/) / Collaborative Working - additional plugins https://github.com/ether/etherpad-lite/wiki/HTTP-API
+ * @todo change base structure to Etherpad (http://etherpad.org/) / Collaborative Working - additional plugins https://github.com/ether/etherpad-lite/wiki/HTTP-API / https://github.com/ether/etherpad-lite-jquery-plugin / https://github.com/ether/etherpad-lite/blob/master/doc/api/http_api.md#creategrouppadgroupid-padname--text
  *
  * @todo add working context menu for file and directory objects (create / deleting)
  * with modal dialogs and jQuery calls
